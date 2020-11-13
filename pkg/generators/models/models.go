@@ -12,12 +12,17 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/getkin/kin-openapi/openapi3"
 
 	tpl "github.com/contiamo/go-base/v2/pkg/generators/templates"
 )
 
 func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
+	if schemaRef == nil {
+		log.Fatal().Msg("got nil schema ref")
+	}
 	schema := schemaRef.Value
 	propertyType := schemaRef.Value.Type
 	switch propertyType {
@@ -39,7 +44,11 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 			propertyType = filepath.Base(schemaRef.Ref)
 		}
 	case "array":
-		propertyType = "[]" + goTypeFromSpec(schema.Items)
+		subType := "interface{}"
+		if schema.Items != nil {
+			subType = goTypeFromSpec(schema.Items)
+		}
+		propertyType = "[]" + subType
 	case "boolean":
 		propertyType = "bool"
 	case "integer":
@@ -113,9 +122,10 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			}
 			jsonTags += "\"`"
 			modelContext.Properties = append(modelContext.Properties, propertyContext{
-				Name:     tpl.ToPascalCase(propName),
-				Type:     propertyType,
-				JSONTags: jsonTags,
+				Name:        tpl.ToPascalCase(propName),
+				Type:        propertyType,
+				JSONTags:    jsonTags,
+				Description: propSpec.Value.Description,
 			})
 		}
 		sort.Sort(modelContext.Properties)
