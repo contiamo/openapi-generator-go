@@ -79,12 +79,26 @@ components:
           properties:
             anon:
               type: string
-
+        aAllOf:
+          allOf:
+            - $ref: "#/components/schemas/SubType"
+            - type: object
+              properties:
+                extra:
+                  type: string
     SubType:
       type: object
       properties:
         foo:
           type: string
+
+    TopLevelAllOf:
+      allOf:
+        - $ref: "#/components/schemas/SubType"
+        - type: object
+          properties:
+            extra:
+              type: string
 
     EnumType:
       type: string

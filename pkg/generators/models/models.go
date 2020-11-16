@@ -99,6 +99,16 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 
 	// to do sort and iterate over the sorted schema
 	for name, s := range swagger.Components.Schemas {
+		// resolve toplevel allof
+		if len(s.Value.AllOf) > 0 {
+			s.Value.Type = "object"
+			s.Value.Properties = make(map[string]*openapi3.SchemaRef)
+			for _, subSpec := range s.Value.AllOf {
+				for propName, propSpec := range subSpec.Value.Properties {
+					s.Value.Properties[propName] = propSpec
+				}
+			}
+		}
 		if s.Value.Type != "object" {
 			continue
 		}
@@ -111,6 +121,17 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			Description: s.Value.Description,
 		}
 		for propName, propSpec := range s.Value.Properties {
+			// resolve allof
+			if len(propSpec.Value.AllOf) > 0 {
+				propSpec.Value.Type = "object"
+				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
+				for _, subSpec := range propSpec.Value.AllOf {
+					for p, s := range subSpec.Value.Properties {
+						propSpec.Value.Properties[p] = s
+					}
+				}
+			}
+
 			propertyType := goTypeFromSpec(propSpec)
 			if propertyType == "time.Time" || propertyType == "*time.Time" {
 				found := false

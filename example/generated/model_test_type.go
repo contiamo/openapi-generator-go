@@ -7,6 +7,11 @@ package api
 
 // TestType is an object.
 type TestType struct {
+	// AAllOf
+	AAllOf struct {
+		Foo   string
+		Extra string
+	} `json:"aAllOf,omitempty"`
 	// AArray
 	AArray []interface{} `json:"aArray,omitempty"`
 	// AEnum
@@ -47,6 +52,22 @@ type TestType struct {
 	ATypedObject SubType `json:"aTypedObject,omitempty"`
 	// AUint64
 	AUint64 uint64 `json:"aUint64,omitempty"`
+}
+
+// GetAAllOf returns the AAllOf property
+func (m TestType) GetAAllOf() struct {
+	Foo   string
+	Extra string
+} {
+	return m.AAllOf
+}
+
+// SetAAllOf sets the AAllOf property
+func (m TestType) SetAAllOf(val struct {
+	Foo   string
+	Extra string
+}) {
+	m.AAllOf = val
 }
 
 // GetAArray returns the AArray property
