@@ -100,6 +100,15 @@ components:
             extra:
               type: string
 
+    ObjectWithNullableReference:
+      type: object
+      properties:
+        foo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/SubType"
+
+
     EnumType:
       type: string
       enum:
