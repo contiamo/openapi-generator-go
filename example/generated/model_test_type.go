@@ -7,57 +7,66 @@ package api
 
 // TestType is an object.
 type TestType struct {
-	// AAllOf
-	AAllOf SubType `json:"aAllOf,omitempty"`
-	// AArray
+	// AAllOf:
+	AAllOf struct {
+		Foo   string
+		Extra string
+	} `json:"aAllOf,omitempty"`
+	// AArray:
 	AArray []interface{} `json:"aArray,omitempty"`
-	// AEnum
+	// AEnum:
 	AEnum EnumType `json:"aEnum,omitempty"`
-	// AInt
+	// AInt:
 	AInt int32 `json:"aInt,omitempty"`
-	// ANullableArray
+	// ANullableArray:
 	ANullableArray []interface{} `json:"aNullableArray,omitempty"`
-	// ANullableObject
+	// ANullableObject:
 	ANullableObject map[string]interface{} `json:"aNullableObject,omitempty"`
-	// ANumber
+	// ANumber:
 	ANumber float32 `json:"aNumber,omitempty"`
-	// AObject
+	// AObject:
 	AObject map[string]interface{} `json:"aObject,omitempty"`
-	// AObjectWithAdditionalComplexProperties
+	// AObjectWithAdditionalComplexProperties:
 	AObjectWithAdditionalComplexProperties map[string]SubType `json:"aObjectWithAdditionalComplexProperties,omitempty"`
-	// AObjectWithAdditionalProperties
+	// AObjectWithAdditionalProperties:
 	AObjectWithAdditionalProperties map[string]string `json:"aObjectWithAdditionalProperties,omitempty"`
-	// AObjectWithAnAnonymousObjectProperty
+	// AObjectWithAnAnonymousObjectProperty:
 	AObjectWithAnAnonymousObjectProperty struct {
 		Anon string
 	} `json:"aObjectWithAnAnonymousObjectProperty,omitempty"`
-	// AOneOf
+	// AOneOf:
 	AOneOf interface{} `json:"aOneOf,omitempty"`
-	// APointer
+	// APointer:
 	APointer *string `json:"aPointer,omitempty"`
-	// ARequiredValue
+	// ARequiredValue:
 	ARequiredValue string `json:"aRequiredValue"`
-	// AString
+	// AString:
 	AString string `json:"aString,omitempty"`
-	// AStringArray
+	// AStringArray:
 	AStringArray []string `json:"aStringArray,omitempty"`
 	// AStringWithDescription: this is some documentation
 	AStringWithDescription string `json:"aStringWithDescription,omitempty"`
-	// ATypedArray
+	// ATypedArray:
 	ATypedArray []SubType `json:"aTypedArray,omitempty"`
-	// ATypedObject
+	// ATypedObject:
 	ATypedObject SubType `json:"aTypedObject,omitempty"`
-	// AUint64
+	// AUint64:
 	AUint64 uint64 `json:"aUint64,omitempty"`
 }
 
 // GetAAllOf returns the AAllOf property
-func (m TestType) GetAAllOf() SubType {
+func (m TestType) GetAAllOf() struct {
+	Foo   string
+	Extra string
+} {
 	return m.AAllOf
 }
 
 // SetAAllOf sets the AAllOf property
-func (m TestType) SetAAllOf(val SubType) {
+func (m TestType) SetAAllOf(val struct {
+	Foo   string
+	Extra string
+}) {
 	m.AAllOf = val
 }
 

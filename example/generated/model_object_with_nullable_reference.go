@@ -7,7 +7,7 @@ package api
 
 // ObjectWithNullableReference is an object.
 type ObjectWithNullableReference struct {
-	// Foo
+	// Foo:
 	Foo *SubType `json:"foo,omitempty"`
 }
 

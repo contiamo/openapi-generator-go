@@ -102,8 +102,10 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 		// resolve toplevel allof
 		if len(s.Value.AllOf) > 0 {
 			s.Value.Type = "object"
-			if s.Value.AllOf[0].Ref != "" {
-				s.Ref = s.Value.AllOf[0].Ref
+			if len(s.Value.AllOf) == 1 {
+				if s.Value.AllOf[0].Ref != "" {
+					s.Ref = s.Value.AllOf[0].Ref
+				}
 			}
 			s.Value.Properties = make(map[string]*openapi3.SchemaRef)
 			for _, subSpec := range s.Value.AllOf {
@@ -127,8 +129,11 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			// resolve allof
 			if len(propSpec.Value.AllOf) > 0 {
 				propSpec.Value.Type = "object"
-				if propSpec.Value.AllOf[0].Ref != "" {
-					propSpec.Ref = propSpec.Value.AllOf[0].Ref
+				if len(propSpec.Value.AllOf) == 1 {
+					if propSpec.Value.AllOf[0].Ref != "" {
+						propSpec.Ref = propSpec.Value.AllOf[0].Ref
+					}
+
 				}
 				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
 				for _, subSpec := range propSpec.Value.AllOf {
@@ -245,12 +250,16 @@ package {{ .PackageName }}
 {{- if .Imports }}){{end}}
 
 {{ (printf "%s is an object. %s" .ModelName .Description) | commentBlock }}
+{{- if not .Properties }}
+type {{.ModelName}} map[string]interface{}
+{{- else }}
 type {{.ModelName}} struct {
 {{- range .Properties}}
-	// {{.Name}}{{if .Description}}: {{.Description}}{{end}}
+	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
 	{{.Name}} {{.Type}} {{.JSONTags}}
 {{- end}}
 }
+{{- end}}
 
 {{- $modelName := .ModelName }}
 {{ range .Properties}}

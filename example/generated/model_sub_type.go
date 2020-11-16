@@ -7,7 +7,7 @@ package api
 
 // SubType is an object.
 type SubType struct {
-	// Foo
+	// Foo:
 	Foo string `json:"foo,omitempty"`
 }
 

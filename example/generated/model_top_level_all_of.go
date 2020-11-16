@@ -7,9 +7,9 @@ package api
 
 // TopLevelAllOf is an object.
 type TopLevelAllOf struct {
-	// Extra
+	// Extra:
 	Extra string `json:"extra,omitempty"`
-	// Foo
+	// Foo:
 	Foo string `json:"foo,omitempty"`
 }
 

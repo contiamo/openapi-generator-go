@@ -108,6 +108,9 @@ components:
           allOf:
             - $ref: "#/components/schemas/SubType"
 
+    DenisAllOf:
+      allOf:
+        - type: object
 
     EnumType:
       type: string
