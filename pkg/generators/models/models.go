@@ -156,7 +156,6 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 		err = modelTemplate.Execute(buf, modelContext)
 		content, err := format.Source(buf.Bytes())
 		if err != nil {
-			fmt.Println(string(buf.Bytes()))
 			return fmt.Errorf("failed to format source code: %w", err)
 		}
 		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
