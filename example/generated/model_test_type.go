@@ -25,6 +25,10 @@ type TestType struct {
 	AObjectWithAdditionalComplexProperties map[string]SubType `json:"aObjectWithAdditionalComplexProperties,omitempty"`
 	// AObjectWithAdditionalProperties
 	AObjectWithAdditionalProperties map[string]string `json:"aObjectWithAdditionalProperties,omitempty"`
+	// AObjectWithAnAnonymousObjectProperty
+	AObjectWithAnAnonymousObjectProperty struct {
+		Anon string
+	} `json:"aObjectWithAnAnonymousObjectProperty,omitempty"`
 	// AOneOf
 	AOneOf interface{} `json:"aOneOf,omitempty"`
 	// APointer
@@ -133,6 +137,20 @@ func (m TestType) GetAObjectWithAdditionalProperties() map[string]string {
 // SetAObjectWithAdditionalProperties sets the AObjectWithAdditionalProperties property
 func (m TestType) SetAObjectWithAdditionalProperties(val map[string]string) {
 	m.AObjectWithAdditionalProperties = val
+}
+
+// GetAObjectWithAnAnonymousObjectProperty returns the AObjectWithAnAnonymousObjectProperty property
+func (m TestType) GetAObjectWithAnAnonymousObjectProperty() struct {
+	Anon string
+} {
+	return m.AObjectWithAnAnonymousObjectProperty
+}
+
+// SetAObjectWithAnAnonymousObjectProperty sets the AObjectWithAnAnonymousObjectProperty property
+func (m TestType) SetAObjectWithAnAnonymousObjectProperty(val struct {
+	Anon string
+}) {
+	m.AObjectWithAnAnonymousObjectProperty = val
 }
 
 // GetAOneOf returns the AOneOf property

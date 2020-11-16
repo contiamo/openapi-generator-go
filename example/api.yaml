@@ -74,6 +74,11 @@ components:
             - integer
         aRequiredValue:
           type: string
+        aObjectWithAnAnonymousObjectProperty:
+          type: object
+          properties:
+            anon:
+              type: string
 
     SubType:
       type: object

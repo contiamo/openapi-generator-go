@@ -27,15 +27,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	propertyType := schemaRef.Value.Type
 	switch propertyType {
 	case "object":
-		if schemaRef.Ref != "" {
-			propertyType = filepath.Base(schemaRef.Ref)
-		} else {
-			subType := "interface{}"
-			if schema.AdditionalProperties != nil {
-				subType = goTypeFromSpec(schema.AdditionalProperties)
-			}
-			propertyType = "map[string]" + subType
-		}
+		propertyType = goTypeForObject(schemaRef)
 	case "string":
 		if schema.Format == "date-time" || schema.Format == "time" {
 			propertyType = "time.Time"
@@ -62,6 +54,30 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		propertyType = "*" + propertyType
 	}
 	return propertyType
+}
+
+func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
+	switch {
+	case schemaRef.Ref != "":
+		propType = filepath.Base(schemaRef.Ref)
+	case schemaRef.Value.AdditionalProperties != nil:
+		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
+		propType = "map[string]" + subType
+	case len(schemaRef.Value.Properties) > 0:
+		structBuilder := &strings.Builder{}
+		structBuilder.WriteString("struct {\n")
+		for name, ref := range schemaRef.Value.Properties {
+			structBuilder.WriteString(tpl.ToPascalCase(name))
+			structBuilder.WriteString(" ")
+			structBuilder.WriteString(goTypeFromSpec(ref))
+			structBuilder.WriteString("\n")
+		}
+		structBuilder.WriteString("}")
+		propType = structBuilder.String()
+	default:
+		return "map[string]interface{}"
+	}
+	return propType
 }
 
 // GenerateModels outputs the Go enum models with validators
@@ -94,7 +110,6 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			ModelName:   tpl.ToPascalCase(name),
 			Description: s.Value.Description,
 		}
-
 		for propName, propSpec := range s.Value.Properties {
 			propertyType := goTypeFromSpec(propSpec)
 			if propertyType == "time.Time" || propertyType == "*time.Time" {
@@ -141,6 +156,7 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 		err = modelTemplate.Execute(buf, modelContext)
 		content, err := format.Source(buf.Bytes())
 		if err != nil {
+			fmt.Println(string(buf.Bytes()))
 			return fmt.Errorf("failed to format source code: %w", err)
 		}
 		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
