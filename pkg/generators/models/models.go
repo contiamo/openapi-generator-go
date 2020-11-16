@@ -16,7 +16,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	tpl "github.com/contiamo/go-base/v2/pkg/generators/templates"
+	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 )
 
 func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
