@@ -8,7 +8,7 @@ bin/openapi-generator-go: $(shell find ./ -name "*.go")
 install: bin/openapi-generator-go
 	cp $< $(shell go env GOPATH)/bin/
 
-CONTAINER_ENGINE=podman
+CONTAINER_ENGINE=docker
 container-build:
 	$(CONTAINER_ENGINE) run --rm \
 	-v $(shell pwd):/app \
