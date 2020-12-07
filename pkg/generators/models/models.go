@@ -16,7 +16,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	tpl "github.com/contiamo/go-base/v2/pkg/generators/templates"
+	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 )
 
 func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
@@ -27,15 +27,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	propertyType := schemaRef.Value.Type
 	switch propertyType {
 	case "object":
-		if schemaRef.Ref != "" {
-			propertyType = filepath.Base(schemaRef.Ref)
-		} else {
-			subType := "interface{}"
-			if schema.AdditionalProperties != nil {
-				subType = goTypeFromSpec(schema.AdditionalProperties)
-			}
-			propertyType = "map[string]" + subType
-		}
+		propertyType = goTypeForObject(schemaRef)
 	case "string":
 		if schema.Format == "date-time" || schema.Format == "time" {
 			propertyType = "time.Time"
@@ -64,6 +56,30 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	return propertyType
 }
 
+func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
+	switch {
+	case schemaRef.Ref != "":
+		propType = filepath.Base(schemaRef.Ref)
+	case schemaRef.Value.AdditionalProperties != nil:
+		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
+		propType = "map[string]" + subType
+	case len(schemaRef.Value.Properties) > 0:
+		structBuilder := &strings.Builder{}
+		structBuilder.WriteString("struct {\n")
+		for name, ref := range schemaRef.Value.Properties {
+			structBuilder.WriteString(tpl.ToPascalCase(name))
+			structBuilder.WriteString(" ")
+			structBuilder.WriteString(goTypeFromSpec(ref))
+			structBuilder.WriteString("\n")
+		}
+		structBuilder.WriteString("}")
+		propType = structBuilder.String()
+	default:
+		return "map[string]interface{}"
+	}
+	return propType
+}
+
 // GenerateModels outputs the Go enum models with validators
 func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 	if opts.PackageName == "" {
@@ -83,6 +99,21 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 
 	// to do sort and iterate over the sorted schema
 	for name, s := range swagger.Components.Schemas {
+		// resolve toplevel allof
+		if len(s.Value.AllOf) > 0 {
+			s.Value.Type = "object"
+			if len(s.Value.AllOf) == 1 {
+				if s.Value.AllOf[0].Ref != "" {
+					s.Ref = s.Value.AllOf[0].Ref
+				}
+			}
+			s.Value.Properties = make(map[string]*openapi3.SchemaRef)
+			for _, subSpec := range s.Value.AllOf {
+				for propName, propSpec := range subSpec.Value.Properties {
+					s.Value.Properties[propName] = propSpec
+				}
+			}
+		}
 		if s.Value.Type != "object" {
 			continue
 		}
@@ -94,8 +125,24 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			ModelName:   tpl.ToPascalCase(name),
 			Description: s.Value.Description,
 		}
-
 		for propName, propSpec := range s.Value.Properties {
+			// resolve allof
+			if len(propSpec.Value.AllOf) > 0 {
+				propSpec.Value.Type = "object"
+				if len(propSpec.Value.AllOf) == 1 {
+					if propSpec.Value.AllOf[0].Ref != "" {
+						propSpec.Ref = propSpec.Value.AllOf[0].Ref
+					}
+
+				}
+				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
+				for _, subSpec := range propSpec.Value.AllOf {
+					for p, s := range subSpec.Value.Properties {
+						propSpec.Value.Properties[p] = s
+					}
+				}
+			}
+
 			propertyType := goTypeFromSpec(propSpec)
 			if propertyType == "time.Time" || propertyType == "*time.Time" {
 				found := false
@@ -203,12 +250,16 @@ package {{ .PackageName }}
 {{- if .Imports }}){{end}}
 
 {{ (printf "%s is an object. %s" .ModelName .Description) | commentBlock }}
+{{- if not .Properties }}
+type {{.ModelName}} map[string]interface{}
+{{- else }}
 type {{.ModelName}} struct {
 {{- range .Properties}}
-	// {{.Name}}{{if .Description}}: {{.Description}}{{end}}
+	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
 	{{.Name}} {{.Type}} {{.JSONTags}}
 {{- end}}
 }
+{{- end}}
 
 {{- $modelName := .ModelName }}
 {{ range .Properties}}

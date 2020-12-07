@@ -74,12 +74,43 @@ components:
             - integer
         aRequiredValue:
           type: string
-
+        aObjectWithAnAnonymousObjectProperty:
+          type: object
+          properties:
+            anon:
+              type: string
+        aAllOf:
+          allOf:
+            - $ref: "#/components/schemas/SubType"
+            - type: object
+              properties:
+                extra:
+                  type: string
     SubType:
       type: object
       properties:
         foo:
           type: string
+
+    TopLevelAllOf:
+      allOf:
+        - $ref: "#/components/schemas/SubType"
+        - type: object
+          properties:
+            extra:
+              type: string
+
+    ObjectWithNullableReference:
+      type: object
+      properties:
+        foo:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/SubType"
+
+    DenisAllOf:
+      allOf:
+        - type: object
 
     EnumType:
       type: string
