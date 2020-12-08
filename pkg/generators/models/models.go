@@ -145,8 +145,8 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			if s.Value.AdditionalPropertiesAllowed != nil && *s.Value.AdditionalPropertiesAllowed {
 				s.Value.Properties = nil
 			}
-
 		}
+
 		if s.Value.Type != "object" {
 			continue
 		}
@@ -160,6 +160,26 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 		}
 
 		for propName, propSpec := range s.Value.Properties {
+			if len(propSpec.Value.AllOf) > 0 {
+				propSpec.Value.Type = "object"
+				if len(propSpec.Value.AllOf) == 1 {
+					if propSpec.Value.AllOf[0].Ref != "" {
+						propSpec.Ref = propSpec.Value.AllOf[0].Ref
+					}
+				}
+				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
+				for _, subSpec := range propSpec.Value.AllOf {
+					for propName, subPropSpec := range subSpec.Value.Properties {
+						propSpec.Value.Properties[propName] = subPropSpec
+					}
+					if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
+						propSpec.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
+					}
+				}
+				if propSpec.Value.AdditionalPropertiesAllowed != nil && *propSpec.Value.AdditionalPropertiesAllowed {
+					propSpec.Value.Properties = nil
+				}
+			}
 			propertyType := goTypeFromSpec(propSpec)
 			if propertyType == "time.Time" || propertyType == "*time.Time" {
 				found := false
