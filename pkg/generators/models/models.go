@@ -138,6 +138,8 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 				for propName, propSpec := range subSpec.Value.Properties {
 					s.Value.Properties[propName] = propSpec
 				}
+				// Here we bubble up the additionalProperties if we find it in any of the allof entries.
+				// If we find it, we delete all collected property information and will return an map[string]interface{}
 				if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
 					s.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
 				}
