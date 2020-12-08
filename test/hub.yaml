@@ -48,8 +48,6 @@ tags:
     description: Endpoints for managing generic resources of the catalog
   - name: search
     description: Search-related endpoints
-  - name: streams
-    description: Endpoints for stream management
   - name: tables
     description: Endpoints for managing data source tables
   - name: tasks
@@ -1412,135 +1410,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationInstanceResponse"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-
-
-  "/api/v1/{projectId}/streams":
-    post:
-      tags:
-        - streams
-      summary: Create a stream
-      description: |
-        This creates a new stream resource
-      x-handler-group: Streams
-      operationId: CreateStream
-      parameters:
-        - name: projectId
-          in: path
-          description: UUID of the project
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StreamCreateRequest"
-        description: Stream to create
-        required: true
-      responses:
-        '201':
-          description: Stream created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StreamResponse"
-        '422':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  "/api/v1/{projectId}/streams/{streamId}":
-    parameters:
-      - name: projectId
-        in: path
-        description: UUID of the project
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: streamId
-        in: path
-        description: UUID or name of the stream
-        required: true
-        schema:
-          type: string
-    get:
-      tags:
-        - streams
-      summary: Retrieve a stream
-      description: Retrieve a single stream by ID or name
-      x-handler-group: Streams
-      operationId: GetStream
-      responses:
-        '200':
-          description: Object containing the requested stream information
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StreamInstanceResponse"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    delete:
-      tags:
-        - streams
-      summary: Delete an stream
-      description: Delete a single stream by ID or name
-      x-handler-group: Streams
-      operationId: DeleteStream
-      responses:
-        '204':
-          description: Stream successfully deleted
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    patch:
-      tags:
-        - streams
-      summary: Update a stream
-      description: Update an stream using a partial PATCH technique
-      x-handler-group: Streams
-      operationId: UpdateStream
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StreamUpdateRequest"
-      responses:
-        '200':
-          description: Object containing the requested stream information
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StreamInstanceResponse"
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -4845,7 +4714,6 @@ components:
         - pipeline
         - api
         - model
-        - stream
 
     CreateConnectionRequest:
       type: object
@@ -4969,6 +4837,7 @@ components:
         - tableCount
 
     ConnectionTestWithStatsResult:
+      type: object
       properties:
         message:
           type: string
@@ -5124,7 +4993,6 @@ components:
           type: number
           nullable: true
 
-
     FieldType:
       type: string
       description: |
@@ -5147,7 +5015,6 @@ components:
         - `number` is a numeric value, described by RFC8259, section 6.
 
         - `link` is a link object with a displayed text and URL, e.g. `{"displayText": "text", "url": "http://example.com"}`. Only absolute URLs with HTTP/HTTPS protocol are allowed.
-
       enum:
         - text
         - multitext
@@ -5170,7 +5037,6 @@ components:
         - Configurable fields are editable default fields. These can be modified but not deleted.
 
         - Custom are user defined fields. These are fully defined by the user.
-
       enum:
         - system
         - configurable
@@ -5306,8 +5172,8 @@ components:
           type: integer
 
     UseCaseActions:
-      description: List of actions allowed to perform on the use case
       type: object
+      description: List of actions allowed to perform on the use case
       required:
         - role
         - read
@@ -5488,8 +5354,8 @@ components:
           type: integer
 
     BIReportActions:
-      description: List of actions allowed to perform on the BI Report
       type: object
+      description: List of actions allowed to perform on the BI Report
       required:
         - role
         - read
@@ -5926,8 +5792,8 @@ components:
           type: integer
 
     ApplicationActions:
-      description: List of actions allowed to perform on the application
       type: object
+      description: List of actions allowed to perform on the application
       required:
         - role
         - read
@@ -6104,199 +5970,6 @@ components:
         # ApplicationType as a type not a value. In general, the value "unknown" shouldn't be used.
         - unknown
 
-    StreamStatistics:
-      type: object
-      description: Various statistics about the stream
-      required:
-        - dependantCount
-        - dependencyCount
-      properties:
-        dependantCount:
-          description: How many resources depend on this stream
-          type: integer
-        dependencyCount:
-          description: How many dependencies this resources stream has
-          type: integer
-
-    StreamActions:
-      description: List of actions allowed to perform on the stream
-      type: object
-      required:
-        - role
-        - read
-        - editMetadata
-        - delete
-        - grant
-      properties:
-        role:
-          type: string
-          description: |
-            aggregated role name.  This can be used to indicate the total role level that is represented by the users available
-            actions.
-
-            The value `none` indicates that the user has no direct permissions on the resource. In general, this will only be returned if the
-            resource is `public`, indicating that the user can read the resource metadata, but can not otherwise perform any other actions.
-
-            The value `admin` indicates the user is a project admin, and therefore is allowed all available actions, overriding any other specific
-            permissions that may have been directly granted to the user or a group they are in.
-
-            The other allowed values correspond to a specific `Role`. This indicates that the user or a group they are in was directly granted this role.
-            In this case, the API returns the role name with the highest access levels.
-          enum:
-            - none
-            - owner
-            - steward
-            - admin
-        read:
-          description: |
-            If true the user is allowed to read the resource and its connections/links
-          type: boolean
-        editMetadata:
-          description: If true the user is allowed to edit the metadata of the resource
-          type: boolean
-        delete:
-          description: |
-            If true the user is allowed to delete the resource
-          type: boolean
-        grant:
-          description: If true the user is allowed to grant permissions for the resource to other users
-          type: boolean
-
-    StreamResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        projectId:
-          type: string
-          format: uuid
-        name:
-          type: string
-          minLength: 2
-          maxLength: 255
-        displayName:
-          type: string
-          maxLength: 63
-        description:
-          type: string
-          maxLength: 255
-        documentation:
-          description: Long form markdown field that can be used to document the resource
-          type: string
-        isPublic:
-          type: boolean
-        isOrphaned:
-          description: Indicates that this stream couldn't be synced from an external system
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        orphanedAt:
-          type: string
-          nullable: true
-          format: date-time
-        externalId:
-          type: string
-          nullable: true
-        "type":
-          $ref: "#/components/schemas/StreamType"
-        properties:
-          type: object
-        resourceActions:
-          $ref: "#/components/schemas/StreamActions"
-        stats:
-          $ref: "#/components/schemas/StreamStatistics"
-      required:
-        - id
-        - projectId
-        - name
-        - displayName
-        - description
-        - documentation
-        - isPublic
-        - isOrphaned
-        - createdAt
-        - updatedAt
-        - orphanedAt
-        - externalId
-        - type
-        - properties
-        - resourceActions
-        - stats
-
-    StreamInstanceResponse:
-      type: object
-      required:
-        - fieldspec
-        - data
-      properties:
-        fieldspec:
-          type: array
-          items:
-            $ref: "#/components/schemas/FieldSpec"
-        data:
-          $ref: "#/components/schemas/StreamResponse"
-
-    StreamCreateRequest:
-      type: object
-      properties:
-        displayName:
-          type: string
-          maxLength: 63
-        description:
-          type: string
-          maxLength: 255
-        isPublic:
-          type: boolean
-        externalId:
-          type: string
-          nullable: true
-        "type":
-          $ref: "#/components/schemas/StreamType"
-      required:
-        - displayName
-        - isPublic
-
-    StreamUpdateRequest:
-      type: object
-      properties:
-        description:
-          type: string
-          nullable: true
-          maxLength: 255
-        displayName:
-          type: string
-          maxLength: 63
-          nullable: true
-        icon:
-          type: string
-          nullable: true
-        documentation:
-          type: string
-          nullable: true
-        isPublic:
-          type: boolean
-          nullable: true
-        properties:
-          type: object
-          nullable: true
-        externalId:
-          type: string
-          nullable: true
-
-    StreamType:
-      type: string
-      enum:
-        - generic
-        # TECHDEBT: our enum code generator will  turn StreamType into a constant
-        # if it only has one value, but the resulting code can not compile because it will use
-        # ApplicationType as a type not a value. In general, the value "unknown" shouldn't be used.
-        - unknown
-
     PipelineStatistics:
       type: object
       description: Various statistics about the pipeline
@@ -6312,8 +5985,8 @@ components:
           type: integer
 
     PipelineActions:
-      description: List of actions allowed to perform on the pipeline
       type: object
+      description: List of actions allowed to perform on the pipeline
       required:
         - role
         - read
@@ -6505,8 +6178,8 @@ components:
           type: integer
 
     APIActions:
-      description: List of actions allowed to perform on the API
       type: object
+      description: List of actions allowed to perform on the API
       required:
         - role
         - read
@@ -6707,8 +6380,8 @@ components:
             type: string
 
     ModelActions:
-      description: List of actions allowed to perform on the model
       type: object
+      description: List of actions allowed to perform on the model
       required:
         - role
         - read
@@ -7168,7 +6841,6 @@ components:
         - pipeline
         - api
         - model
-        - stream
 
     SearchResponse:
       type: object
@@ -7192,7 +6864,6 @@ components:
             - $ref: "#/components/schemas/PipelineResponse"
             - $ref: "#/components/schemas/APIResponse"
             - $ref: "#/components/schemas/ModelResponse"
-            - $ref: "#/components/schemas/StreamResponse"
         meta:
           type: object
           required:
@@ -7523,8 +7194,8 @@ components:
             - failed
 
     DataSourceActions:
-      description: List of actions allowed to perform on the data source
       type: object
+      description: List of actions allowed to perform on the data source
       required:
         - role
         - read
@@ -7716,8 +7387,8 @@ components:
       additionalProperties: false
 
     Filter:
-      description: A filter to reduce the output of list requests
       type: object
+      description: A filter to reduce the output of list requests
       required:
         - property
         - operation
@@ -7737,8 +7408,8 @@ components:
                 type: string
 
     FilterSet:
-      description: A set of filters which should all be applied
       type: object
+      description: A set of filters which should all be applied
       required:
         - filters
       properties:
@@ -7748,8 +7419,8 @@ components:
             $ref: "#/components/schemas/Filter"
 
     SearchFilters:
-      description: Filters to be applied indexed by entity type
       type: object
+      description: Filters to be applied indexed by entity type
       properties:
         datasource:
           type: array
@@ -7820,8 +7491,8 @@ components:
     # taken from the Pantheon spec SQlType
     # currently https://github.com/contiamo/pantheon/blob/master/docs/swagger.json#L1906
     TableColumnType:
-      description: The data type of the table column as it was discovered from the data source.
       type: string
+      description: The data type of the table column as it was discovered from the data source.
       enum:
         - boolean
         - varchar
@@ -8046,7 +7717,9 @@ components:
         progress:
           $ref: "#/components/schemas/ProfilingProgress"
         entities:
-          $ref: "#/components/schemas/EntityDetectionResponse"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/EntityDetectionResponse"
 
     ProfilingProgress:
       type: object
@@ -8177,8 +7850,8 @@ components:
           default: false
 
     ManagedTableColumnType:
-      description: The data type of the column in a managed table
       type: string
+      description: The data type of the column in a managed table
       enum:
         - bool
         - integer
@@ -8251,11 +7924,11 @@ components:
           $ref: "#/components/schemas/ColumnMapping"
 
     ColumnMapping:
+      type: array
       description: |-
         Defines how to map the columns from a file to be ingested
         to the columns of the target table.
         This allows to reorder and/or drop certain columns of the input data
-      type: array
       items:
         $ref: "#/components/schemas/ColumnMappingEntry"
 
@@ -8693,8 +8366,8 @@ components:
           $ref: "#/components/schemas/ColumnResponse"
 
     PageInfo:
-      description: Contains the pagination metadata for a response
       type: object
+      description: Contains the pagination metadata for a response
       properties:
         itemCount:
           type: integer
@@ -8717,16 +8390,16 @@ components:
         - current
 
     DataSourceType:
-      description: Type of a data source
       type: string
+      description: Type of a data source
       enum:
         - managed
         - external
         - virtual
 
     DataSourceTechnology:
-      description: Type of a data source
       type: string
+      description: Type of a data source
       enum:
         - s3
         - bigquery
@@ -8991,6 +8664,7 @@ components:
               type: string
 
     PostgreSQLDataSourceConnectionInfo:
+      x-data-proxy-compatible: true
       allOf:
         - $ref: "#/components/schemas/BaseConnectionInfo"
         - type: object
@@ -9099,6 +8773,7 @@ components:
               format: password
 
     RedshiftDataSourceConnectionInfo:
+      x-data-proxy-compatible: true
       allOf:
         - $ref: "#/components/schemas/BaseConnectionInfo"
         - type: object
@@ -9143,6 +8818,7 @@ components:
           maximum: 100
 
     QueryRequest:
+      type: object
       properties:
         customReference:
           type: string
@@ -9155,6 +8831,7 @@ components:
         - sql
 
     QueryResponse:
+      type: object
       properties:
         columns:
           items:
@@ -9184,7 +8861,6 @@ components:
       - rows
 
     QueryResponseMetadata:
-      type: object
       discriminator:
         propertyName: type
       oneOf:
@@ -9192,6 +8868,7 @@ components:
       properties: {}
 
     SqlColumnMetadata:
+      type: object
       properties:
         dataType:
           enum:
@@ -9253,6 +8930,7 @@ components:
       - sqlType
 
     PagedQueryHistoryResponse:
+      type: object
       properties:
         data:
           items:
@@ -9265,6 +8943,7 @@ components:
       - page
 
     QueryHistoryResponse:
+      type: object
       properties:
         id:
           format: uuid
@@ -9313,7 +8992,6 @@ components:
         userId:
           format: "uuid"
           type: "string"
-
       required:
         - id
         - type
@@ -9322,10 +9000,10 @@ components:
         - origin
 
     QueryHistoryRecordType:
-        enum:
-          - Native
-          - Catalog
-        type: string
+      type: string
+      enum:
+        - Native
+        - Catalog
 
     QueryFileFormat:
       type: string
@@ -9481,7 +9159,6 @@ components:
 
     EntityDetectionResponse:
       type: object
-      nullable: true
       required:
         - metadata
         - columns
@@ -9514,8 +9191,8 @@ components:
             type: string
 
     PredefinedEntity:
-      description: The available predefined entity types that the Profiler can detect, as opposed to any potential user-defined entity types and rules.
       type: string
+      description: The available predefined entity types that the Profiler can detect, as opposed to any potential user-defined entity types and rules.
       enum:
         - "LOCATION"
         - "US_BANK_NUMBER"
@@ -9784,6 +9461,7 @@ components:
             $ref: "#/components/schemas/ProjectResourceStatisticsRootLevelItem"
 
     ProjectResourceStatisticsRootLevelItem:
+      type: object
       required:
         - category
         - totalCount
@@ -9800,6 +9478,7 @@ components:
             $ref: "#/components/schemas/ProjectResourceStatisticsItem"
 
     ProjectResourceStatisticsItem:
+      type: object
       required:
         - kind
         - count
