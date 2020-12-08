@@ -66,6 +66,10 @@ func TestGenerator(t *testing.T) {
 			name:     "format date-time results in a time.Time and the import is added properly",
 			fileName: "model_access_request_response.go",
 		},
+		{
+			name:     "nullable true + usage of allof with one entry results in a pointer to a specific type",
+			fileName: "model_upload_response.go",
+		},
 	}
 
 	for _, tc := range cases {
