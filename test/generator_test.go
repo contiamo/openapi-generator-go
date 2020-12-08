@@ -30,6 +30,7 @@ func TestGenerator(t *testing.T) {
 
 	cases := []struct {
 		name            string
+		description     string
 		fileName        string
 		expectedContent string
 	}{
@@ -38,12 +39,12 @@ func TestGenerator(t *testing.T) {
 			fileName: "model_access_request_state.go",
 		},
 		{
-			name:     "array handling without pointers now",
-			fileName: "model_access_request_list.go",
+			name:     "array handling without pointers now (children prop is omitempty but no pointer)",
+			fileName: "model_resource_dump_response.go",
 		},
 		{
 			name:     "no pointers for maps anymore (properties in this example)",
-			fileName: "model_api_response.go",
+			fileName: "model_table_update_request.go",
 		},
 		{
 			name:     "allof handling in the technology specific connection properties",
@@ -62,7 +63,7 @@ func TestGenerator(t *testing.T) {
 			fileName: "model_resource_dump_response_body.go",
 		},
 		{
-			name:     "format date-time results in a time.Time",
+			name:     "format date-time results in a time.Time and the import is added properly",
 			fileName: "model_access_request_response.go",
 		},
 	}
