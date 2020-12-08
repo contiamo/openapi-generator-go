@@ -68,7 +68,6 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
 		propType = "map[string]" + subType
 	case schemaRef.Value.AdditionalPropertiesAllowed != nil && *schemaRef.Value.AdditionalPropertiesAllowed:
-		fmt.Println("return freeform type")
 		propType = "map[string]interface{}"
 	case len(schemaRef.Value.Properties) > 0:
 		structBuilder := &strings.Builder{}
