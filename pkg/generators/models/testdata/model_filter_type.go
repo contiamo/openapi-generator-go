@@ -13,9 +13,9 @@ import (
 type FilterType string
 
 var (
-	FilterTypeHideAll FilterType = "hideAll"
+	FilterTypeHideAll      FilterType = "hideAll"
 	FilterTypeHideOnlyExpr FilterType = "hideOnlyExpr"
-	FilterTypeShowAll FilterType = "showAll"
+	FilterTypeShowAll      FilterType = "showAll"
 	FilterTypeShowOnlyExpr FilterType = "showOnlyExpr"
 
 	// KnownFilterType is the list of valid FilterType
