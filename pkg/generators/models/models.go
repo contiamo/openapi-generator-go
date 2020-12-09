@@ -23,6 +23,10 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	if schemaRef == nil {
 		log.Fatal().Msg("got nil schema ref")
 	}
+	// add missing object types
+	if len(schemaRef.Value.Properties) > 0 {
+		schemaRef.Value.Type = "object"
+	}
 	schema := schemaRef.Value
 	propertyType := schemaRef.Value.Type
 	switch propertyType {
@@ -63,13 +67,30 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 	case schemaRef.Value.AdditionalProperties != nil:
 		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
 		propType = "map[string]" + subType
+	case schemaRef.Value.AdditionalPropertiesAllowed != nil && *schemaRef.Value.AdditionalPropertiesAllowed:
+		propType = "map[string]interface{}"
 	case len(schemaRef.Value.Properties) > 0:
 		structBuilder := &strings.Builder{}
 		structBuilder.WriteString("struct {\n")
-		for name, ref := range schemaRef.Value.Properties {
+		for _, name := range sortedKeys(schemaRef.Value.Properties) {
+			ref := schemaRef.Value.Properties[name]
+			propName := tpl.ToPascalCase(name)
+			omitEmpty := true
+			for _, required := range ref.Value.Required {
+				if required == propName {
+					omitEmpty = false
+					break
+				}
+			}
+			jsonTags := "`json:\"" + name
+			if omitEmpty {
+				jsonTags += ",omitempty"
+			}
+			jsonTags += "\"`"
 			structBuilder.WriteString(tpl.ToPascalCase(name))
 			structBuilder.WriteString(" ")
 			structBuilder.WriteString(goTypeFromSpec(ref))
+			structBuilder.WriteString(jsonTags)
 			structBuilder.WriteString("\n")
 		}
 		structBuilder.WriteString("}")
@@ -99,6 +120,11 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 
 	// to do sort and iterate over the sorted schema
 	for name, s := range swagger.Components.Schemas {
+		// add forgotten "type: object"
+		if len(s.Value.Properties) > 0 || len(s.Value.OneOf) > 0 || len(s.Value.AllOf) > 0 {
+			s.Value.Type = "object"
+		}
+
 		// resolve toplevel allof
 		if len(s.Value.AllOf) > 0 {
 			s.Value.Type = "object"
@@ -112,8 +138,17 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 				for propName, propSpec := range subSpec.Value.Properties {
 					s.Value.Properties[propName] = propSpec
 				}
+				// Here we bubble up the additionalProperties if we find it in any of the allof entries.
+				// If we find it, we delete all collected property information and will return an map[string]interface{}
+				if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
+					s.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
+				}
+			}
+			if s.Value.AdditionalPropertiesAllowed != nil && *s.Value.AdditionalPropertiesAllowed {
+				s.Value.Properties = nil
 			}
 		}
+
 		if s.Value.Type != "object" {
 			continue
 		}
@@ -125,24 +160,28 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			ModelName:   tpl.ToPascalCase(name),
 			Description: s.Value.Description,
 		}
+
 		for propName, propSpec := range s.Value.Properties {
-			// resolve allof
 			if len(propSpec.Value.AllOf) > 0 {
 				propSpec.Value.Type = "object"
 				if len(propSpec.Value.AllOf) == 1 {
 					if propSpec.Value.AllOf[0].Ref != "" {
 						propSpec.Ref = propSpec.Value.AllOf[0].Ref
 					}
-
 				}
 				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
 				for _, subSpec := range propSpec.Value.AllOf {
-					for p, s := range subSpec.Value.Properties {
-						propSpec.Value.Properties[p] = s
+					for propName, subPropSpec := range subSpec.Value.Properties {
+						propSpec.Value.Properties[propName] = subPropSpec
+					}
+					if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
+						propSpec.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
 					}
 				}
+				if propSpec.Value.AdditionalPropertiesAllowed != nil && *propSpec.Value.AdditionalPropertiesAllowed {
+					propSpec.Value.Properties = nil
+				}
 			}
-
 			propertyType := goTypeFromSpec(propSpec)
 			if propertyType == "time.Time" || propertyType == "*time.Time" {
 				found := false
@@ -203,6 +242,7 @@ func GenerateModels(specFile io.Reader, dst string, opts Options) error {
 			return fmt.Errorf("failed to close output file: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -279,3 +319,11 @@ var modelTemplate = template.Must(
 		Funcs(fmap).
 		Parse(modelTemplateSource),
 )
+
+func sortedKeys(obj map[string]*openapi3.SchemaRef) (res []string) {
+	for k := range obj {
+		res = append(res, k)
+	}
+	sort.Strings(res)
+	return res
+}

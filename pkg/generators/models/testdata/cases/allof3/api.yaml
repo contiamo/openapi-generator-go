@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Foo:
+      allOf:
+        - $ref: "#/components/schemas/Sub"
+        - type: object
+          properties:
+            mixin:
+              type: string
+
+    Sub:
+      type: object
+      properties:
+        sub:
+          type: string

@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Foo:
+      allOf:
+        - type: object
+          properties:
+            foo:
+              type: string
+        - type: object
+          properties:
+            bar:
+              type: string

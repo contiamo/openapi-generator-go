@@ -1,10 +1,11 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -84,23 +85,25 @@ func GenerateEnums(specFile io.Reader, dst string, opts Options) error {
 		modelName := strings.ToLower(strings.ReplaceAll(fmt.Sprintf("model_%s.go", tpl.ToSnakeCase(tctx.Name)), " ", "_"))
 		filename := filepath.Join(dst, modelName)
 		logrus.Debugf("writing %s\n", filename)
-		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			return err
-		}
 
+		buf := &bytes.Buffer{}
 		if len(tctx.Values) == 1 {
-			err = constTemplate.Execute(f, tctx)
+			err = constTemplate.Execute(buf, tctx)
 		} else {
-			err = enumTemplate.Execute(f, tctx)
+			err = enumTemplate.Execute(buf, tctx)
 		}
 		if err != nil {
 			return fmt.Errorf("failed to generate enum code: %w", err)
 		}
 
-		err = f.Close()
+		content, err := format.Source(buf.Bytes())
 		if err != nil {
-			return fmt.Errorf("failed to close output file: %w", err)
+			return fmt.Errorf("failed to format source code: %w", err)
+		}
+
+		err = ioutil.WriteFile(filename, content, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write output file: %w", err)
 		}
 	}
 	return nil
