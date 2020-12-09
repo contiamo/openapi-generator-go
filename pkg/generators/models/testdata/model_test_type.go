@@ -7,11 +7,11 @@ package testpkg
 
 // TestType is an object.
 type TestType struct {
-	// Bar
+	// Bar:
 	Bar string `json:"bar,omitempty"`
-	// Baz
+	// Baz:
 	Baz []SubType `json:"baz,omitempty"`
-	// Foo
+	// Foo:
 	Foo int `json:"foo,omitempty"`
 }
 
