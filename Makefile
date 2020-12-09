@@ -37,3 +37,7 @@ crosscompile:
 	$(MAKE) container-build OS=linux ARCH=arm && mv bin/openapi-generator-go bin/linux/arm/
 	$(MAKE) container-build OS=linux ARCH=arm64 && mv bin/openapi-generator-go bin/linux/arm64/
 	$(MAKE) container-build OS=darwin ARCH=amd64 && mv bin/openapi-generator-go bin/darwin/amd64/
+
+
+test:
+	@go test -cover ./...
