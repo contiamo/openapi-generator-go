@@ -27,7 +27,7 @@ The generator consists of two parts
 ### The router generator
 We chose `go-chi` because it is fast, supports the standard library Handler interface, and is easy to add middlewares using `r.Use`.
 
-The generator will create a method `NewRouter` and handler interfaces that you must then implement and pass to `NewRouter`. It is important to note that it does not generate any handler logic, just the required interfaces.  Handlers can be grouped into specific interaces by adding `x-handler-group: <Name>` to your schema. This is one of the only schema extensions we have added to improve our code generation. The handler interface will be called `NameHandler` and will have a method matching the `operationId` from the spec.
+The generator will create a method `NewRouter` and handler interfaces that you must then implement and pass to `NewRouter`. It is important to note that it does not generate any handler logic, just the required interfaces.  Handlers can be grouped into specific interfaces by adding `x-handler-group: <Name>` to your schema. This is one of the only schema extensions we have added to improve our code generation. The handler interface will be called `NameHandler` and will have a method matching the `operationId` from the spec.
 
 For example, each of our projects will implement a project specific `NewRouter` that does the handler configuration and  initialization of the generated router. In the next example, `openapi.NewRouter` is generated using
 
@@ -90,7 +90,7 @@ We also provide better support for :
 * [arrays](./pkg/generators/models/testdata/cases/typed_arrays/expected/model_foo.go),
 * [allOf](./pkg/generators/models/testdata/cases/allof1/expected/model_foo.go),
 * and [oneOf](./pkg/generators/models/testdata/cases/oneof/expected/model_foo.go)
-that feel more natural in Go. Creating as many strong types as is possible and using `interface{}` otherwise. These cases often failed or generated non-compilable code.
+that feel more natural in Go. Creating as many strong types as is possible and using `interface{}` otherwise. These cases often failed or generated non-compilable code with the official generator.
 
 
 ## Future work
