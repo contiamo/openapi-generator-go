@@ -1,280 +1,180 @@
 package models
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"go/format"
 	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 	"text/template"
 
-	"github.com/rs/zerolog/log"
-
-	"github.com/getkin/kin-openapi/openapi3"
-
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/pkg/errors"
 )
 
-func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
-	if schemaRef == nil {
-		log.Fatal().Msg("got nil schema ref")
-	}
-	// add missing object types
-	if len(schemaRef.Value.Properties) > 0 {
-		schemaRef.Value.Type = "object"
-	}
-	schema := schemaRef.Value
-	propertyType := schemaRef.Value.Type
-	switch propertyType {
-	case "object":
-		propertyType = goTypeForObject(schemaRef)
-	case "string":
-		if schema.Format == "date-time" || schema.Format == "time" {
-			propertyType = "time.Time"
-		}
-		if len(schema.Enum) > 0 && schemaRef.Ref != "" {
-			propertyType = filepath.Base(schemaRef.Ref)
-		}
-	case "array":
-		subType := "interface{}"
-		if schema.Items != nil {
-			subType = goTypeFromSpec(schema.Items)
-		}
-		propertyType = "[]" + subType
-	case "boolean":
-		propertyType = "bool"
-	case "integer":
-		propertyType = "int32"
-	case "number":
-		propertyType = "float32"
-	case "":
-		propertyType = "interface{}"
-	}
-	if schema.Nullable && !strings.HasPrefix(propertyType, "[]") && !strings.HasPrefix(propertyType, "map[") {
-		propertyType = "*" + propertyType
-	}
-	return propertyType
-}
+type ModelKind string
 
-func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
-	switch {
-	case schemaRef.Ref != "":
-		propType = filepath.Base(schemaRef.Ref)
-	case schemaRef.Value.AdditionalProperties != nil:
-		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
-		propType = "map[string]" + subType
-	case schemaRef.Value.AdditionalPropertiesAllowed != nil && *schemaRef.Value.AdditionalPropertiesAllowed:
-		propType = "map[string]interface{}"
-	case len(schemaRef.Value.Properties) > 0:
-		structBuilder := &strings.Builder{}
-		structBuilder.WriteString("struct {\n")
-		for _, name := range sortedKeys(schemaRef.Value.Properties) {
-			ref := schemaRef.Value.Properties[name]
-			propName := tpl.ToPascalCase(name)
-			omitEmpty := true
-			for _, required := range ref.Value.Required {
-				if required == propName {
-					omitEmpty = false
-					break
-				}
-			}
-			jsonTags := "`json:\"" + name
-			if omitEmpty {
-				jsonTags += ",omitempty"
-			}
-			jsonTags += "\"`"
-			structBuilder.WriteString(tpl.ToPascalCase(name))
-			structBuilder.WriteString(" ")
-			structBuilder.WriteString(goTypeFromSpec(ref))
-			structBuilder.WriteString(jsonTags)
-			structBuilder.WriteString("\n")
-		}
-		structBuilder.WriteString("}")
-		propType = structBuilder.String()
-	default:
-		return "map[string]interface{}"
-	}
-	return propType
-}
+const (
+	Struct   ModelKind = "struct"
+	Enum     ModelKind = "enum"
+	Constant ModelKind = "constant"
+)
 
-// GenerateModels outputs the Go enum models with validators
-func GenerateModels(specFile io.Reader, dst string, opts Options) error {
-	if opts.PackageName == "" {
-		opts.PackageName = DefaultPackageName
-	}
-
-	data, err := ioutil.ReadAll(specFile)
-	if err != nil {
-		return fmt.Errorf("can not read spec file: %w", err)
-	}
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(data)
-	if err != nil {
-		return fmt.Errorf("can not parse the OpenAPI spec: %w", err)
-	}
-
-	models := modelContexts{}
-
-	// to do sort and iterate over the sorted schema
-	for name, s := range swagger.Components.Schemas {
-		// add forgotten "type: object"
-		if len(s.Value.Properties) > 0 || len(s.Value.OneOf) > 0 || len(s.Value.AllOf) > 0 {
-			s.Value.Type = "object"
-		}
-
-		// resolve toplevel allof
-		if len(s.Value.AllOf) > 0 {
-			s.Value.Type = "object"
-			if len(s.Value.AllOf) == 1 {
-				if s.Value.AllOf[0].Ref != "" {
-					s.Ref = s.Value.AllOf[0].Ref
-				}
-			}
-			s.Value.Properties = make(map[string]*openapi3.SchemaRef)
-			for _, subSpec := range s.Value.AllOf {
-				for propName, propSpec := range subSpec.Value.Properties {
-					s.Value.Properties[propName] = propSpec
-				}
-				// Here we bubble up the additionalProperties if we find it in any of the allof entries.
-				// If we find it, we delete all collected property information and will return an map[string]interface{}
-				if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
-					s.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
-				}
-			}
-			if s.Value.AdditionalPropertiesAllowed != nil && *s.Value.AdditionalPropertiesAllowed {
-				s.Value.Properties = nil
-			}
-		}
-
-		if s.Value.Type != "object" {
-			continue
-		}
-
-		modelContext := modelContext{
-			SpecTitle:   swagger.Info.Title,
-			SpecVersion: swagger.Info.Version,
-			PackageName: opts.PackageName,
-			ModelName:   tpl.ToPascalCase(name),
-			Description: s.Value.Description,
-		}
-
-		for propName, propSpec := range s.Value.Properties {
-			if len(propSpec.Value.AllOf) > 0 {
-				propSpec.Value.Type = "object"
-				if len(propSpec.Value.AllOf) == 1 {
-					if propSpec.Value.AllOf[0].Ref != "" {
-						propSpec.Ref = propSpec.Value.AllOf[0].Ref
-					}
-				}
-				propSpec.Value.Properties = make(map[string]*openapi3.SchemaRef)
-				for _, subSpec := range propSpec.Value.AllOf {
-					for propName, subPropSpec := range subSpec.Value.Properties {
-						propSpec.Value.Properties[propName] = subPropSpec
-					}
-					if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
-						propSpec.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
-					}
-				}
-				if propSpec.Value.AdditionalPropertiesAllowed != nil && *propSpec.Value.AdditionalPropertiesAllowed {
-					propSpec.Value.Properties = nil
-				}
-			}
-			propertyType := goTypeFromSpec(propSpec)
-			if propertyType == "time.Time" || propertyType == "*time.Time" {
-				found := false
-				for _, i := range modelContext.Imports {
-					if i == "time" {
-						found = true
-						break
-					}
-				}
-				if !found {
-					modelContext.Imports = append(modelContext.Imports, "time")
-				}
-			}
-			omitEmpty := true
-			for _, required := range s.Value.Required {
-				if required == propName {
-					omitEmpty = false
-					break
-				}
-			}
-			jsonTags := "`json:\"" + propName
-			if omitEmpty {
-				jsonTags += ",omitempty"
-			}
-			jsonTags += "\"`"
-			modelContext.Properties = append(modelContext.Properties, propertyContext{
-				Name:        tpl.ToPascalCase(propName),
-				Type:        propertyType,
-				JSONTags:    jsonTags,
-				Description: propSpec.Value.Description,
-			})
-		}
-		sort.Sort(modelContext.Properties)
-		models = append(models, modelContext)
-	}
-
-	sort.Sort(models)
-	for _, modelContext := range models {
-		modelName := strings.ToLower(strings.ReplaceAll(fmt.Sprintf("model_%s.go", tpl.ToSnakeCase(modelContext.ModelName)), " ", "_"))
-		filename := filepath.Join(dst, modelName)
-
-		buf := &bytes.Buffer{}
-		err = modelTemplate.Execute(buf, modelContext)
-		content, err := format.Source(buf.Bytes())
-		if err != nil {
-			return fmt.Errorf("failed to format source code: %w", err)
-		}
-		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to open output file: %w", err)
-		}
-		_, err = io.Copy(f, bytes.NewReader(content))
-		if err != nil {
-			return fmt.Errorf("failed to write to output file: %w", err)
-		}
-		err = f.Close()
-		if err != nil {
-			return fmt.Errorf("failed to close output file: %w", err)
-		}
-	}
-
-	return nil
-}
-
-type modelContext struct {
-	Filename    string
+type Model struct {
+	Name        string
+	Description string
 	Imports     []string
+	Kind        ModelKind
+	Properties  []PropSpec
+	GoType      string
 	SpecTitle   string
 	SpecVersion string
 	PackageName string
-	ModelName   string
-	Description string
-	Properties  propertyContexts
 }
 
-type propertyContext struct {
-	Name        string
+type PropSpec struct {
+	Name        string // Property name of structs, variable name of enumns and constants
 	Description string
-	Type        string
+	GoType      string
 	JSONTags    string
+	AsPointer   bool
+	Value       string
 }
 
-type modelContexts []modelContext
+func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
+	model = &Model{
+		Description: ref.Value.Description,
+	}
+	ref = resolveAllOf(ref)
+	switch {
+	case len(ref.Value.Enum) > 1:
+		model.Kind = Enum
+		model.Properties, err = enumPropsFromRef(ref, model)
+		model.GoType = goTypeFromSpec(ref)
+	case len(ref.Value.Enum) == 1:
+		model.Kind = Constant
+		model.Properties, err = enumPropsFromRef(ref, model)
+		model.GoType = goTypeFromSpec(ref)
+	default:
+		model.Kind = Struct
+		model.Properties, model.Imports, err = structPropsFromRef(ref)
+	}
+	if err != nil {
+		return nil, err
+	}
 
-func (e modelContexts) Len() int           { return len(e) }
-func (e modelContexts) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
-func (e modelContexts) Less(i, j int) bool { return e[i].ModelName < e[j].ModelName }
+	return model, nil
+}
 
-type propertyContexts []propertyContext
+func (m *Model) Render(ctx context.Context, writer io.Writer) error {
+	var tpl *template.Template
+	switch m.Kind {
+	case Struct:
+		tpl = modelTemplate
+	case Enum:
+		tpl = enumTemplate
+	case Constant:
+		tpl = constTemplate
+	}
+	err := tpl.Execute(writer, m)
+	if err != nil {
+		return errors.Wrap(err, "failed to render model")
+	}
+	return nil
+}
 
-func (e propertyContexts) Len() int           { return len(e) }
-func (e propertyContexts) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
-func (e propertyContexts) Less(i, j int) bool { return e[i].Name < e[j].Name }
+func resolveAllOf(ref *openapi3.SchemaRef) *openapi3.SchemaRef {
+	if len(ref.Value.AllOf) > 0 {
+		ref.Value.Type = "object"
+		if len(ref.Value.AllOf) == 1 {
+			if ref.Value.AllOf[0].Ref != "" {
+				ref.Ref = ref.Value.AllOf[0].Ref
+			}
+		}
+		ref.Value.Properties = make(map[string]*openapi3.SchemaRef)
+		for _, subSpec := range ref.Value.AllOf {
+			for propName, propSpec := range subSpec.Value.Properties {
+				ref.Value.Properties[propName] = propSpec
+			}
+			// Here we bubble up the additionalProperties if we find it in any of the allof entrieref.
+			// If we find it, we delete all collected property information and will return an map[string]interface{}
+			if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
+				ref.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
+			}
+		}
+		if ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed {
+			ref.Value.Properties = nil
+		}
+		ref.Value.AllOf = nil
+	}
+	return ref
+}
+
+func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
+	props := ref.Value.Properties
+	for _, r := range ref.Value.AllOf {
+		for k, v := range r.Value.Properties {
+			props[k] = v
+		}
+	}
+	timeImportRequired := false
+	for _, name := range sortedKeys(ref.Value.Properties) {
+		prop := ref.Value.Properties[name]
+		prop = resolveAllOf(prop)
+		goType := goTypeFromSpec(prop)
+		if goType == "time.Time" {
+			timeImportRequired = true
+		}
+		omitEmpty := true
+		for _, required := range ref.Value.Required {
+			if required == name {
+				omitEmpty = false
+				break
+			}
+		}
+		jsonTags := "`json:\"" + name
+		if omitEmpty {
+			jsonTags += ",omitempty"
+		}
+		jsonTags += "\"`"
+
+		specs = append(specs, PropSpec{
+			Name:        tpl.ToPascalCase(name),
+			GoType:      goType,
+			JSONTags:    jsonTags,
+			Description: prop.Value.Description,
+			AsPointer:   !checkIfRequired(name, ref.Value.Required),
+		})
+	}
+	if timeImportRequired {
+		imports = []string{"time"}
+	}
+	return specs, imports, err
+}
+
+func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
+	for _, val := range ref.Value.Enum {
+		valueVarName := tpl.FirstUpper(fmt.Sprintf("%v", val))
+		specs = append(specs, PropSpec{
+			Name:   valueVarName,
+			Value:  fmt.Sprintf(`"%v"`, val),
+			GoType: model.Name,
+		})
+	}
+	sort.Slice(specs, func(i, j int) bool {
+		return specs[i].Name < specs[j].Name
+	})
+	return specs, err
+}
+
+func checkIfRequired(name string, list []string) bool {
+	for _, n := range list {
+		if n == name {
+			return true
+		}
+	}
+	return false
+}
 
 var modelTemplateSource = `// This file is auto-generated, DO NOT EDIT.
 //
@@ -289,41 +189,108 @@ package {{ .PackageName }}
 {{ end}}
 {{- if .Imports }}){{end}}
 
-{{ (printf "%s is an object. %s" .ModelName .Description) | commentBlock }}
+{{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
 {{- if not .Properties }}
-type {{.ModelName}} map[string]interface{}
+type {{.Name}} map[string]interface{}
 {{- else }}
-type {{.ModelName}} struct {
+type {{.Name}} struct {
 {{- range .Properties}}
 	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
-	{{.Name}} {{.Type}} {{.JSONTags}}
+	{{.Name}} {{.GoType}} {{.JSONTags}}
 {{- end}}
 }
 {{- end}}
 
-{{- $modelName := .ModelName }}
+{{- $modelName := .Name }}
 {{ range .Properties}}
 // Get{{.Name}} returns the {{.Name}} property
-func (m {{$modelName}}) Get{{.Name}}() {{.Type}} {
+func (m {{$modelName}}) Get{{.Name}}() {{.GoType}} {
 	return m.{{.Name}}
 }
 
 // Set{{.Name}} sets the {{.Name}} property
-func (m {{$modelName}}) Set{{.Name}}(val {{.Type}}) {
+func (m {{$modelName}}) Set{{.Name}}(val {{.GoType}}) {
 	m.{{.Name}} = val
 }
 {{ end}}`
+
+var enumTemplateSource = `
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+import (
+	validation "github.com/go-ozzo/ozzo-validation"
+)
+
+{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
+type {{.Name}} {{.GoType}}
+
+var (
+	{{- $enum :=. }}
+	{{- range $v := .Properties }}
+	{{$enum.Name}}{{$v.Name}} {{$enum.Name}} = {{$v.Value}}
+	{{- end}}
+
+	// Known{{.Name}} is the list of valid {{.Name}}
+	Known{{.Name }} = []{{.Name}}{
+		{{- range $v := .Properties }}
+		{{$enum.Name}}{{$v.Name}},
+		{{- end}}
+	}
+
+	{{- $enum :=. }}
+	// Known{{$enum.Name}}{{$enum.GoType | firstUpper}} is the list of valid {{$enum.Name}} as {{$enum.GoType}}
+	Known{{$enum.Name}}{{$enum.GoType | firstUpper}} = []{{$enum.GoType}}{
+		{{- range $v := .Properties }}
+		{{$enum.GoType}}({{$enum.Name}}{{$v.Name}}),
+		{{- end}}
+	}
+
+	// InKnown{{.Name}} is an ozzo-validator for {{.Name}}
+	InKnown{{.Name}} = validation.In(
+		{{- range $v := .Properties }}
+		{{$enum.Name}}{{$v.Name}},
+		{{- end}}
+	)
+)
+`
+
+var constTemplateSource = `
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
+const {{.Name}} = {{ (index .Properties 0).Value}}
+`
+
+var fmap = template.FuncMap{
+	"firstLower":   tpl.FirstLower,
+	"firstUpper":   tpl.FirstUpper,
+	"commentBlock": tpl.CommentBlock,
+	"toPascalCase": tpl.ToPascalCase,
+	"toSnakeCase":  tpl.ToSnakeCase,
+}
 
 var modelTemplate = template.Must(
 	template.New("model").
 		Funcs(fmap).
 		Parse(modelTemplateSource),
 )
-
-func sortedKeys(obj map[string]*openapi3.SchemaRef) (res []string) {
-	for k := range obj {
-		res = append(res, k)
-	}
-	sort.Strings(res)
-	return res
-}
+var enumTemplate = template.Must(
+	template.New("enum").
+		Funcs(fmap).
+		Parse(enumTemplateSource),
+)
+var constTemplate = template.Must(
+	template.New("const").
+		Funcs(fmap).
+		Parse(constTemplateSource),
+)

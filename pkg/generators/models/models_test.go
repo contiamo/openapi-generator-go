@@ -46,7 +46,7 @@ func TestGenerateModels(t *testing.T) {
 	opts := Options{PackageName: "testpkg"}
 
 	specReader := strings.NewReader(modelsSpec)
-	err = GenerateModels(specReader, dname, opts)
+	err = Generate(specReader, dname, opts)
 	require.NoError(t, err)
 
 	testTypeContent, err := ioutil.ReadFile(filepath.Join(dname, "model_test_type.go"))
@@ -133,15 +133,11 @@ func TestModels(t *testing.T) {
 			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
-			err = GenerateModels(reader, dir, Options{
+			err = Generate(reader, dir, Options{
 				PackageName: "generatortest",
 			})
 			require.NoError(t, err)
 			reader = bytes.NewReader(bs)
-			err = GenerateEnums(reader, dir, Options{
-				PackageName: "generatortest",
-			})
-			require.NoError(t, err)
 			files, err := filepath.Glob(filepath.Join(dir, "*"))
 			require.NoError(t, err)
 			for _, f := range files {

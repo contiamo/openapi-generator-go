@@ -9,8 +9,8 @@ package api
 type TestType struct {
 	// AAllOf:
 	AAllOf struct {
-		Foo   string
-		Extra string
+		Extra string `json:"extra,omitempty"`
+		Foo   string `json:"foo,omitempty"`
 	} `json:"aAllOf,omitempty"`
 	// AArray:
 	AArray []interface{} `json:"aArray,omitempty"`
@@ -32,7 +32,7 @@ type TestType struct {
 	AObjectWithAdditionalProperties map[string]string `json:"aObjectWithAdditionalProperties,omitempty"`
 	// AObjectWithAnAnonymousObjectProperty:
 	AObjectWithAnAnonymousObjectProperty struct {
-		Anon string
+		Anon string `json:"anon,omitempty"`
 	} `json:"aObjectWithAnAnonymousObjectProperty,omitempty"`
 	// AOneOf:
 	AOneOf interface{} `json:"aOneOf,omitempty"`
@@ -56,16 +56,16 @@ type TestType struct {
 
 // GetAAllOf returns the AAllOf property
 func (m TestType) GetAAllOf() struct {
-	Foo   string
-	Extra string
+	Extra string `json:"extra,omitempty"`
+	Foo   string `json:"foo,omitempty"`
 } {
 	return m.AAllOf
 }
 
 // SetAAllOf sets the AAllOf property
 func (m TestType) SetAAllOf(val struct {
-	Foo   string
-	Extra string
+	Extra string `json:"extra,omitempty"`
+	Foo   string `json:"foo,omitempty"`
 }) {
 	m.AAllOf = val
 }
@@ -162,14 +162,14 @@ func (m TestType) SetAObjectWithAdditionalProperties(val map[string]string) {
 
 // GetAObjectWithAnAnonymousObjectProperty returns the AObjectWithAnAnonymousObjectProperty property
 func (m TestType) GetAObjectWithAnAnonymousObjectProperty() struct {
-	Anon string
+	Anon string `json:"anon,omitempty"`
 } {
 	return m.AObjectWithAnAnonymousObjectProperty
 }
 
 // SetAObjectWithAnAnonymousObjectProperty sets the AObjectWithAnAnonymousObjectProperty property
 func (m TestType) SetAObjectWithAnAnonymousObjectProperty(val struct {
-	Anon string
+	Anon string `json:"anon,omitempty"`
 }) {
 	m.AObjectWithAnAnonymousObjectProperty = val
 }
