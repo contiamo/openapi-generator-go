@@ -55,9 +55,14 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		model.Kind = Constant
 		model.Properties, err = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
-	default:
+	case ref.Value.Type == "object" ||
+		len(ref.Value.Properties) > 0 ||
+		len(ref.Value.AllOf) > 0 ||
+		len(ref.Value.OneOf) > 0:
 		model.Kind = Struct
 		model.Properties, model.Imports, err = structPropsFromRef(ref)
+	default:
+		return nil, errors.New("type not handled")
 	}
 	if err != nil {
 		return nil, err
@@ -111,18 +116,12 @@ func resolveAllOf(ref *openapi3.SchemaRef) *openapi3.SchemaRef {
 }
 
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
-	props := ref.Value.Properties
-	for _, r := range ref.Value.AllOf {
-		for k, v := range r.Value.Properties {
-			props[k] = v
-		}
-	}
 	timeImportRequired := false
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop)
 		goType := goTypeFromSpec(prop)
-		if goType == "time.Time" {
+		if goType == "time.Time" || goType == "*time.Time" {
 			timeImportRequired = true
 		}
 		omitEmpty := true
@@ -154,7 +153,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
 	for _, val := range ref.Value.Enum {
-		valueVarName := tpl.FirstUpper(fmt.Sprintf("%v", val))
+		valueVarName := tpl.ToPascalCase(tpl.FirstUpper(fmt.Sprintf("%v", val)))
 		specs = append(specs, PropSpec{
 			Name:   valueVarName,
 			Value:  fmt.Sprintf(`"%v"`, val),

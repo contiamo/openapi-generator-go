@@ -24,7 +24,10 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -54,6 +57,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initLogging)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -64,6 +68,16 @@ func init() {
 	rootCmd.PersistentFlags().StringP("spec", "s", "api.yaml", "filepath to the openapi spec file")
 	rootCmd.PersistentFlags().StringP("output", "o", "./models", "output directory")
 	rootCmd.PersistentFlags().String("package-name", "api", "package name")
+	rootCmd.PersistentFlags().String("log-level", "info", "log level")
+}
+
+func initLogging() {
+	level, _ := rootCmd.PersistentFlags().GetString("log-level")
+	lvl, err := zerolog.ParseLevel(strings.ToLower(level))
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to parse --log-level")
+	}
+	zerolog.SetGlobalLevel(lvl)
 }
 
 // initConfig reads in config file and ENV variables if set.

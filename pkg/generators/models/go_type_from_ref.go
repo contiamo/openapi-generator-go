@@ -17,7 +17,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		log.Fatal().Msg("got nil schema ref")
 	}
 	// add missing object types
-	if len(schemaRef.Value.Properties) > 0 {
+	if schemaRef.Value.Properties != nil {
 		schemaRef.Value.Type = "object"
 	}
 	schema := schemaRef.Value

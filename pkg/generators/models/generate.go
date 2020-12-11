@@ -40,9 +40,13 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 	}
 
 	for name, ref := range swagger.Components.Schemas {
+		if ref.Value.Type == "array" {
+			// We dont generate toplevel arrays. If they are referenced within another object, they will translate to []ItemType
+			continue
+		}
 		model, err := NewModelFromRef(ref)
 		if err != nil {
-			log.Error().Str("name", name).Err(err).Msg("fauled to parse model from openapi spec")
+			log.Debug().Str("name", name).Err(err).Msg("failed to parse model from openapi spec")
 			continue
 		}
 
