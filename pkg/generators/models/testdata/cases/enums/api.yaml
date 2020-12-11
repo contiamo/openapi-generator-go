@@ -1,0 +1,13 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Hub Service
+components:
+    schemas:
+        FilterType:
+            type: string
+            enum:
+            - showAll
+            - hideAll
+            - showOnlyExpr
+            - hideOnlyExpr

@@ -45,7 +45,9 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	model = &Model{
 		Description: ref.Value.Description,
 	}
+
 	ref = resolveAllOf(ref)
+
 	switch {
 	case len(ref.Value.Enum) > 1:
 		model.Kind = Enum

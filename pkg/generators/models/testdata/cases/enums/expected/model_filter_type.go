@@ -3,7 +3,7 @@
 // Source:
 //     Title: Hub Service
 //     Version: 0.1.0
-package testpkg
+package generatortest
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"

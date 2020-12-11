@@ -17,7 +17,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		log.Fatal().Msg("got nil schema ref")
 	}
 	// add missing object types
-	if schemaRef.Value.Properties != nil {
+	if len(schemaRef.Value.Properties) > 0 {
 		schemaRef.Value.Type = "object"
 	}
 	schema := schemaRef.Value
@@ -45,7 +45,11 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	case "number":
 		propertyType = "float32"
 	case "":
-		propertyType = "interface{}"
+		if schemaRef.Ref != "" {
+			propertyType = filepath.Base(schemaRef.Ref)
+		} else {
+			propertyType = "interface{}"
+		}
 	}
 	if schema.Nullable && !strings.HasPrefix(propertyType, "[]") && !strings.HasPrefix(propertyType, "map[") {
 		propertyType = "*" + propertyType
@@ -88,6 +92,8 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 		}
 		structBuilder.WriteString("}")
 		propType = structBuilder.String()
+	case len(schemaRef.Value.OneOf) > 0:
+		return "interface{}"
 	default:
 		return "map[string]interface{}"
 	}
