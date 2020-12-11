@@ -3,7 +3,7 @@
 // Source:
 //     Title: Hub Service
 //     Version: 0.1.0
-package testpkg
+package generatortest
 
 // HighlightIndicatorStart is an enum.
 const HighlightIndicatorStart = "{{{"
