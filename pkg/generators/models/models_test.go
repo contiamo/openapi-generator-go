@@ -73,11 +73,11 @@ func TestModels(t *testing.T) {
 		},
 		{
 			name:      "handles string enums",
-			directory: "testdata/cases/enums",
+			directory: "testdata/cases/enum",
 		},
 		{
 			name:      "handles constant enums",
-			directory: "testdata/cases/constants",
+			directory: "testdata/cases/const",
 		},
 	}
 
