@@ -73,11 +73,11 @@ func TestModels(t *testing.T) {
 		},
 		{
 			name:      "handles string enums",
-			directory: "testdata/cases/enums",
+			directory: "testdata/cases/enum",
 		},
 		{
 			name:      "handles constant enums",
-			directory: "testdata/cases/constants",
+			directory: "testdata/cases/const",
 		},
 	}
 
@@ -89,15 +89,11 @@ func TestModels(t *testing.T) {
 			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
-			err = GenerateModels(reader, dir, Options{
+			err = Generate(reader, dir, Options{
 				PackageName: "generatortest",
 			})
 			require.NoError(t, err)
 			reader = bytes.NewReader(bs)
-			err = GenerateEnums(reader, dir, Options{
-				PackageName: "generatortest",
-			})
-			require.NoError(t, err)
 			files, err := filepath.Glob(filepath.Join(dir, "*"))
 			require.NoError(t, err)
 			for _, f := range files {

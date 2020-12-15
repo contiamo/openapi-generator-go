@@ -49,25 +49,16 @@ var modelsCmd = &cobra.Command{
 			log.Fatal().Str("output", outputDirectory).Err(err).Msg("failed to create output folder")
 		}
 		reader := bytes.NewReader(bs)
-		err = models.GenerateModels(reader, outputDirectory, models.Options{
+		err = models.Generate(reader, outputDirectory, models.Options{
 			PackageName: packageName,
 		})
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to generate models")
 		}
-		reader = bytes.NewReader(bs)
-		err = models.GenerateEnums(reader, outputDirectory, models.Options{
-			PackageName: packageName,
-		})
-		if err != nil {
-			log.Fatal().Err(err).Msg("failed to generate enums")
-		}
 	},
 }
 
 func init() {
-	modelsCmd.Flags().Bool("fail-no-group", false, "fail when there is no x-handler-group defined for any of the endpoints")
-	modelsCmd.Flags().Bool("fail-no-operation-id", false, "fail when there is no operationId defined for any of the methods")
 	generateCmd.AddCommand(modelsCmd)
 	// Here you will define your flags and configuration settings.
 
