@@ -394,8 +394,6 @@ var constTemplate = template.Must(
 )
 
 func uniqueStrings(input []string) (output []string) {
-	fmt.Println("in", input)
-	defer fmt.Println("out", output)
 	m := make(map[string]struct{})
 	for _, item := range input {
 		if _, ok := m[item]; ok {
