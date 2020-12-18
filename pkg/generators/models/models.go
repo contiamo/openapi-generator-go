@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"sort"
 	"text/template"
 
@@ -33,18 +34,30 @@ type Model struct {
 }
 
 type PropSpec struct {
-	Name                       string // Property name of structs, variable name of enumns and constants
-	Description                string
-	GoType                     string
-	JSONTags                   string
-	AsPointer                  bool
-	Value                      string
-	IsRequired                 bool
-	IsEnum                     bool
+	Name        string // Property name of structs, variable name of enumns and constants
+	Description string
+	GoType      string
+	JSONTags    string
+	AsPointer   bool
+	Value       string
+	IsRequired  bool
+	IsEnum      bool
+
+	// Validation stuff
 	HasMin, HasMax             bool
 	Min, Max                   float64
 	HasMinLength, HasMaxLength bool
 	MinLength, MaxLength       uint64
+	IsDate                     bool
+	IsDateTime                 bool
+	IsBase64                   bool
+	IsEmail                    bool
+	IsUUID                     bool
+	IsURL                      bool
+	IsHostname                 bool
+	IsIP                       bool
+	IsIPv4                     bool
+	IsIPv6                     bool
 }
 
 func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
@@ -124,7 +137,6 @@ func resolveAllOf(ref *openapi3.SchemaRef) *openapi3.SchemaRef {
 }
 
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
-	timeImportRequired := false
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop)
@@ -139,7 +151,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		spec.AsPointer = !spec.IsRequired
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
-			timeImportRequired = true
+			imports = append(imports, "time")
 		}
 
 		spec.JSONTags = "`json:\"" + name
@@ -148,17 +160,14 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		}
 		spec.JSONTags += "\"`"
 
-		fillValidationRelatedStuff(prop, &spec)
+		imports = append(imports, fillValidationRelatedStuff(prop, &spec)...)
 
 		specs = append(specs, spec)
 	}
-	if timeImportRequired {
-		imports = []string{"time"}
-	}
-	return specs, imports, err
+	return specs, uniqueStrings(imports), err
 }
 
-func fillValidationRelatedStuff(ref *openapi3.SchemaRef, spec *PropSpec) {
+func fillValidationRelatedStuff(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
 	if ref.Value.Min != nil {
 		spec.HasMin = true
 		spec.Min = *ref.Value.Min
@@ -175,6 +184,44 @@ func fillValidationRelatedStuff(ref *openapi3.SchemaRef, spec *PropSpec) {
 		spec.HasMaxLength = true
 		spec.MaxLength = *ref.Value.MaxLength
 	}
+	if ref.Value.ExclusiveMin {
+		spec.Min += math.SmallestNonzeroFloat64
+	}
+	if ref.Value.ExclusiveMax {
+		spec.Min -= math.SmallestNonzeroFloat64
+	}
+	switch ref.Value.Format {
+	case "date":
+		spec.IsDate = true
+	case "date-time":
+		spec.IsDateTime = true
+		imports = append(imports, "time")
+	case "byte":
+		spec.IsBase64 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "email":
+		spec.IsEmail = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "uuid":
+		spec.IsUUID = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "url":
+		spec.IsURL = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "hostname":
+		spec.IsHostname = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ipv4":
+		spec.IsIPv4 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ipv6":
+		spec.IsIPv6 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ip":
+		spec.IsIP = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	}
+	return imports
 }
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
@@ -209,7 +256,7 @@ var modelTemplateSource = `// This file is auto-generated, DO NOT EDIT.
 package {{ .PackageName }}
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 {{- range .Imports}}
 	"{{.}}"
 {{ end}}
@@ -235,10 +282,20 @@ func (m {{$modelName}}) Validate() error {
 		"{{ firstLower .Name }}": validation.Validate(
 			m.{{ .Name }},
 			{{- if .IsRequired }}validation.Required,{{ end }}
-			{{- if .HasMin }}validation.Min({{ .Min }}),{{ end }}
-			{{- if .HasMax }}validation.Max({{ .Max }}),{{ end }}
+			{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
+			{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
 			{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
 			{{- if .IsEnum }}InKnown{{ .GoType }},{{ end }}
+			{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
+			{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+			{{- if .IsBase64 }}is.Base64,{{ end }}
+			{{- if .IsEmail }}is.Email,{{ end }}
+			{{- if .IsUUID }}is.UUID,{{ end }}
+			{{- if .IsURL }}is.RequestURL,{{ end }}
+		  {{- if .IsHostname }}is.Host,{{ end }}
+		  {{- if .IsIPv4 }}is.IPv4,{{ end }}
+		  {{- if .IsIPv6 }}is.IPv6,{{ end }}
+		  {{- if .IsIP }}is.IP,{{ end }}
 		),
 	{{- end }}
 	}.Filter()
@@ -335,3 +392,17 @@ var constTemplate = template.Must(
 		Funcs(fmap).
 		Parse(constTemplateSource),
 )
+
+func uniqueStrings(input []string) (output []string) {
+	fmt.Println("in", input)
+	defer fmt.Println("out", output)
+	m := make(map[string]struct{})
+	for _, item := range input {
+		if _, ok := m[item]; ok {
+			continue
+		}
+		output = append(output, item)
+		m[item] = struct{}{}
+	}
+	return output
+}

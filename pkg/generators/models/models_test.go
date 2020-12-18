@@ -108,6 +108,7 @@ func TestModels(t *testing.T) {
 			}
 		})
 	}
+	t.Fail()
 }
 
 func equalFiles(t *testing.T, expected, actual string) {

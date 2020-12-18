@@ -17,10 +17,43 @@ components:
           maxLength: 32
         age:
           type: number
-          minimum: 0
+          minimum: 18
           maximum: 120
         gender:
           $ref: "#/components/schemas/Gender"
+        email:
+          type: string
+          format: email
+        date:
+          type: string
+          format: "date"
+        datetime:
+          type: string
+          format: "date-time"
+        base64:
+          type: string
+          format: "base64"
+        email:
+          type: string
+          format: "email"
+        uuid:
+          type: string
+          format: "uuid"
+        url:
+          type: string
+          format: "url"
+        hostname:
+          type: string
+          format: "hostname"
+        ipv4:
+          type: string
+          format: "ipv4"
+        ipv6:
+          type: string
+          format: "ipv6"
+        ip:
+          type: string
+          format: "ip"
     Gender:
       type: string
       enum:
