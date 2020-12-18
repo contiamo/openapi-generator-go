@@ -5,10 +5,23 @@
 //     Version: 0.1.0
 package generatortest
 
+import (
+	validation "github.com/go-ozzo/ozzo-validation"
+)
+
 // Sub is an object.
 type Sub struct {
 	// Foo:
 	Foo string `json:"foo,omitempty"`
+}
+
+// Validate implements basic validation for this model
+func (m Sub) Validate() error {
+	return validation.Errors{
+		"foo": validation.Validate(
+			m.Foo,
+		),
+	}.Filter()
 }
 
 // GetFoo returns the Foo property

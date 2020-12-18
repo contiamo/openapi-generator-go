@@ -33,12 +33,18 @@ type Model struct {
 }
 
 type PropSpec struct {
-	Name        string // Property name of structs, variable name of enumns and constants
-	Description string
-	GoType      string
-	JSONTags    string
-	AsPointer   bool
-	Value       string
+	Name                       string // Property name of structs, variable name of enumns and constants
+	Description                string
+	GoType                     string
+	JSONTags                   string
+	AsPointer                  bool
+	Value                      string
+	IsRequired                 bool
+	IsEnum                     bool
+	HasMin, HasMax             bool
+	Min, Max                   float64
+	HasMinLength, HasMaxLength bool
+	MinLength, MaxLength       uint64
 }
 
 func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
@@ -122,35 +128,53 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop)
-		goType := goTypeFromSpec(prop)
-		if goType == "time.Time" || goType == "*time.Time" {
+
+		spec := PropSpec{
+			Name:        tpl.ToPascalCase(name),
+			Description: prop.Value.Description,
+			GoType:      goTypeFromSpec(prop),
+			IsRequired:  checkIfRequired(name, ref.Value.Required),
+			IsEnum:      len(prop.Value.Enum) > 0,
+		}
+		spec.AsPointer = !spec.IsRequired
+
+		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
 			timeImportRequired = true
 		}
-		omitEmpty := true
-		for _, required := range ref.Value.Required {
-			if required == name {
-				omitEmpty = false
-				break
-			}
-		}
-		jsonTags := "`json:\"" + name
-		if omitEmpty {
-			jsonTags += ",omitempty"
-		}
-		jsonTags += "\"`"
 
-		specs = append(specs, PropSpec{
-			Name:        tpl.ToPascalCase(name),
-			GoType:      goType,
-			JSONTags:    jsonTags,
-			Description: prop.Value.Description,
-			AsPointer:   !checkIfRequired(name, ref.Value.Required),
-		})
+		spec.JSONTags = "`json:\"" + name
+		if !spec.IsRequired {
+			spec.JSONTags += ",omitempty"
+		}
+		spec.JSONTags += "\"`"
+
+		fillValidationRelatedStuff(prop, &spec)
+
+		specs = append(specs, spec)
 	}
 	if timeImportRequired {
 		imports = []string{"time"}
 	}
 	return specs, imports, err
+}
+
+func fillValidationRelatedStuff(ref *openapi3.SchemaRef, spec *PropSpec) {
+	if ref.Value.Min != nil {
+		spec.HasMin = true
+		spec.Min = *ref.Value.Min
+	}
+	if ref.Value.Max != nil {
+		spec.HasMax = true
+		spec.Max = *ref.Value.Max
+	}
+	if ref.Value.MinLength > 0 {
+		spec.HasMinLength = true
+		spec.MinLength = ref.Value.MinLength
+	}
+	if ref.Value.MaxLength != nil {
+		spec.HasMaxLength = true
+		spec.MaxLength = *ref.Value.MaxLength
+	}
 }
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
@@ -184,11 +208,12 @@ var modelTemplateSource = `// This file is auto-generated, DO NOT EDIT.
 //     Version: {{.SpecVersion}}
 package {{ .PackageName }}
 
-{{ if .Imports }}import ({{end}}
+import (
+	validation "github.com/go-ozzo/ozzo-validation"
 {{- range .Imports}}
 	"{{.}}"
 {{ end}}
-{{- if .Imports }}){{end}}
+)
 
 {{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
 {{- if not .Properties }}
@@ -203,6 +228,21 @@ type {{.Name}} struct {
 {{- end}}
 
 {{- $modelName := .Name }}
+// Validate implements basic validation for this model
+func (m {{$modelName}}) Validate() error {
+	return validation.Errors{
+		{{- range .Properties}}
+		"{{ firstLower .Name }}": validation.Validate(
+			m.{{ .Name }},
+			{{- if .IsRequired }}validation.Required,{{ end }}
+			{{- if .HasMin }}validation.Min({{ .Min }}),{{ end }}
+			{{- if .HasMax }}validation.Max({{ .Max }}),{{ end }}
+			{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
+			{{- if .IsEnum }}InKnown{{ .GoType }},{{ end }}
+		),
+	{{- end }}
+	}.Filter()
+}
 {{ range .Properties}}
 // Get{{.Name}} returns the {{.Name}} property
 func (m {{$modelName}}) Get{{.Name}}() {{.GoType}} {
