@@ -15,7 +15,7 @@ import (
 // Person is an object.
 type Person struct {
 	// Age:
-	Age float32 `json:"age,omitempty"`
+	Age float64 `json:"age,omitempty"`
 	// Base64:
 	Base64 string `json:"base64,omitempty"`
 	// Date:
@@ -46,7 +46,7 @@ type Person struct {
 func (m Person) Validate() error {
 	return validation.Errors{
 		"age": validation.Validate(
-			m.Age, validation.Required, validation.Min(float32(18)), validation.Max(float32(120)),
+			m.Age, validation.Required, validation.Min(float64(18)), validation.Max(float64(120)),
 		),
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
@@ -88,12 +88,12 @@ func (m Person) Validate() error {
 }
 
 // GetAge returns the Age property
-func (m Person) GetAge() float32 {
+func (m Person) GetAge() float64 {
 	return m.Age
 }
 
 // SetAge sets the Age property
-func (m Person) SetAge(val float32) {
+func (m Person) SetAge(val float64) {
 	m.Age = val
 }
 
