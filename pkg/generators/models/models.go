@@ -296,10 +296,10 @@ func (m {{$modelName}}) Validate() error {
 			{{- if .IsEmail }}is.Email,{{ end }}
 			{{- if .IsUUID }}is.UUID,{{ end }}
 			{{- if .IsURL }}is.RequestURL,{{ end }}
-		  {{- if .IsHostname }}is.Host,{{ end }}
-		  {{- if .IsIPv4 }}is.IPv4,{{ end }}
-		  {{- if .IsIPv6 }}is.IPv6,{{ end }}
-		  {{- if .IsIP }}is.IP,{{ end }}
+			{{- if .IsHostname }}is.Host,{{ end }}
+			{{- if .IsIPv4 }}is.IPv4,{{ end }}
+			{{- if .IsIPv6 }}is.IPv6,{{ end }}
+			{{- if .IsIP }}is.IP,{{ end }}
 		),
 	{{- end }}
 	}.Filter()
