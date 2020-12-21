@@ -73,7 +73,7 @@ func (m {{$modelName}}) Validate() error {
 			{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
 			{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
 			{{- if .IsBase64 }}is.Base64,{{ end }}
-			{{- if .IsEmail }}is.Email,{{ end }}
+			{{- if .IsEmail }}is.EmailFormat,{{ end }}
 			{{- if .IsUUID }}is.UUID,{{ end }}
 			{{- if .IsURL }}is.RequestURL,{{ end }}
 			{{- if .IsHostname }}is.Host,{{ end }}
@@ -111,7 +111,7 @@ import (
 {{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
 
-(
+var (
 	{{- $enum :=. }}
 	{{- range $v := .Properties }}
 	{{$enum.Name}}{{$v.Name}} {{$enum.Name}} = {{$v.Value}}

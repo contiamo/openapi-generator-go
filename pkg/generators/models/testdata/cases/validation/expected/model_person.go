@@ -58,7 +58,7 @@ func (m Person) Validate() error {
 			m.Datetime, validation.Date(time.RFC3339),
 		),
 		"email": validation.Validate(
-			m.Email, is.Email,
+			m.Email, is.EmailFormat,
 		),
 		"gender": validation.Validate(
 			m.Gender, InKnownGender,

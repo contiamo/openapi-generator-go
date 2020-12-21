@@ -6,7 +6,7 @@
 package generatortest
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Gender is an enum.
