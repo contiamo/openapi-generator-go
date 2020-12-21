@@ -7,9 +7,9 @@ package generatortest
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"time"
-
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+
+	"time"
 )
 
 // Person is an object.
@@ -49,7 +49,7 @@ func (m Person) Validate() error {
 			m.Age, validation.Min(float32(18)), validation.Max(float32(120)),
 		),
 		"base64": validation.Validate(
-			m.Base64,
+			m.Base64, is.Base64,
 		),
 		"date": validation.Validate(
 			m.Date, validation.Date("2006-01-02"),
@@ -61,7 +61,7 @@ func (m Person) Validate() error {
 			m.Email, is.Email,
 		),
 		"gender": validation.Validate(
-			m.Gender, validation.Required, InKnownGender,
+			m.Gender, InKnownGender,
 		),
 		"hostname": validation.Validate(
 			m.Hostname, is.Host,
@@ -76,7 +76,7 @@ func (m Person) Validate() error {
 			m.Ipv6, is.IPv6,
 		),
 		"name": validation.Validate(
-			m.Name, validation.Required, validation.Length(2, 32),
+			m.Name, validation.Length(2, 32),
 		),
 		"url": validation.Validate(
 			m.Url, is.RequestURL,

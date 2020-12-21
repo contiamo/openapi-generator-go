@@ -11,6 +11,7 @@ import (
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type ModelKind string
@@ -220,6 +221,10 @@ func fillValidationRelatedStuff(ref *openapi3.SchemaRef, spec *PropSpec) (import
 	case "ip":
 		spec.IsIP = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "":
+		break // do nothing
+	default:
+		log.Warn().Str("format", ref.Value.Format).Msg("unknown format")
 	}
 	return imports
 }
@@ -281,7 +286,6 @@ func (m {{$modelName}}) Validate() error {
 		{{- range .Properties}}
 		"{{ firstLower .Name }}": validation.Validate(
 			m.{{ .Name }},
-			{{- if .IsRequired }}validation.Required,{{ end }}
 			{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
 			{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
 			{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}

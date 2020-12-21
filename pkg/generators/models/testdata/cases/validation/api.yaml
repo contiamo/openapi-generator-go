@@ -32,7 +32,7 @@ components:
           format: "date-time"
         base64:
           type: string
-          format: "base64"
+          format: "byte"
         email:
           type: string
           format: "email"
