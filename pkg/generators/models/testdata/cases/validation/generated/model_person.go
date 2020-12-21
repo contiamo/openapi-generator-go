@@ -46,7 +46,7 @@ type Person struct {
 func (m Person) Validate() error {
 	return validation.Errors{
 		"age": validation.Validate(
-			m.Age, validation.Min(float32(18)), validation.Max(float32(120)),
+			m.Age, validation.Required, validation.Min(float32(18)), validation.Max(float32(120)),
 		),
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
@@ -76,7 +76,7 @@ func (m Person) Validate() error {
 			m.Ipv6, is.IPv6,
 		),
 		"name": validation.Validate(
-			m.Name, validation.Length(2, 32),
+			m.Name, validation.Required, validation.Length(2, 32),
 		),
 		"url": validation.Validate(
 			m.Url, is.RequestURL,

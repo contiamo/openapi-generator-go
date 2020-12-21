@@ -45,6 +45,7 @@ type PropSpec struct {
 	IsEnum      bool
 
 	// Validation stuff
+	IsRequiredInValidation     bool
 	HasMin, HasMax             bool
 	Min, Max                   float64
 	HasMinLength, HasMaxLength bool
@@ -172,18 +173,31 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	if ref.Value.Min != nil {
 		spec.HasMin = true
 		spec.Min = *ref.Value.Min
+		if spec.Min > 0 {
+			spec.IsRequiredInValidation = true
+		}
 	}
 	if ref.Value.Max != nil {
 		spec.HasMax = true
 		spec.Max = *ref.Value.Max
+		if spec.Max > 0 {
+			spec.IsRequiredInValidation = true
+		}
 	}
 	if ref.Value.MinLength > 0 {
 		spec.HasMinLength = true
 		spec.MinLength = ref.Value.MinLength
+		if spec.MinLength > 0 {
+			spec.IsRequiredInValidation = true
+		}
+
 	}
 	if ref.Value.MaxLength != nil {
 		spec.HasMaxLength = true
 		spec.MaxLength = *ref.Value.MaxLength
+		if spec.MaxLength > 0 {
+			spec.IsRequiredInValidation = true
+		}
 	}
 	if ref.Value.ExclusiveMin {
 		spec.Min += math.SmallestNonzeroFloat64
