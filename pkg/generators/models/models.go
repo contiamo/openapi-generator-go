@@ -235,10 +235,10 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	case "ip":
 		spec.IsIP = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
-	case "":
+	case "", "int32", "int64", "float", "double":
 		break // do nothing
 	default:
-		log.Warn().Str("format", ref.Value.Format).Msg("unknown format")
+		log.Warn().Str("name", spec.Name).Str("format", ref.Value.Format).Msg("unknown format")
 	}
 	return imports
 }
