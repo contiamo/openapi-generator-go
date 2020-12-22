@@ -20,6 +20,10 @@ func TestModels(t *testing.T) {
 			directory: "testdata/cases/simple_model",
 		},
 		{
+			name:      "validation",
+			directory: "testdata/cases/validation",
+		},
+		{
 			name:      "embedded type",
 			directory: "testdata/cases/embedded_type",
 		},

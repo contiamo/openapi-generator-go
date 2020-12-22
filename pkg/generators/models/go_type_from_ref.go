@@ -41,9 +41,23 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	case "boolean":
 		propertyType = "bool"
 	case "integer":
-		propertyType = "int32"
+		switch schemaRef.Value.Format {
+		case "int32":
+			propertyType = "int32"
+		case "int64":
+			propertyType = "int64"
+		default:
+			propertyType = "int64"
+		}
 	case "number":
-		propertyType = "float32"
+		switch schemaRef.Value.Format {
+		case "float":
+			propertyType = "float32"
+		case "double":
+			propertyType = "float64"
+		default:
+			propertyType = "float64"
+		}
 	case "":
 		if schemaRef.Ref != "" {
 			propertyType = filepath.Base(schemaRef.Ref)

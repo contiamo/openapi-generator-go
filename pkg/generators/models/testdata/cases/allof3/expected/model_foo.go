@@ -5,12 +5,21 @@
 //     Version: 0.1.0
 package generatortest
 
+import (
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
 // Foo is an object.
 type Foo struct {
 	// Mixin:
 	Mixin string `json:"mixin,omitempty"`
 	// Sub:
 	Sub string `json:"sub,omitempty"`
+}
+
+// Validate implements basic validation for this model
+func (m Foo) Validate() error {
+	return validation.Errors{}.Filter()
 }
 
 // GetMixin returns the Mixin property

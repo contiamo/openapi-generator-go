@@ -5,10 +5,23 @@
 //     Version: 0.1.0
 package generatortest
 
+import (
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
 // Foo is an object.
 type Foo struct {
 	// Foo:
 	Foo map[string]string `json:"foo,omitempty"`
+}
+
+// Validate implements basic validation for this model
+func (m Foo) Validate() error {
+	return validation.Errors{
+		"foo": validation.Validate(
+			m.Foo,
+		),
+	}.Filter()
 }
 
 // GetFoo returns the Foo property

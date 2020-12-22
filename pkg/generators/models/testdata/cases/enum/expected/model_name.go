@@ -6,11 +6,16 @@
 package generatortest
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Name is an enum.
 type Name string
+
+// Validate implements basic validation for this model
+func (m Name) Validate() error {
+	return InKnownName.Validate(m)
+}
 
 var (
 	NameBar Name = "bar"

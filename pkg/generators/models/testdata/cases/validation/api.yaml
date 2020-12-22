@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Person:
+      type: object
+      required:
+        - name
+        - gender
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 32
+        age:
+          type: number
+          minimum: 18
+          maximum: 120
+        gender:
+          $ref: "#/components/schemas/Gender"
+        address:
+          $ref: "#/components/schemas/Address"
+        favoriteColors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Color"
+          minLength: 1
+        email:
+          type: string
+          format: email
+        date:
+          type: string
+          format: "date"
+        datetime:
+          type: string
+          format: "date-time"
+        base64:
+          type: string
+          format: "byte"
+        email:
+          type: string
+          format: "email"
+        uuid:
+          type: string
+          format: "uuid"
+        url:
+          type: string
+          format: "url"
+        hostname:
+          type: string
+          format: "hostname"
+        ipv4:
+          type: string
+          format: "ipv4"
+        ipv6:
+          type: string
+          format: "ipv6"
+        ip:
+          type: string
+          format: "ip"
+    Gender:
+      type: string
+      enum:
+        - default
+        - female
+        - male
+    Color:
+      type: string
+      enum:
+        - red
+        - blue
+        - green
+        - yellow
+    Address:
+      type: object
+      required:
+        - street
+        - number
+        - name
+      properties:
+        street:
+          type: string
+          minLength: 2
+        number:
+          type: integer
+        name:
+          type: string
+          nullable: true
+          minLength: 2

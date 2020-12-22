@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"sort"
 	"text/template"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type ModelKind string
@@ -37,8 +39,28 @@ type PropSpec struct {
 	Description string
 	GoType      string
 	JSONTags    string
-	AsPointer   bool
 	Value       string
+	IsRequired  bool
+	IsEnum      bool
+
+	// Validation stuff
+	IsNullable                 bool
+	NeedsValidation            bool
+	IsRequiredInValidation     bool
+	HasMin, HasMax             bool
+	Min, Max                   float64
+	HasMinLength, HasMaxLength bool
+	MinLength, MaxLength       uint64
+	IsDate                     bool
+	IsDateTime                 bool
+	IsBase64                   bool
+	IsEmail                    bool
+	IsUUID                     bool
+	IsURL                      bool
+	IsHostname                 bool
+	IsIP                       bool
+	IsIPv4                     bool
+	IsIPv6                     bool
 }
 
 func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
@@ -118,39 +140,139 @@ func resolveAllOf(ref *openapi3.SchemaRef) *openapi3.SchemaRef {
 }
 
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
-	timeImportRequired := false
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop)
-		goType := goTypeFromSpec(prop)
-		if goType == "time.Time" || goType == "*time.Time" {
-			timeImportRequired = true
-		}
-		omitEmpty := true
-		for _, required := range ref.Value.Required {
-			if required == name {
-				omitEmpty = false
-				break
-			}
-		}
-		jsonTags := "`json:\"" + name
-		if omitEmpty {
-			jsonTags += ",omitempty"
-		}
-		jsonTags += "\"`"
 
-		specs = append(specs, PropSpec{
+		spec := PropSpec{
 			Name:        tpl.ToPascalCase(name),
-			GoType:      goType,
-			JSONTags:    jsonTags,
 			Description: prop.Value.Description,
-			AsPointer:   !checkIfRequired(name, ref.Value.Required),
-		})
+			GoType:      goTypeFromSpec(prop),
+			IsRequired:  checkIfRequired(name, ref.Value.Required),
+			IsEnum:      len(prop.Value.Enum) > 0,
+			IsNullable:  prop.Value.Nullable,
+		}
+
+		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
+			imports = append(imports, "time")
+		}
+
+		spec.JSONTags = "`json:\"" + name
+		if !spec.IsRequired {
+			spec.JSONTags += ",omitempty"
+		}
+		spec.JSONTags += "\"`"
+
+		imports = append(imports, fillValidationRelatedProperties(prop, &spec)...)
+
+		specs = append(specs, spec)
 	}
-	if timeImportRequired {
-		imports = []string{"time"}
+	return specs, uniqueStrings(imports), err
+}
+
+func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
+	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
+		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
+		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
+		// enable recursive validation
+		spec.NeedsValidation = true
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 	}
-	return specs, imports, err
+
+	if ref.Value.Min != nil {
+		spec.NeedsValidation = true
+		spec.HasMin = true
+		spec.Min = *ref.Value.Min
+		if spec.Min > 0 {
+			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		}
+	}
+	if ref.Value.Max != nil {
+		spec.NeedsValidation = true
+		spec.HasMax = true
+		spec.Max = *ref.Value.Max
+		if spec.Max > 0 {
+			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		}
+	}
+	if ref.Value.MinLength > 0 {
+		spec.NeedsValidation = true
+		spec.HasMinLength = true
+		spec.MinLength = ref.Value.MinLength
+		if spec.MinLength > 0 {
+			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		}
+	}
+	if ref.Value.MaxLength != nil {
+		spec.NeedsValidation = true
+		spec.HasMaxLength = true
+		spec.MaxLength = *ref.Value.MaxLength
+		if spec.MaxLength > 0 {
+			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		}
+	}
+	if ref.Value.ExclusiveMin {
+		spec.Min += math.SmallestNonzeroFloat64
+	}
+	if ref.Value.ExclusiveMax {
+		spec.Min -= math.SmallestNonzeroFloat64
+	}
+	switch ref.Value.Format {
+	case "date":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.IsRequired = true
+		spec.IsDate = true
+	case "date-time":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.IsRequired = true
+		spec.IsDateTime = true
+		imports = append(imports, "time")
+	case "byte":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsBase64 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "email":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsEmail = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "uuid":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsUUID = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "url":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsURL = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "hostname":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsHostname = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ipv4":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsIPv4 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ipv6":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsIPv6 = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "ip":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsIP = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "", "int32", "int64", "float", "double":
+		break // do nothing
+	default:
+		log.Warn().Str("name", spec.Name).Str("format", ref.Value.Format).Msg("unknown format")
+	}
+	return imports
 }
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
@@ -177,121 +299,14 @@ func checkIfRequired(name string, list []string) bool {
 	return false
 }
 
-var modelTemplateSource = `// This file is auto-generated, DO NOT EDIT.
-//
-// Source:
-//     Title: {{.SpecTitle}}
-//     Version: {{.SpecVersion}}
-package {{ .PackageName }}
-
-{{ if .Imports }}import ({{end}}
-{{- range .Imports}}
-	"{{.}}"
-{{ end}}
-{{- if .Imports }}){{end}}
-
-{{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
-{{- if not .Properties }}
-type {{.Name}} map[string]interface{}
-{{- else }}
-type {{.Name}} struct {
-{{- range .Properties}}
-	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
-	{{.Name}} {{.GoType}} {{.JSONTags}}
-{{- end}}
-}
-{{- end}}
-
-{{- $modelName := .Name }}
-{{ range .Properties}}
-// Get{{.Name}} returns the {{.Name}} property
-func (m {{$modelName}}) Get{{.Name}}() {{.GoType}} {
-	return m.{{.Name}}
-}
-
-// Set{{.Name}} sets the {{.Name}} property
-func (m {{$modelName}}) Set{{.Name}}(val {{.GoType}}) {
-	m.{{.Name}} = val
-}
-{{ end}}`
-
-var enumTemplateSource = `
-// This file is auto-generated, DO NOT EDIT.
-//
-// Source:
-//     Title: {{.SpecTitle}}
-//     Version: {{.SpecVersion}}
-package {{ .PackageName }}
-
-import (
-	validation "github.com/go-ozzo/ozzo-validation"
-)
-
-{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
-type {{.Name}} {{.GoType}}
-
-var (
-	{{- $enum :=. }}
-	{{- range $v := .Properties }}
-	{{$enum.Name}}{{$v.Name}} {{$enum.Name}} = {{$v.Value}}
-	{{- end}}
-
-	// Known{{.Name}} is the list of valid {{.Name}}
-	Known{{.Name }} = []{{.Name}}{
-		{{- range $v := .Properties }}
-		{{$enum.Name}}{{$v.Name}},
-		{{- end}}
+func uniqueStrings(input []string) (output []string) {
+	m := make(map[string]struct{})
+	for _, item := range input {
+		if _, ok := m[item]; ok {
+			continue
+		}
+		output = append(output, item)
+		m[item] = struct{}{}
 	}
-
-	{{- $enum :=. }}
-	// Known{{$enum.Name}}{{$enum.GoType | firstUpper}} is the list of valid {{$enum.Name}} as {{$enum.GoType}}
-	Known{{$enum.Name}}{{$enum.GoType | firstUpper}} = []{{$enum.GoType}}{
-		{{- range $v := .Properties }}
-		{{$enum.GoType}}({{$enum.Name}}{{$v.Name}}),
-		{{- end}}
-	}
-
-	// InKnown{{.Name}} is an ozzo-validator for {{.Name}}
-	InKnown{{.Name}} = validation.In(
-		{{- range $v := .Properties }}
-		{{$enum.Name}}{{$v.Name}},
-		{{- end}}
-	)
-)
-`
-
-var constTemplateSource = `
-// This file is auto-generated, DO NOT EDIT.
-//
-// Source:
-//     Title: {{.SpecTitle}}
-//     Version: {{.SpecVersion}}
-package {{ .PackageName }}
-
-{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
-const {{.Name}} = {{ (index .Properties 0).Value}}
-`
-
-var fmap = template.FuncMap{
-	"firstLower":   tpl.FirstLower,
-	"firstUpper":   tpl.FirstUpper,
-	"commentBlock": tpl.CommentBlock,
-	"toPascalCase": tpl.ToPascalCase,
-	"toSnakeCase":  tpl.ToSnakeCase,
+	return output
 }
-
-var modelTemplate = template.Must(
-	template.New("model").
-		Funcs(fmap).
-		Parse(modelTemplateSource),
-)
-var enumTemplate = template.Must(
-	template.New("enum").
-		Funcs(fmap).
-		Parse(enumTemplateSource),
-)
-var constTemplate = template.Must(
-	template.New("const").
-		Funcs(fmap).
-		Parse(constTemplateSource),
-)
