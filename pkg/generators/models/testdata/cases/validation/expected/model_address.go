@@ -14,7 +14,7 @@ type Address struct {
 	// Name:
 	Name *string `json:"name"`
 	// Number:
-	Number int64 `json:"number"`
+	Number int32 `json:"number"`
 	// Street:
 	Street string `json:"street"`
 }
@@ -42,12 +42,12 @@ func (m Address) SetName(val *string) {
 }
 
 // GetNumber returns the Number property
-func (m Address) GetNumber() int64 {
+func (m Address) GetNumber() int32 {
 	return m.Number
 }
 
 // SetNumber sets the Number property
-func (m Address) SetNumber(val int64) {
+func (m Address) SetNumber(val int32) {
 	m.Number = val
 }
 

@@ -17,7 +17,7 @@ type Person struct {
 	// Address:
 	Address Address `json:"address,omitempty"`
 	// Age:
-	Age float64 `json:"age,omitempty"`
+	Age float32 `json:"age,omitempty"`
 	// Base64:
 	Base64 string `json:"base64,omitempty"`
 	// Date:
@@ -53,7 +53,7 @@ func (m Person) Validate() error {
 			m.Address,
 		),
 		"age": validation.Validate(
-			m.Age, validation.Min(float64(18)), validation.Max(float64(120)),
+			m.Age, validation.Min(float32(18)), validation.Max(float32(120)),
 		),
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
@@ -102,12 +102,12 @@ func (m Person) SetAddress(val Address) {
 }
 
 // GetAge returns the Age property
-func (m Person) GetAge() float64 {
+func (m Person) GetAge() float32 {
 	return m.Age
 }
 
 // SetAge sets the Age property
-func (m Person) SetAge(val float64) {
+func (m Person) SetAge(val float32) {
 	m.Age = val
 }
 
