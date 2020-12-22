@@ -19,7 +19,7 @@ type Top struct {
 func (m Top) Validate() error {
 	return validation.Errors{
 		"bar": validation.Validate(
-			m.Bar, validation.Required,
+			m.Bar,
 		),
 	}.Filter()
 }

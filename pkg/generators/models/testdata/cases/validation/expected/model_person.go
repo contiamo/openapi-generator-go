@@ -50,43 +50,43 @@ type Person struct {
 func (m Person) Validate() error {
 	return validation.Errors{
 		"address": validation.Validate(
-			m.Address, validation.Required,
+			m.Address,
 		),
 		"age": validation.Validate(
-			m.Age, validation.Required, validation.Min(float64(18)), validation.Max(float64(120)),
+			m.Age, validation.Min(float64(18)), validation.Max(float64(120)),
 		),
 		"base64": validation.Validate(
-			m.Base64, validation.Required, is.Base64,
+			m.Base64, is.Base64,
 		),
 		"email": validation.Validate(
-			m.Email, validation.Required, is.EmailFormat,
+			m.Email, is.EmailFormat,
 		),
 		"favoriteColors": validation.Validate(
-			m.FavoriteColors, validation.Required, validation.Length(1, 0),
+			m.FavoriteColors, validation.Length(1, 0),
 		),
 		"gender": validation.Validate(
-			m.Gender, validation.Required, InKnownGender,
+			m.Gender, validation.Required,
 		),
 		"hostname": validation.Validate(
-			m.Hostname, validation.Required, is.Host,
+			m.Hostname, is.Host,
 		),
 		"ip": validation.Validate(
-			m.Ip, validation.Required, is.IP,
+			m.Ip, is.IP,
 		),
 		"ipv4": validation.Validate(
-			m.Ipv4, validation.Required, is.IPv4,
+			m.Ipv4, is.IPv4,
 		),
 		"ipv6": validation.Validate(
-			m.Ipv6, validation.Required, is.IPv6,
+			m.Ipv6, is.IPv6,
 		),
 		"name": validation.Validate(
 			m.Name, validation.Required, validation.Length(2, 32),
 		),
 		"url": validation.Validate(
-			m.Url, validation.Required, is.RequestURL,
+			m.Url, is.RequestURL,
 		),
 		"uuid": validation.Validate(
-			m.Uuid, validation.Required, is.UUID,
+			m.Uuid, is.UUID,
 		),
 	}.Filter()
 }

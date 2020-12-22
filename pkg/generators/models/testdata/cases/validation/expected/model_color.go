@@ -12,6 +12,11 @@ import (
 // Color is an enum.
 type Color string
 
+// Validate implements basic validation for this model
+func (m Color) Validate() error {
+	return InKnownColor.Validate(m)
+}
+
 var (
 	ColorBlue   Color = "blue"
 	ColorGreen  Color = "green"

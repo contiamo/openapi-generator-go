@@ -12,6 +12,11 @@ import (
 // Name is an enum.
 type Name string
 
+// Validate implements basic validation for this model
+func (m Name) Validate() error {
+	return InKnownName.Validate(m)
+}
+
 var (
 	NameBar Name = "bar"
 	NameFoo Name = "foo"

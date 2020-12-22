@@ -12,6 +12,11 @@ import (
 // Gender is an enum.
 type Gender string
 
+// Validate implements basic validation for this model
+func (m Gender) Validate() error {
+	return InKnownGender.Validate(m)
+}
+
 var (
 	GenderDefault Gender = "default"
 	GenderFemale  Gender = "female"

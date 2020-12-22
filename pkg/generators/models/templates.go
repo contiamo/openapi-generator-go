@@ -71,7 +71,6 @@ func (m {{$modelName}}) Validate() error {
 					{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
 					{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
 					{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
-					{{- if .IsEnum }}InKnown{{ .GoType }},{{ end }}
 					{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
 					{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
 					{{- if .IsBase64 }}is.Base64,{{ end }}
@@ -113,6 +112,11 @@ import (
 
 {{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
+
+// Validate implements basic validation for this model
+func (m {{.Name}}) Validate() error {
+	return InKnown{{.Name}}.Validate(m)
+}
 
 var (
 	{{- $enum :=. }}
