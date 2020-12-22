@@ -10,11 +10,11 @@ import (
 
 func TestPerson(t *testing.T) {
 	require.NoError(t, validation.Validate(&Person{
-		Age:      120,
+		Age:      18,
 		Gender:   GenderDefault,
-		Name:     "Foobar",
-		Hostname: "localhost",
-		Email:    "foo@localhost",
+		Name:     "Foo",
+		Hostname: "foobar.com",
+		Email:    "foo@localhost.de",
 		Uuid:     uuid.NewV4().String(),
 	}))
 }

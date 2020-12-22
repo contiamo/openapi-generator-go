@@ -45,6 +45,7 @@ type PropSpec struct {
 	IsEnum      bool
 
 	// Validation stuff
+	NeedsValidation            bool
 	IsRequiredInValidation     bool
 	HasMin, HasMax             bool
 	Min, Max                   float64
@@ -170,7 +171,15 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 }
 
 func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
+	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
+		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
+		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
+		// enable recursive validation
+		spec.NeedsValidation = true
+	}
+
 	if ref.Value.Min != nil {
+		spec.NeedsValidation = true
 		spec.HasMin = true
 		spec.Min = *ref.Value.Min
 		if spec.Min > 0 {
@@ -178,6 +187,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		}
 	}
 	if ref.Value.Max != nil {
+		spec.NeedsValidation = true
 		spec.HasMax = true
 		spec.Max = *ref.Value.Max
 		if spec.Max > 0 {
@@ -185,6 +195,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		}
 	}
 	if ref.Value.MinLength > 0 {
+		spec.NeedsValidation = true
 		spec.HasMinLength = true
 		spec.MinLength = ref.Value.MinLength
 		if spec.MinLength > 0 {
@@ -193,6 +204,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 	}
 	if ref.Value.MaxLength != nil {
+		spec.NeedsValidation = true
 		spec.HasMaxLength = true
 		spec.MaxLength = *ref.Value.MaxLength
 		if spec.MaxLength > 0 {
@@ -207,32 +219,42 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	}
 	switch ref.Value.Format {
 	case "date":
+		spec.NeedsValidation = true
 		spec.IsDate = true
 	case "date-time":
+		spec.NeedsValidation = true
 		spec.IsDateTime = true
 		imports = append(imports, "time")
 	case "byte":
+		spec.NeedsValidation = true
 		spec.IsBase64 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "email":
+		spec.NeedsValidation = true
 		spec.IsEmail = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "uuid":
+		spec.NeedsValidation = true
 		spec.IsUUID = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "url":
+		spec.NeedsValidation = true
 		spec.IsURL = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "hostname":
+		spec.NeedsValidation = true
 		spec.IsHostname = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ipv4":
+		spec.NeedsValidation = true
 		spec.IsIPv4 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ipv6":
+		spec.NeedsValidation = true
 		spec.IsIPv6 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ip":
+		spec.NeedsValidation = true
 		spec.IsIP = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "", "int32", "int64", "float", "double":

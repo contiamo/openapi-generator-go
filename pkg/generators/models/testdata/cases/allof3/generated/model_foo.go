@@ -19,14 +19,7 @@ type Foo struct {
 
 // Validate implements basic validation for this model
 func (m Foo) Validate() error {
-	return validation.Errors{
-		"mixin": validation.Validate(
-			m.Mixin,
-		),
-		"sub": validation.Validate(
-			m.Sub,
-		),
-	}.Filter()
+	return validation.Errors{}.Filter()
 }
 
 // GetMixin returns the Mixin property

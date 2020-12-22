@@ -17,11 +17,7 @@ type Sub struct {
 
 // Validate implements basic validation for this model
 func (m Sub) Validate() error {
-	return validation.Errors{
-		"sub": validation.Validate(
-			m.Sub,
-		),
-	}.Filter()
+	return validation.Errors{}.Filter()
 }
 
 // GetSub returns the Sub property

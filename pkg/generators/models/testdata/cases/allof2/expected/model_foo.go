@@ -19,14 +19,7 @@ type Foo struct {
 
 // Validate implements basic validation for this model
 func (m Foo) Validate() error {
-	return validation.Errors{
-		"bar": validation.Validate(
-			m.Bar,
-		),
-		"foo": validation.Validate(
-			m.Foo,
-		),
-	}.Filter()
+	return validation.Errors{}.Filter()
 }
 
 // GetBar returns the Bar property

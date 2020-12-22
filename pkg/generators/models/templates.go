@@ -64,25 +64,27 @@ type {{.Name}} struct {
 func (m {{$modelName}}) Validate() error {
 	return validation.Errors{
 		{{- range .Properties}}
-		"{{ firstLower .Name }}": validation.Validate(
-			m.{{ .Name }},
-			{{- if .IsRequiredInValidation}}validation.Required,{{ end }}
-			{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
-			{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
-			{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
-			{{- if .IsEnum }}InKnown{{ .GoType }},{{ end }}
-			{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
-			{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
-			{{- if .IsBase64 }}is.Base64,{{ end }}
-			{{- if .IsEmail }}is.EmailFormat,{{ end }}
-			{{- if .IsUUID }}is.UUID,{{ end }}
-			{{- if .IsURL }}is.RequestURL,{{ end }}
-			{{- if .IsHostname }}is.Host,{{ end }}
-			{{- if .IsIPv4 }}is.IPv4,{{ end }}
-			{{- if .IsIPv6 }}is.IPv6,{{ end }}
-			{{- if .IsIP }}is.IP,{{ end }}
-		),
-	{{- end }}
+			{{- if .NeedsValidation }}
+				"{{ firstLower .Name }}": validation.Validate(
+					m.{{ .Name }},
+					{{- if .IsRequiredInValidation}}validation.Required,{{ end }}
+					{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
+					{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
+					{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
+					{{- if .IsEnum }}InKnown{{ .GoType }},{{ end }}
+					{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
+					{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+					{{- if .IsBase64 }}is.Base64,{{ end }}
+					{{- if .IsEmail }}is.EmailFormat,{{ end }}
+					{{- if .IsUUID }}is.UUID,{{ end }}
+					{{- if .IsURL }}is.RequestURL,{{ end }}
+					{{- if .IsHostname }}is.Host,{{ end }}
+					{{- if .IsIPv4 }}is.IPv4,{{ end }}
+					{{- if .IsIPv6 }}is.IPv6,{{ end }}
+					{{- if .IsIP }}is.IP,{{ end }}
+				),
+			{{- end }}
+		{{- end }}
 	}.Filter()
 }
 {{ range .Properties}}
