@@ -39,12 +39,12 @@ type PropSpec struct {
 	Description string
 	GoType      string
 	JSONTags    string
-	AsPointer   bool
 	Value       string
 	IsRequired  bool
 	IsEnum      bool
 
 	// Validation stuff
+	IsNullable                 bool
 	NeedsValidation            bool
 	IsRequiredInValidation     bool
 	HasMin, HasMax             bool
@@ -150,8 +150,8 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 			GoType:      goTypeFromSpec(prop),
 			IsRequired:  checkIfRequired(name, ref.Value.Required),
 			IsEnum:      len(prop.Value.Enum) > 0,
+			IsNullable:  prop.Value.Nullable,
 		}
-		spec.AsPointer = !spec.IsRequired
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
 			imports = append(imports, "time")
@@ -176,7 +176,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
 		// enable recursive validation
 		spec.NeedsValidation = true
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 	}
 
 	if ref.Value.Min != nil {
@@ -184,7 +184,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		spec.HasMin = true
 		spec.Min = *ref.Value.Min
 		if spec.Min > 0 {
-			spec.IsRequiredInValidation = spec.IsRequired
+			spec.IsRequiredInValidation = !spec.IsNullable
 		}
 	}
 	if ref.Value.Max != nil {
@@ -192,7 +192,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		spec.HasMax = true
 		spec.Max = *ref.Value.Max
 		if spec.Max > 0 {
-			spec.IsRequiredInValidation = spec.IsRequired
+			spec.IsRequiredInValidation = !spec.IsNullable
 		}
 	}
 	if ref.Value.MinLength > 0 {
@@ -200,16 +200,15 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		spec.HasMinLength = true
 		spec.MinLength = ref.Value.MinLength
 		if spec.MinLength > 0 {
-			spec.IsRequiredInValidation = spec.IsRequired
+			spec.IsRequiredInValidation = !spec.IsNullable
 		}
-
 	}
 	if ref.Value.MaxLength != nil {
 		spec.NeedsValidation = true
 		spec.HasMaxLength = true
 		spec.MaxLength = *ref.Value.MaxLength
 		if spec.MaxLength > 0 {
-			spec.IsRequiredInValidation = spec.IsRequired
+			spec.IsRequiredInValidation = !spec.IsNullable
 		}
 	}
 	if ref.Value.ExclusiveMin {
@@ -220,51 +219,51 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	}
 	switch ref.Value.Format {
 	case "date":
-		spec.IsRequiredInValidation = spec.IsRequired
-		spec.NeedsValidation = true
+		spec.IsRequiredInValidation = !spec.IsNullable
+		spec.IsRequired = true
 		spec.IsDate = true
 	case "date-time":
-		spec.IsRequiredInValidation = spec.IsRequired
-		spec.NeedsValidation = true
+		spec.IsRequiredInValidation = !spec.IsNullable
+		spec.IsRequired = true
 		spec.IsDateTime = true
 		imports = append(imports, "time")
 	case "byte":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsBase64 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "email":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsEmail = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "uuid":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsUUID = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "url":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsURL = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "hostname":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsHostname = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ipv4":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsIPv4 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ipv6":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsIPv6 = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "ip":
-		spec.IsRequiredInValidation = spec.IsRequired
+		spec.IsRequiredInValidation = !spec.IsNullable
 		spec.NeedsValidation = true
 		spec.IsIP = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")

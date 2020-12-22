@@ -19,7 +19,7 @@ type Foo struct {
 func (m Foo) Validate() error {
 	return validation.Errors{
 		"foo": validation.Validate(
-			m.Foo,
+			m.Foo, validation.Required,
 		),
 	}.Filter()
 }

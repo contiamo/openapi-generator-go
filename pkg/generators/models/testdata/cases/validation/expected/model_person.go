@@ -14,6 +14,8 @@ import (
 
 // Person is an object.
 type Person struct {
+	// Address:
+	Address Address `json:"address,omitempty"`
 	// Age:
 	Age float64 `json:"age,omitempty"`
 	// Base64:
@@ -24,6 +26,8 @@ type Person struct {
 	Datetime time.Time `json:"datetime,omitempty"`
 	// Email:
 	Email string `json:"email,omitempty"`
+	// FavoriteColors:
+	FavoriteColors []Color `json:"favoriteColors,omitempty"`
 	// Gender:
 	Gender Gender `json:"gender"`
 	// Hostname:
@@ -45,46 +49,56 @@ type Person struct {
 // Validate implements basic validation for this model
 func (m Person) Validate() error {
 	return validation.Errors{
+		"address": validation.Validate(
+			m.Address, validation.Required,
+		),
 		"age": validation.Validate(
-			m.Age, validation.Min(float64(18)), validation.Max(float64(120)),
+			m.Age, validation.Required, validation.Min(float64(18)), validation.Max(float64(120)),
 		),
 		"base64": validation.Validate(
-			m.Base64, is.Base64,
-		),
-		"date": validation.Validate(
-			m.Date, validation.Date("2006-01-02"),
-		),
-		"datetime": validation.Validate(
-			m.Datetime, validation.Date(time.RFC3339),
+			m.Base64, validation.Required, is.Base64,
 		),
 		"email": validation.Validate(
-			m.Email, is.EmailFormat,
+			m.Email, validation.Required, is.EmailFormat,
+		),
+		"favoriteColors": validation.Validate(
+			m.FavoriteColors, validation.Required, validation.Length(1, 0),
 		),
 		"gender": validation.Validate(
 			m.Gender, validation.Required, InKnownGender,
 		),
 		"hostname": validation.Validate(
-			m.Hostname, is.Host,
+			m.Hostname, validation.Required, is.Host,
 		),
 		"ip": validation.Validate(
-			m.Ip, is.IP,
+			m.Ip, validation.Required, is.IP,
 		),
 		"ipv4": validation.Validate(
-			m.Ipv4, is.IPv4,
+			m.Ipv4, validation.Required, is.IPv4,
 		),
 		"ipv6": validation.Validate(
-			m.Ipv6, is.IPv6,
+			m.Ipv6, validation.Required, is.IPv6,
 		),
 		"name": validation.Validate(
 			m.Name, validation.Required, validation.Length(2, 32),
 		),
 		"url": validation.Validate(
-			m.Url, is.RequestURL,
+			m.Url, validation.Required, is.RequestURL,
 		),
 		"uuid": validation.Validate(
-			m.Uuid, is.UUID,
+			m.Uuid, validation.Required, is.UUID,
 		),
 	}.Filter()
+}
+
+// GetAddress returns the Address property
+func (m Person) GetAddress() Address {
+	return m.Address
+}
+
+// SetAddress sets the Address property
+func (m Person) SetAddress(val Address) {
+	m.Address = val
 }
 
 // GetAge returns the Age property
@@ -135,6 +149,16 @@ func (m Person) GetEmail() string {
 // SetEmail sets the Email property
 func (m Person) SetEmail(val string) {
 	m.Email = val
+}
+
+// GetFavoriteColors returns the FavoriteColors property
+func (m Person) GetFavoriteColors() []Color {
+	return m.FavoriteColors
+}
+
+// SetFavoriteColors sets the FavoriteColors property
+func (m Person) SetFavoriteColors(val []Color) {
+	m.FavoriteColors = val
 }
 
 // GetGender returns the Gender property

@@ -21,6 +21,13 @@ components:
           maximum: 120
         gender:
           $ref: "#/components/schemas/Gender"
+        address:
+          $ref: "#/components/schemas/Address"
+        favoriteColors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Color"
+          minLength: 1
         email:
           type: string
           format: email
@@ -60,3 +67,26 @@ components:
         - default
         - female
         - male
+    Color:
+      type: string
+      enum:
+        - red
+        - blue
+        - green
+        - yellow
+    Address:
+      type: object
+      required:
+        - street
+        - number
+        - name
+      properties:
+        street:
+          type: string
+          minLength: 2
+        number:
+          type: integer
+        name:
+          type: string
+          nullable: true
+          minLength: 2
