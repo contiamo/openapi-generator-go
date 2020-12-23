@@ -47,7 +47,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		case "int64":
 			propertyType = "int64"
 		default:
-			propertyType = "int64"
+			propertyType = "int32" // the default is int32 because this is always json-serialized to a proper number in contrast to int64 which will become a string
 		}
 	case "number":
 		switch schemaRef.Value.Format {
@@ -56,7 +56,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		case "double":
 			propertyType = "float64"
 		default:
-			propertyType = "float64"
+			propertyType = "float32" // the default is float32 because this is always json-serialized to a proper number in contrast to float64 which will become a string
 		}
 	case "":
 		if schemaRef.Ref != "" {
