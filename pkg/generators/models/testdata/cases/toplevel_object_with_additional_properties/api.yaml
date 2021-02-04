@@ -19,3 +19,10 @@ components:
         type: array
         items:
           $ref: "#/components/schemas/Bar"
+    Quak:
+      type: object
+      additionalProperties:
+        oneof:
+          - $ref: "#/components/schemas/Foo"
+          - $ref: "#/components/schemas/Bar"
+      
