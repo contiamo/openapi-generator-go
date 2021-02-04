@@ -49,7 +49,7 @@ import (
 
 {{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
 {{- if not .Properties }}
-type {{.Name}} map[string]interface{}
+type {{.Name}} {{ .GoType }}
 {{- else }}
 type {{.Name}} struct {
 {{- range .Properties}}

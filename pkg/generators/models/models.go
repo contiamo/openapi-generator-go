@@ -85,6 +85,12 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		len(ref.Value.OneOf) > 0:
 		model.Kind = Struct
 		model.Properties, model.Imports, err = structPropsFromRef(ref)
+		if len(model.Properties) == 0 {
+			model.GoType = "map[string]interface{}"
+			if ref.Value.AdditionalProperties != nil {
+				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
+			}
+		}
 	default:
 		return nil, errors.New("type not handled")
 	}
