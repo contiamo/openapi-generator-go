@@ -76,6 +76,10 @@ func TestModels(t *testing.T) {
 			directory: "testdata/cases/object_with_additional_properties",
 		},
 		{
+			name:      "an untyped toplevel object may have additional properties of a specific type",
+			directory: "testdata/cases/toplevel_object_with_additional_properties",
+		},
+		{
 			name:      "handles string enums",
 			directory: "testdata/cases/enum",
 		},
