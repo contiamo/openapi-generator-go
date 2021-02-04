@@ -9,3 +9,13 @@ components:
       type: object
       additionalProperties:
         type: string
+    Bar:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Foo"
+    Baz:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: "#/components/schemas/Bar"
