@@ -32,11 +32,10 @@ container-build:
 	golang:1.15 make binary
 
 crosscompile:
-	mkdir -p bin/linux/{arm,arm64,amd64} bin/darwin/amd64
-	$(MAKE) container-build OS=linux ARCH=amd64 && mv bin/openapi-generator-go bin/linux/amd64/
-	$(MAKE) container-build OS=linux ARCH=arm && mv bin/openapi-generator-go bin/linux/arm/
-	$(MAKE) container-build OS=linux ARCH=arm64 && mv bin/openapi-generator-go bin/linux/arm64/
-	$(MAKE) container-build OS=darwin ARCH=amd64 && mv bin/openapi-generator-go bin/darwin/amd64/
+	$(MAKE) container-build OS=linux ARCH=amd64 && mv bin/openapi-generator-go bin/openapi-generator-go-linux-amd64
+	$(MAKE) container-build OS=linux ARCH=arm && mv bin/openapi-generator-go bin/openapi-generator-go-linux-arm
+	$(MAKE) container-build OS=linux ARCH=arm64 && mv bin/openapi-generator-go bin/openapi-generator-go-linux-arm64
+	$(MAKE) container-build OS=darwin ARCH=amd64 && mv bin/openapi-generator-go bin/openapi-generator-go-darwin-amd64
 
 
 test:
