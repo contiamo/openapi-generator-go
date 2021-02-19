@@ -40,6 +40,10 @@ type Person struct {
 	Ipv6 string `json:"ipv6,omitempty"`
 	// Name:
 	Name string `json:"name"`
+	// RequestURI:
+	RequestURI string `json:"requestURI,omitempty"`
+	// Uri:
+	Uri string `json:"uri,omitempty"`
 	// Url:
 	Url string `json:"url,omitempty"`
 	// Uuid:
@@ -82,8 +86,14 @@ func (m Person) Validate() error {
 		"name": validation.Validate(
 			m.Name, validation.Required, validation.Length(2, 32),
 		),
+		"requestURI": validation.Validate(
+			m.RequestURI, is.RequestURL,
+		),
+		"uri": validation.Validate(
+			m.Uri, is.RequestURI,
+		),
 		"url": validation.Validate(
-			m.Url, is.RequestURL,
+			m.Url, is.URL,
 		),
 		"uuid": validation.Validate(
 			m.Uuid, is.UUID,
@@ -219,6 +229,26 @@ func (m Person) GetName() string {
 // SetName sets the Name property
 func (m Person) SetName(val string) {
 	m.Name = val
+}
+
+// GetRequestURI returns the RequestURI property
+func (m Person) GetRequestURI() string {
+	return m.RequestURI
+}
+
+// SetRequestURI sets the RequestURI property
+func (m Person) SetRequestURI(val string) {
+	m.RequestURI = val
+}
+
+// GetUri returns the Uri property
+func (m Person) GetUri() string {
+	return m.Uri
+}
+
+// SetUri sets the Uri property
+func (m Person) SetUri(val string) {
+	m.Uri = val
 }
 
 // GetUrl returns the Url property

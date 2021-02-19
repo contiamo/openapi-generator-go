@@ -76,7 +76,9 @@ func (m {{$modelName}}) Validate() error {
 					{{- if .IsBase64 }}is.Base64,{{ end }}
 					{{- if .IsEmail }}is.EmailFormat,{{ end }}
 					{{- if .IsUUID }}is.UUID,{{ end }}
-					{{- if .IsURL }}is.RequestURL,{{ end }}
+					{{- if .IsURL }}is.URL,{{ end }}
+					{{- if .IsURI }}is.RequestURI,{{ end }}
+					{{- if .IsRequestURI }}is.RequestURL,{{ end }}
 					{{- if .IsHostname }}is.Host,{{ end }}
 					{{- if .IsIPv4 }}is.IPv4,{{ end }}
 					{{- if .IsIPv6 }}is.IPv6,{{ end }}

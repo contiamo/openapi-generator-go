@@ -57,6 +57,8 @@ type PropSpec struct {
 	IsEmail                    bool
 	IsUUID                     bool
 	IsURL                      bool
+	IsURI                      bool
+	IsRequestURI               bool
 	IsHostname                 bool
 	IsIP                       bool
 	IsIPv4                     bool
@@ -252,6 +254,16 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsURL = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "uri":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsURI = true
+		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+	case "request-uri":
+		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
+		spec.NeedsValidation = true
+		spec.IsRequestURI = true
 		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
 	case "hostname":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
