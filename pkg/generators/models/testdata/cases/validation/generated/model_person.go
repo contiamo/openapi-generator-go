@@ -87,13 +87,13 @@ func (m Person) Validate() error {
 			m.Name, validation.Required, validation.Length(2, 32),
 		),
 		"requestURI": validation.Validate(
-			m.RequestURI, is.RequestURL,
+			m.RequestURI, is.RequestURL.Error("must be valid URI with scheme"),
 		),
 		"uri": validation.Validate(
 			m.Uri, is.RequestURI,
 		),
 		"url": validation.Validate(
-			m.Url, is.URL,
+			m.Url, is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),
 		),
 		"uuid": validation.Validate(
 			m.Uuid, is.UUID,
