@@ -49,6 +49,12 @@ components:
         url:
           type: string
           format: "url"
+        uri:
+          type: string
+          format: "uri"
+        requestURI:
+          type: string
+          format: "request-uri"
         hostname:
           type: string
           format: "hostname"
