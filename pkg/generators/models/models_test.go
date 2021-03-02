@@ -83,6 +83,10 @@ func TestModels(t *testing.T) {
 			name:      "handles string enums",
 			directory: "testdata/cases/enum",
 		},
+		{
+			name:      "enum with one item",
+			directory: "testdata/cases/enum_with_one_item",
+		},
 	}
 
 	for _, tc := range cases {

@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Name:
+      type: string
+      enum:
+        - foo
