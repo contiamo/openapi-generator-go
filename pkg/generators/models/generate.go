@@ -39,21 +39,31 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 		return errors.Wrap(err, "can not parse the OpenAPI spec")
 	}
 
+	if swagger.Components.Schemas == nil {
+		swagger.Components.Schemas = make(map[string]*openapi3.SchemaRef)
+	}
+
 	for _, path := range swagger.Paths {
 		if path.Post != nil {
 			operationID := path.Post.OperationID
 			schema := schemaFromOperation(path.Post)
-			swagger.Components.Schemas[operationID+"Body"] = schema
+			if operationID != "" && schema != nil {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
 		}
 		if path.Put != nil {
 			operationID := path.Put.OperationID
 			schema := schemaFromOperation(path.Put)
-			swagger.Components.Schemas[operationID+"Body"] = schema
+			if operationID != "" && schema != nil {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
 		}
 		if path.Patch != nil {
 			operationID := path.Patch.OperationID
 			schema := schemaFromOperation(path.Patch)
-			swagger.Components.Schemas[operationID+"Body"] = schema
+			if operationID != "" && schema != nil {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
 		}
 	}
 
