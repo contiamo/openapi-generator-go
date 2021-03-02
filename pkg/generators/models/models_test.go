@@ -84,8 +84,8 @@ func TestModels(t *testing.T) {
 			directory: "testdata/cases/enum",
 		},
 		{
-			name:      "handles constant enums",
-			directory: "testdata/cases/const",
+			name:      "enum with one item",
+			directory: "testdata/cases/enum_with_one_item",
 		},
 	}
 
