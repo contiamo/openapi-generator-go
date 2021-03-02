@@ -87,6 +87,10 @@ func TestModels(t *testing.T) {
 			name:      "handles constant enums",
 			directory: "testdata/cases/const",
 		},
+		{
+			name:      "model from path body",
+			directory: "testdata/cases/model_from_path_body",
+		},
 	}
 
 	for _, tc := range cases {

@@ -39,6 +39,24 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 		return errors.Wrap(err, "can not parse the OpenAPI spec")
 	}
 
+	for _, path := range swagger.Paths {
+		if path.Post != nil {
+			operationID := path.Post.OperationID
+			schema := schemaFromOperation(path.Post)
+			swagger.Components.Schemas[operationID+"Body"] = schema
+		}
+		if path.Put != nil {
+			operationID := path.Put.OperationID
+			schema := schemaFromOperation(path.Put)
+			swagger.Components.Schemas[operationID+"Body"] = schema
+		}
+		if path.Patch != nil {
+			operationID := path.Patch.OperationID
+			schema := schemaFromOperation(path.Patch)
+			swagger.Components.Schemas[operationID+"Body"] = schema
+		}
+	}
+
 	for name, ref := range swagger.Components.Schemas {
 		if ref.Value.Type == "array" {
 			// We dont generate toplevel arrays. If they are referenced within another object, they will translate to []ItemType
@@ -81,4 +99,12 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 
 	return nil
 
+}
+
+func schemaFromOperation(op *openapi3.Operation) *openapi3.SchemaRef {
+	content, ok := op.RequestBody.Value.Content["application/json"]
+	if ok {
+		return content.Schema
+	}
+	return nil
 }
