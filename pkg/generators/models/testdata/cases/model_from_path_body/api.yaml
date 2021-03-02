@@ -19,5 +19,18 @@ paths:
         201:
           description: foobar
 
+    put:
+      operationId: MySecondOp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Foo"
+      responses:
+        201:
+          description: foobar
+
 components:
-  schemas: {}
+  schemas:
+    Foo:
+      type: object

@@ -47,21 +47,21 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 		if path.Post != nil {
 			operationID := path.Post.OperationID
 			schema := schemaFromOperation(path.Post)
-			if operationID != "" && schema != nil {
+			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
 			}
 		}
 		if path.Put != nil {
 			operationID := path.Put.OperationID
 			schema := schemaFromOperation(path.Put)
-			if operationID != "" && schema != nil {
+			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
 			}
 		}
 		if path.Patch != nil {
 			operationID := path.Patch.OperationID
 			schema := schemaFromOperation(path.Patch)
-			if operationID != "" && schema != nil {
+			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
 			}
 		}
