@@ -17,9 +17,8 @@ import (
 type ModelKind string
 
 const (
-	Struct   ModelKind = "struct"
-	Enum     ModelKind = "enum"
-	Constant ModelKind = "constant"
+	Struct ModelKind = "struct"
+	Enum   ModelKind = "enum"
 )
 
 type Model struct {
@@ -35,7 +34,7 @@ type Model struct {
 }
 
 type PropSpec struct {
-	Name        string // Property name of structs, variable name of enumns and constants
+	Name        string // Property name of structs, variable name of enumns
 	Description string
 	GoType      string
 	JSONTags    string
@@ -73,12 +72,8 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	ref = resolveAllOf(ref)
 
 	switch {
-	case len(ref.Value.Enum) > 1:
+	case len(ref.Value.Enum) > 0:
 		model.Kind = Enum
-		model.Properties, err = enumPropsFromRef(ref, model)
-		model.GoType = goTypeFromSpec(ref)
-	case len(ref.Value.Enum) == 1:
-		model.Kind = Constant
 		model.Properties, err = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
 	case ref.Value.Type == "object" ||
@@ -110,8 +105,6 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 		tpl = modelTemplate
 	case Enum:
 		tpl = enumTemplate
-	case Constant:
-		tpl = constTemplate
 	}
 	err := tpl.Execute(writer, m)
 	if err != nil {

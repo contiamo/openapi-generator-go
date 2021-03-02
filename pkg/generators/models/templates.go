@@ -19,12 +19,6 @@ var (
 			Parse(enumTemplateSource),
 	)
 
-	constTemplate = template.Must(
-		template.New("const").
-			Funcs(fmap).
-			Parse(constTemplateSource),
-	)
-
 	fmap = template.FuncMap{
 		"firstLower":   tpl.FirstLower,
 		"firstUpper":   tpl.FirstUpper,
@@ -148,17 +142,5 @@ var (
 		{{- end}}
 	)
 )
-`
-
-	constTemplateSource = `
-// This file is auto-generated, DO NOT EDIT.
-//
-// Source:
-//     Title: {{.SpecTitle}}
-//     Version: {{.SpecVersion}}
-package {{ .PackageName }}
-
-{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
-const {{.Name}} = {{ (index .Properties 0).Value}}
 `
 )
