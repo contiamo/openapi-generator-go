@@ -112,9 +112,11 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 }
 
 func schemaFromOperation(op *openapi3.Operation) *openapi3.SchemaRef {
-	content, ok := op.RequestBody.Value.Content["application/json"]
-	if ok {
-		return content.Schema
+	if op.RequestBody != nil && op.RequestBody.Value != nil && op.RequestBody.Value.Content != nil {
+		content, ok := op.RequestBody.Value.Content["application/json"]
+		if ok {
+			return content.Schema
+		}
 	}
 	return nil
 }

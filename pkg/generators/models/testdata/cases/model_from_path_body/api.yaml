@@ -18,7 +18,6 @@ paths:
       responses:
         201:
           description: foobar
-
     put:
       operationId: MySecondOp
       requestBody:
@@ -26,6 +25,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/Foo"
+      responses:
+        201:
+          description: foobar
+  "/foobar2":
+    post:
+      operationId: MyOp2
       responses:
         201:
           description: foobar
