@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+paths:
+  "/foobar":
+    post:
+      operationId: MyOp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                foo:
+                  type: string
+      responses:
+        201:
+          description: foobar
+
+    put:
+      operationId: MySecondOp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Foo"
+      responses:
+        201:
+          description: foobar
+
+components:
+  schemas:
+    Foo:
+      type: object

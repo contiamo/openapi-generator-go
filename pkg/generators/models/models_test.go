@@ -87,6 +87,10 @@ func TestModels(t *testing.T) {
 			name:      "enum with one item",
 			directory: "testdata/cases/enum_with_one_item",
 		},
+		{
+			name:      "model from path body",
+			directory: "testdata/cases/model_from_path_body",
+		},
 	}
 
 	for _, tc := range cases {
