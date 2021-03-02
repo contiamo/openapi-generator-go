@@ -85,7 +85,6 @@ You can find various examples of the what is supported and the corresponding out
 Our generator differs from the official OpenAPI generator tools by also providing getters for many fields, which makes it easier to define and work with interfaces of the models.
 
 We also provide better support for :
-* [constants](./pkg/generators/models/testdata/cases/constants/expected/model_highlight_indicator_start.go),
 * [enums](./pkg/generators/models/testdata/cases/enums/expected/model_filter_type.go), enum support also includes some utility methods that make validating the enums much easier,
 * [arrays](./pkg/generators/models/testdata/cases/typed_arrays/expected/model_foo.go),
 * [allOf](./pkg/generators/models/testdata/cases/allof1/expected/model_foo.go),
@@ -95,5 +94,5 @@ that feel more natural in Go. Creating as many strong types as is possible and u
 
 ## Future work
 
-- Adding validators for each model using the `ozzo-validation` [Validatable interface](https://godoc.org/github.com/go-ozzo/ozzo-validation#Validatable)
-- Support for `oneOf` discriminators
+[x] Adding validators for each model using the `ozzo-validation` [Validatable interface](https://godoc.org/github.com/go-ozzo/ozzo-validation#Validatable)
+[ ] Support for `oneOf` discriminators
