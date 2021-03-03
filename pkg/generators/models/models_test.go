@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -91,6 +92,10 @@ func TestModels(t *testing.T) {
 			name:      "model from path body",
 			directory: "testdata/cases/model_from_path_body",
 		},
+		{
+			name:      "enum with name collision",
+			directory: "testdata/cases/enum_with_name_collision",
+		},
 	}
 
 	for _, tc := range cases {
@@ -116,6 +121,13 @@ func TestModels(t *testing.T) {
 			}
 		})
 	}
+	t.Run("everything can be built", func(t *testing.T) {
+		cmd := exec.Command("go", "build", "./...")
+		cmd.Dir = "./testdata"
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		require.NoError(t, cmd.Run())
+	})
 }
 
 func equalFiles(t *testing.T, expected, actual string) {
