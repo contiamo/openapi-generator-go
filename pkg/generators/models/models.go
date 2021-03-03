@@ -287,8 +287,11 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 }
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
-	for _, val := range ref.Value.Enum {
+	for idx, val := range ref.Value.Enum {
 		valueVarName := tpl.ToPascalCase(tpl.FirstUpper(fmt.Sprintf("%v", val)))
+		if valueVarName == "" {
+			valueVarName = fmt.Sprintf("Item%d", idx)
+		}
 		specs = append(specs, PropSpec{
 			Name:   valueVarName,
 			Value:  fmt.Sprintf(`"%v"`, val),

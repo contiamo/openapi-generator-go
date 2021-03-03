@@ -91,6 +91,10 @@ func TestModels(t *testing.T) {
 			name:      "model from path body",
 			directory: "testdata/cases/model_from_path_body",
 		},
+		{
+			name:      "enum with name collision",
+			directory: "testdata/cases/enum_with_name_collision",
+		},
 	}
 
 	for _, tc := range cases {
