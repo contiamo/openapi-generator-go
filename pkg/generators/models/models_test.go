@@ -99,8 +99,8 @@ func TestModels(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		dir := filepath.Join(tc.directory, "generated")
 		t.Run(tc.name, func(t *testing.T) {
+			dir := filepath.Join(tc.directory, "generated")
 			err := os.MkdirAll(dir, 0755)
 			require.NoError(t, err)
 			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
@@ -120,13 +120,14 @@ func TestModels(t *testing.T) {
 				)
 			}
 		})
-		t.Run(tc.name+" can be built", func(t *testing.T) {
-			cmd := exec.Command("go", "build", "-modfile=../../../go.mod", "./"+dir)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			require.NoError(t, cmd.Run())
-		})
 	}
+	t.Run("everything can be built", func(t *testing.T) {
+		cmd := exec.Command("go", "build", "./...")
+		cmd.Dir = "./testdata"
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		require.NoError(t, cmd.Run())
+	})
 }
 
 func equalFiles(t *testing.T, expected, actual string) {
