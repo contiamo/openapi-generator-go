@@ -16,6 +16,8 @@ type GetFooQueryParameters struct {
 	Param1 string `json:"param1,omitempty"`
 	// Param2:
 	Param2 int32 `json:"param2,omitempty"`
+	// Param3:
+	Param3 []string `json:"param3,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -26,6 +28,9 @@ func (m GetFooQueryParameters) Validate() error {
 		),
 		"param2": validation.Validate(
 			m.Param2, validation.Min(int32(0)), validation.Max(int32(10)),
+		),
+		"param3": validation.Validate(
+			m.Param3,
 		),
 	}.Filter()
 }
@@ -48,4 +53,14 @@ func (m GetFooQueryParameters) GetParam2() int32 {
 // SetParam2 sets the Param2 property
 func (m GetFooQueryParameters) SetParam2(val int32) {
 	m.Param2 = val
+}
+
+// GetParam3 returns the Param3 property
+func (m GetFooQueryParameters) GetParam3() []string {
+	return m.Param3
+}
+
+// SetParam3 sets the Param3 property
+func (m GetFooQueryParameters) SetParam3(val []string) {
+	m.Param3 = val
 }

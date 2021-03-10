@@ -20,6 +20,12 @@ paths:
             type: integer
             minimum: 0
             maximum: 10
+        - name: param3
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         "200":
           description: foobar
