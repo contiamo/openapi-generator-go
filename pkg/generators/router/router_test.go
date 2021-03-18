@@ -22,26 +22,58 @@ func TestSetEndpoint(t *testing.T) {
 		Group:       "TestGroup",
 	}
 
+	notPascal := endpoint{
+		OperationID: "test_operation",
+		Group:       "test_group",
+	}
+
 	path := "/some/path"
 	method := http.MethodGet
 	cases := []struct {
 		name   string
-		e      *endpoint
+		e      endpoint
 		opts   Options
 		exp    templateCtx
 		expErr string
 	}{
 		{
 			name: "returns populated dictionaries for a valid endpoint",
-			e:    &valid,
+			e:    valid,
 			exp: templateCtx{
+				UniqueOperationIDs: map[string]struct{}{
+					valid.OperationID: {},
+				},
 				Groups: map[string]*handlerGroup{
-					valid.Group: &handlerGroup{Endpoints: []endpoint{valid}},
+					valid.Group: {Endpoints: []endpoint{valid}},
 				},
 				PathsByGroups: map[string]*pathsInGroup{
-					valid.Group: &pathsInGroup{
+					valid.Group: {
 						AllowedMethodsByPaths: map[string]*methodsInPath{
-							path: &methodsInPath{
+							path: {
+								OperationsByMethods: map[string]string{
+									method: valid.OperationID,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "returns populated dictionaries for a valid endpoint with a not pascalifed name",
+			e:    notPascal,
+			exp: templateCtx{
+				// the endpoint should be successfully converted into the `valid`
+				UniqueOperationIDs: map[string]struct{}{
+					valid.OperationID: {},
+				},
+				Groups: map[string]*handlerGroup{
+					valid.Group: {Endpoints: []endpoint{valid}},
+				},
+				PathsByGroups: map[string]*pathsInGroup{
+					valid.Group: {
+						AllowedMethodsByPaths: map[string]*methodsInPath{
+							path: {
 								OperationsByMethods: map[string]string{
 									method: valid.OperationID,
 								},
@@ -54,35 +86,38 @@ func TestSetEndpoint(t *testing.T) {
 		{
 			name: "does not populate if the endpoint is nil",
 			exp: templateCtx{
-				Groups:        make(map[string]*handlerGroup),
-				PathsByGroups: make(map[string]*pathsInGroup),
+				UniqueOperationIDs: make(map[string]struct{}),
+				Groups:             make(map[string]*handlerGroup),
+				PathsByGroups:      make(map[string]*pathsInGroup),
 			},
 		},
 		{
 			name: "does not populate if the endpoint has no group",
-			e:    &endpoint{OperationID: "some"},
+			e:    endpoint{OperationID: "some"},
 			exp: templateCtx{
-				Groups:        make(map[string]*handlerGroup),
-				PathsByGroups: make(map[string]*pathsInGroup),
+				UniqueOperationIDs: make(map[string]struct{}),
+				Groups:             make(map[string]*handlerGroup),
+				PathsByGroups:      make(map[string]*pathsInGroup),
 			},
 		},
 		{
 			name: "does not populate if the endpoint has no operation ID",
-			e:    &endpoint{Group: "some"},
+			e:    endpoint{Group: "some"},
 			exp: templateCtx{
-				Groups:        make(map[string]*handlerGroup),
-				PathsByGroups: make(map[string]*pathsInGroup),
+				UniqueOperationIDs: make(map[string]struct{}),
+				Groups:             make(map[string]*handlerGroup),
+				PathsByGroups:      make(map[string]*pathsInGroup),
 			},
 		},
 		{
 			name:   "returns error if opts.FailNoGroup = true and the endpoint has no group",
-			e:      &endpoint{OperationID: "some"},
+			e:      endpoint{OperationID: "some"},
 			opts:   Options{FailNoGroup: true},
 			expErr: fmt.Sprintf("`%s %s` does not have the `x-handler-group` value", method, path),
 		},
 		{
 			name:   "returns error if opts.FailNoOperationID = true and the endpoint has no operation ID",
-			e:      &endpoint{Group: "some"},
+			e:      endpoint{Group: "some"},
 			opts:   Options{FailNoOperationID: true},
 			expErr: fmt.Sprintf("`%s %s` does not have the `operationId` value", method, path),
 		},
@@ -91,8 +126,9 @@ func TestSetEndpoint(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			out := &templateCtx{
-				Groups:        make(map[string]*handlerGroup),
-				PathsByGroups: make(map[string]*pathsInGroup),
+				UniqueOperationIDs: make(map[string]struct{}),
+				Groups:             make(map[string]*handlerGroup),
+				PathsByGroups:      make(map[string]*pathsInGroup),
 			}
 
 			err := setEndpoint(out, tc.opts, method, path, tc.e)
@@ -105,6 +141,19 @@ func TestSetEndpoint(t *testing.T) {
 			require.EqualValues(t, tc.exp, *out)
 		})
 	}
+
+	t.Run("returns error if pascalified OperationID is not unique", func(t *testing.T) {
+		out := &templateCtx{
+			UniqueOperationIDs: map[string]struct{}{
+				valid.OperationID: {},
+			},
+			Groups:        make(map[string]*handlerGroup),
+			PathsByGroups: make(map[string]*pathsInGroup),
+		}
+		err := setEndpoint(out, Options{}, method, path, notPascal)
+		require.Error(t, err)
+		require.Equal(t, "converted operation ID value \"TestOperation\" is not unique (original value \"test_operation\")", err.Error())
+	})
 }
 
 func TestCreateTemplateCtx(t *testing.T) {
@@ -115,39 +164,39 @@ func TestCreateTemplateCtx(t *testing.T) {
 			Version:     "Version",
 		},
 		Paths: map[string]path{
-			"/some/path": path{
+			"/some/path": {
 				GET: &endpoint{
 					Summary:     "GET Summary",
 					Description: "GET Description",
-					OperationID: "GETOperationID",
+					OperationID: "GETOperationId",
 					Group:       "Group",
 				},
 				POST: &endpoint{
 					Summary:     "POST Summary",
 					Description: "POST Description",
-					OperationID: "POSTOperationID",
-					Group:       "Group",
+					OperationID: "POST_operation_id",
+					Group:       "_group",
 				},
 				PUT: &endpoint{
 					Summary:     "PUT Summary",
 					Description: "PUT Description",
-					OperationID: "PUTOperationID",
+					OperationID: "PUTOperationId",
 					Group:       "Group",
 				},
 				PATCH: &endpoint{
 					Summary:     "PATCH Summary",
 					Description: "PATCH Description",
-					OperationID: "PATCHOperationID",
+					OperationID: "PATCHOperationId",
 					Group:       "Group",
 				},
 				DELETE: &endpoint{
 					Summary:     "DELETE Summary",
 					Description: "DELETE Description",
-					OperationID: "DELETEOperationID",
+					OperationID: "DELETEOperationId",
 					Group:       "Group",
 				},
 			},
-			"/another/path": path{},
+			"/another/path": {},
 		},
 	}
 
@@ -159,24 +208,36 @@ func TestCreateTemplateCtx(t *testing.T) {
 		GroupsSorted: []string{
 			"Group",
 		},
+		UniqueOperationIDs: map[string]struct{}{
+			"GETOperationId":    {},
+			"POSTOperationId":   {},
+			"PUTOperationId":    {},
+			"PATCHOperationId":  {},
+			"DELETEOperationId": {},
+		},
 		Groups: map[string]*handlerGroup{
-			"Group": &handlerGroup{
+			"Group": {
 				Endpoints: []endpoint{
 					*spec.Paths["/some/path"].DELETE,
 					*spec.Paths["/some/path"].GET,
 					*spec.Paths["/some/path"].PATCH,
-					*spec.Paths["/some/path"].POST,
+					{
+						Summary:     "POST Summary",
+						Description: "POST Description",
+						OperationID: "POSTOperationId",
+						Group:       "Group",
+					},
 					*spec.Paths["/some/path"].PUT,
 				},
 			},
 		},
 		PathsByGroups: map[string]*pathsInGroup{
-			"Group": &pathsInGroup{
+			"Group": {
 				PathsSorted: []string{
 					"/some/path",
 				},
 				AllowedMethodsByPaths: map[string]*methodsInPath{
-					"/some/path": &methodsInPath{
+					"/some/path": {
 						MethodsSorted: []string{
 							"DELETE",
 							"GET",
@@ -185,11 +246,11 @@ func TestCreateTemplateCtx(t *testing.T) {
 							"PUT",
 						},
 						OperationsByMethods: map[string]string{
-							"GET":    "GETOperationID",
-							"POST":   "POSTOperationID",
-							"PUT":    "PUTOperationID",
-							"PATCH":  "PATCHOperationID",
-							"DELETE": "DELETEOperationID",
+							"GET":    "GETOperationId",
+							"POST":   "POSTOperationId",
+							"PUT":    "PUTOperationId",
+							"PATCH":  "PATCHOperationId",
+							"DELETE": "DELETEOperationId",
 						},
 					},
 				},
@@ -207,7 +268,7 @@ func TestGenerate(t *testing.T) {
 			Version:     "Version",
 		},
 		Paths: map[string]path{
-			"/some/path": path{
+			"/some/path": {
 				GET: &endpoint{
 					Summary:     "GET Summary",
 					Description: "GET Description",

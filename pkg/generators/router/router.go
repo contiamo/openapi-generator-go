@@ -56,11 +56,12 @@ func Generate(specFile io.Reader, router io.Writer, opts Options) (err error) {
 }
 
 type templateCtx struct {
-	PackageName   string
-	Spec          spec
-	GroupsSorted  []string
-	Groups        map[string]*handlerGroup
-	PathsByGroups map[string]*pathsInGroup
+	PackageName        string
+	Spec               spec
+	GroupsSorted       []string
+	Groups             map[string]*handlerGroup
+	PathsByGroups      map[string]*pathsInGroup
+	UniqueOperationIDs map[string]struct{}
 }
 
 type pathsInGroup struct {
@@ -108,31 +109,42 @@ func createTemplateCtx(spec spec, opts Options) (out templateCtx, err error) {
 	out.Spec = spec
 	out.Groups = make(map[string]*handlerGroup)
 	out.PathsByGroups = make(map[string]*pathsInGroup)
+	out.UniqueOperationIDs = make(map[string]struct{})
 
 	for path, definition := range spec.Paths {
-		err = setEndpoint(&out, opts, http.MethodGet, path, definition.GET)
-		if err != nil {
-			return out, err
+		if definition.GET != nil {
+			err = setEndpoint(&out, opts, http.MethodGet, path, *definition.GET)
+			if err != nil {
+				return out, err
+			}
 		}
 
-		err = setEndpoint(&out, opts, http.MethodPost, path, definition.POST)
-		if err != nil {
-			return out, err
+		if definition.POST != nil {
+			err = setEndpoint(&out, opts, http.MethodPost, path, *definition.POST)
+			if err != nil {
+				return out, err
+			}
 		}
 
-		err = setEndpoint(&out, opts, http.MethodPut, path, definition.PUT)
-		if err != nil {
-			return out, err
+		if definition.PUT != nil {
+			err = setEndpoint(&out, opts, http.MethodPut, path, *definition.PUT)
+			if err != nil {
+				return out, err
+			}
 		}
 
-		err = setEndpoint(&out, opts, http.MethodPatch, path, definition.PATCH)
-		if err != nil {
-			return out, err
+		if definition.PATCH != nil {
+			err = setEndpoint(&out, opts, http.MethodPatch, path, *definition.PATCH)
+			if err != nil {
+				return out, err
+			}
 		}
 
-		err = setEndpoint(&out, opts, http.MethodDelete, path, definition.DELETE)
-		if err != nil {
-			return out, err
+		if definition.DELETE != nil {
+			err = setEndpoint(&out, opts, http.MethodDelete, path, *definition.DELETE)
+			if err != nil {
+				return out, err
+			}
 		}
 	}
 
@@ -181,10 +193,7 @@ func sortContext(out *templateCtx) {
 	sort.Strings(out.GroupsSorted)
 }
 
-func setEndpoint(out *templateCtx, opts Options, method, path string, e *endpoint) error {
-	if e == nil {
-		return nil
-	}
+func setEndpoint(out *templateCtx, opts Options, method, path string, e endpoint) error {
 	if e.Group == "" {
 		if opts.FailNoGroup {
 			return fmt.Errorf("`%s %s` does not have the `x-handler-group` value", method, path)
@@ -198,12 +207,25 @@ func setEndpoint(out *templateCtx, opts Options, method, path string, e *endpoin
 		return nil
 	}
 
+	casedOperationID := tpl.ToPascalCase(e.OperationID)
+	if _, exists := out.UniqueOperationIDs[casedOperationID]; exists {
+		return fmt.Errorf(
+			"converted operation ID value %q is not unique (original value %q)",
+			casedOperationID,
+			e.OperationID,
+		)
+	}
+	e.OperationID = casedOperationID
+	out.UniqueOperationIDs[e.OperationID] = struct{}{}
+
+	e.Group = tpl.ToPascalCase(e.Group)
+
 	group := out.Groups[e.Group]
 	if group == nil {
 		group = &handlerGroup{}
 		out.Groups[e.Group] = group
 	}
-	group.Endpoints = append(group.Endpoints, *e)
+	group.Endpoints = append(group.Endpoints, e)
 
 	exPathsInGroup := out.PathsByGroups[e.Group]
 	if exPathsInGroup == nil {
