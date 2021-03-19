@@ -315,14 +315,8 @@ func TestGenerate(t *testing.T) {
 				},
 				DELETE: &endpoint{
 					Summary:     "DELETE Summary",
-					Description: "DELETE Description",
+					Description: "DELETE Description\nas multiline comment",
 					OperationID: "DELETEAnotherOperationID",
-					Group:       "Another",
-				},
-				PUT: &endpoint{
-					Summary:     "PUT Summary",
-					Description: "PUT Description\nbut a multiline this time",
-					OperationID: "PUTAnotherOperationID",
 					Group:       "Another",
 				},
 			},
@@ -352,14 +346,12 @@ import (
 // AnotherHandler handles the operations of the 'Another' handler group.
 type AnotherHandler interface {
 	// DELETEAnotherOperationID DELETE Description
+	// as multiline comment
 	DELETEAnotherOperationID(w http.ResponseWriter, r *http.Request)
 	// GETAnotherOperationID GET Description
 	GETAnotherOperationID(w http.ResponseWriter, r *http.Request)
 	// PATCHAnotherOperationID PATCH Description
 	PATCHAnotherOperationID(w http.ResponseWriter, r *http.Request)
-	// PUTAnotherOperationID PUT Description
-	// but a multiline this time
-	PUTAnotherOperationID(w http.ResponseWriter, r *http.Request)
 }
 
 // GroupHandler handles the operations of the 'Group' handler group.
@@ -397,12 +389,10 @@ func NewRouter(
 		http.MethodDelete,
 		http.MethodGet,
 		http.MethodPatch,
-		http.MethodPut,
 	))
 	r.Delete("/another/path", anotherHandler.DELETEAnotherOperationID)
 	r.Get("/another/path", anotherHandler.GETAnotherOperationID)
 	r.Patch("/another/path", anotherHandler.PATCHAnotherOperationID)
-	r.Put("/another/path", anotherHandler.PUTAnotherOperationID)
 
 	// 'Group' group
 
