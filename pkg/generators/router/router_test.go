@@ -319,6 +319,12 @@ func TestGenerate(t *testing.T) {
 					OperationID: "DELETEAnotherOperationID",
 					Group:       "Another",
 				},
+				PUT: &endpoint{
+					Summary:     "PUT Summary",
+					Description: "PUT Description\nbut a multiline this time",
+					OperationID: "PUTAnotherOperationID",
+					Group:       "Another",
+				},
 			},
 		},
 	}
@@ -343,7 +349,6 @@ import (
 	"github.com/go-chi/chi"
 )
 
-
 // AnotherHandler handles the operations of the 'Another' handler group.
 type AnotherHandler interface {
 	// DELETEAnotherOperationID DELETE Description
@@ -352,6 +357,9 @@ type AnotherHandler interface {
 	GETAnotherOperationID(w http.ResponseWriter, r *http.Request)
 	// PATCHAnotherOperationID PATCH Description
 	PATCHAnotherOperationID(w http.ResponseWriter, r *http.Request)
+	// PUTAnotherOperationID PUT Description
+	// but a multiline this time
+	PUTAnotherOperationID(w http.ResponseWriter, r *http.Request)
 }
 
 // GroupHandler handles the operations of the 'Group' handler group.
@@ -382,33 +390,35 @@ func NewRouter(
 
 	r := chi.NewRouter()
 
-// 'Another' group
+	// 'Another' group
 
-// '/another/path'
-r.Options("/another/path", optionsHandlerFunc(
-	http.MethodDelete,
-	http.MethodGet,
-	http.MethodPatch,
-))
-r.Delete("/another/path", anotherHandler.DELETEAnotherOperationID)
-r.Get("/another/path", anotherHandler.GETAnotherOperationID)
-r.Patch("/another/path", anotherHandler.PATCHAnotherOperationID)
+	// '/another/path'
+	r.Options("/another/path", optionsHandlerFunc(
+		http.MethodDelete,
+		http.MethodGet,
+		http.MethodPatch,
+		http.MethodPut,
+	))
+	r.Delete("/another/path", anotherHandler.DELETEAnotherOperationID)
+	r.Get("/another/path", anotherHandler.GETAnotherOperationID)
+	r.Patch("/another/path", anotherHandler.PATCHAnotherOperationID)
+	r.Put("/another/path", anotherHandler.PUTAnotherOperationID)
 
-// 'Group' group
+	// 'Group' group
 
-// '/some/path'
-r.Options("/some/path", optionsHandlerFunc(
-	http.MethodDelete,
-	http.MethodGet,
-	http.MethodPatch,
-	http.MethodPost,
-	http.MethodPut,
-))
-r.Delete("/some/path", groupHandler.DELETEOperationID)
-r.Get("/some/path", groupHandler.GETOperationID)
-r.Patch("/some/path", groupHandler.PATCHOperationID)
-r.Post("/some/path", groupHandler.POSTOperationID)
-r.Put("/some/path", groupHandler.PUTOperationID)
+	// '/some/path'
+	r.Options("/some/path", optionsHandlerFunc(
+		http.MethodDelete,
+		http.MethodGet,
+		http.MethodPatch,
+		http.MethodPost,
+		http.MethodPut,
+	))
+	r.Delete("/some/path", groupHandler.DELETEOperationID)
+	r.Get("/some/path", groupHandler.GETOperationID)
+	r.Patch("/some/path", groupHandler.PATCHOperationID)
+	r.Post("/some/path", groupHandler.POSTOperationID)
+	r.Put("/some/path", groupHandler.PUTOperationID)
 
 	return r
 }

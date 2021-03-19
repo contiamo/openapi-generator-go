@@ -1,7 +1,9 @@
 package router
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"io"
 	"net/http"
 	"sort"
@@ -9,6 +11,7 @@ import (
 	"text/template"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
+	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -52,7 +55,25 @@ func Generate(specFile io.Reader, router io.Writer, opts Options) (err error) {
 		return err
 	}
 
-	return routerTemplate.Execute(router, tctx)
+	buf := &bytes.Buffer{}
+	err = routerTemplate.Execute(buf, tctx)
+	if err != nil {
+		log.Error().Err(err).Str("component", "router").Msg("failed to execute template")
+		return err
+	}
+
+	content, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Error().Str("component", "router").Err(err).Msg("failed to format source code")
+		return err
+	}
+
+	_, err = io.Copy(router, bytes.NewReader(content))
+	if err != nil {
+		log.Error().Str("component", "router").Err(err).Msg("failed to write to target output")
+		return err
+	}
+	return nil
 }
 
 type templateCtx struct {
