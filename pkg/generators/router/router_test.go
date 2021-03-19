@@ -315,7 +315,7 @@ func TestGenerate(t *testing.T) {
 				},
 				DELETE: &endpoint{
 					Summary:     "DELETE Summary",
-					Description: "DELETE Description",
+					Description: "DELETE Description\nas multiline comment",
 					OperationID: "DELETEAnotherOperationID",
 					Group:       "Another",
 				},
@@ -343,10 +343,10 @@ import (
 	"github.com/go-chi/chi"
 )
 
-
 // AnotherHandler handles the operations of the 'Another' handler group.
 type AnotherHandler interface {
 	// DELETEAnotherOperationID DELETE Description
+	// as multiline comment
 	DELETEAnotherOperationID(w http.ResponseWriter, r *http.Request)
 	// GETAnotherOperationID GET Description
 	GETAnotherOperationID(w http.ResponseWriter, r *http.Request)
@@ -382,33 +382,33 @@ func NewRouter(
 
 	r := chi.NewRouter()
 
-// 'Another' group
+	// 'Another' group
 
-// '/another/path'
-r.Options("/another/path", optionsHandlerFunc(
-	http.MethodDelete,
-	http.MethodGet,
-	http.MethodPatch,
-))
-r.Delete("/another/path", anotherHandler.DELETEAnotherOperationID)
-r.Get("/another/path", anotherHandler.GETAnotherOperationID)
-r.Patch("/another/path", anotherHandler.PATCHAnotherOperationID)
+	// '/another/path'
+	r.Options("/another/path", optionsHandlerFunc(
+		http.MethodDelete,
+		http.MethodGet,
+		http.MethodPatch,
+	))
+	r.Delete("/another/path", anotherHandler.DELETEAnotherOperationID)
+	r.Get("/another/path", anotherHandler.GETAnotherOperationID)
+	r.Patch("/another/path", anotherHandler.PATCHAnotherOperationID)
 
-// 'Group' group
+	// 'Group' group
 
-// '/some/path'
-r.Options("/some/path", optionsHandlerFunc(
-	http.MethodDelete,
-	http.MethodGet,
-	http.MethodPatch,
-	http.MethodPost,
-	http.MethodPut,
-))
-r.Delete("/some/path", groupHandler.DELETEOperationID)
-r.Get("/some/path", groupHandler.GETOperationID)
-r.Patch("/some/path", groupHandler.PATCHOperationID)
-r.Post("/some/path", groupHandler.POSTOperationID)
-r.Put("/some/path", groupHandler.PUTOperationID)
+	// '/some/path'
+	r.Options("/some/path", optionsHandlerFunc(
+		http.MethodDelete,
+		http.MethodGet,
+		http.MethodPatch,
+		http.MethodPost,
+		http.MethodPut,
+	))
+	r.Delete("/some/path", groupHandler.DELETEOperationID)
+	r.Get("/some/path", groupHandler.GETOperationID)
+	r.Patch("/some/path", groupHandler.PATCHOperationID)
+	r.Post("/some/path", groupHandler.POSTOperationID)
+	r.Put("/some/path", groupHandler.PUTOperationID)
 
 	return r
 }
