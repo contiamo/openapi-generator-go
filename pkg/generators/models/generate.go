@@ -44,25 +44,180 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 	}
 
 	for _, path := range swagger.Paths {
-		if path.Post != nil {
-			operationID := path.Post.OperationID
-			schema := schemaFromOperation(path.Post)
+		if path.Connect != nil {
+			operationID := path.Connect.OperationID
+			schema := requestBodySchemaFromOperation(path.Connect)
 			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Connect.Parameters = append(path.Parameters, path.Connect.Parameters...)
+			if len(path.Connect.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Connect.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Connect.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
+			}
+		}
+		if path.Head != nil {
+			operationID := path.Connect.OperationID
+			schema := requestBodySchemaFromOperation(path.Head)
+			if operationID != "" && schema != nil && schema.Ref == "" {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Head.Parameters = append(path.Parameters, path.Head.Parameters...)
+			if len(path.Head.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Head.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Head.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
+			}
+		}
+		if path.Get != nil {
+			operationID := path.Get.OperationID
+			schema := requestBodySchemaFromOperation(path.Get)
+			if operationID != "" && schema != nil && schema.Ref == "" {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Get.Parameters = append(path.Parameters, path.Get.Parameters...)
+			if len(path.Get.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Get.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Get.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
+			}
+		}
+		if path.Options != nil {
+			operationID := path.Options.OperationID
+			schema := requestBodySchemaFromOperation(path.Options)
+			if operationID != "" && schema != nil && schema.Ref == "" {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Options.Parameters = append(path.Parameters, path.Options.Parameters...)
+			if len(path.Options.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Options.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Options.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
+			}
+		}
+		if path.Delete != nil {
+			operationID := path.Delete.OperationID
+			schema := requestBodySchemaFromOperation(path.Delete)
+			if operationID != "" && schema != nil && schema.Ref == "" {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Delete.Parameters = append(path.Parameters, path.Delete.Parameters...)
+			if len(path.Delete.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Delete.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Delete.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
+			}
+		}
+		if path.Post != nil {
+			operationID := path.Post.OperationID
+			schema := requestBodySchemaFromOperation(path.Post)
+			if operationID != "" && schema != nil && schema.Ref == "" {
+				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Post.Parameters = append(path.Parameters, path.Post.Parameters...)
+			if len(path.Post.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Post.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Post.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
 			}
 		}
 		if path.Put != nil {
 			operationID := path.Put.OperationID
-			schema := schemaFromOperation(path.Put)
+			schema := requestBodySchemaFromOperation(path.Put)
 			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Put.Parameters = append(path.Parameters, path.Put.Parameters...)
+			if len(path.Put.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Put.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Put.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
 			}
 		}
 		if path.Patch != nil {
 			operationID := path.Patch.OperationID
-			schema := schemaFromOperation(path.Patch)
+			schema := requestBodySchemaFromOperation(path.Patch)
 			if operationID != "" && schema != nil && schema.Ref == "" {
 				swagger.Components.Schemas[operationID+"Body"] = schema
+			}
+			path.Patch.Parameters = append(path.Parameters, path.Patch.Parameters...)
+			if len(path.Patch.Parameters) > 0 {
+				model, err := NewModelFromParameters(path.Patch.Parameters)
+				if err != nil {
+					continue
+				}
+				model.Name = tpl.ToPascalCase(path.Patch.OperationID + "QueryParameters")
+				model.PackageName = opts.PackageName
+				model.SpecTitle = swagger.Info.Title
+				model.SpecVersion = swagger.Info.Version
+				err = writeModelToFile(model, dst)
+				if err != nil {
+					continue
+				}
 			}
 		}
 	}
@@ -83,27 +238,9 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 		model.SpecTitle = swagger.Info.Title
 		model.SpecVersion = swagger.Info.Version
 
-		modelName := strings.ToLower(strings.ReplaceAll(fmt.Sprintf("model_%s.go", tpl.ToSnakeCase(model.Name)), " ", "_"))
-
-		buf := &bytes.Buffer{}
-		err = model.Render(context.TODO(), buf)
+		err = writeModelToFile(model, dst)
 		if err != nil {
-			log.Error().Str("name", name).Err(err).Msg("failed to render model")
-			continue
-		}
-
-		content, err := format.Source(buf.Bytes())
-		if err != nil {
-			log.Error().Str("name", name).Err(err).Msg("failed to format source code")
-			fmt.Println(string(buf.Bytes()))
-			continue
-		}
-
-		target := filepath.Join(dst, modelName)
-		err = ioutil.WriteFile(target, content, 0644)
-		if err != nil {
-			log.Error().Str("name", name).Str("path", target).Err(err).Msg("failed to write model to file")
-			continue
+			return err
 		}
 	}
 
@@ -111,12 +248,38 @@ func Generate(specFile io.Reader, dst string, opts Options) error {
 
 }
 
-func schemaFromOperation(op *openapi3.Operation) *openapi3.SchemaRef {
+func requestBodySchemaFromOperation(op *openapi3.Operation) *openapi3.SchemaRef {
 	if op.RequestBody != nil && op.RequestBody.Value != nil && op.RequestBody.Value.Content != nil {
 		content, ok := op.RequestBody.Value.Content["application/json"]
 		if ok {
 			return content.Schema
 		}
+	}
+	return nil
+}
+
+func writeModelToFile(model *Model, dst string) error {
+	modelName := strings.ToLower(strings.ReplaceAll(fmt.Sprintf("model_%s.go", tpl.ToSnakeCase(model.Name)), " ", "_"))
+
+	buf := &bytes.Buffer{}
+	err := model.Render(context.TODO(), buf)
+	if err != nil {
+		log.Error().Str("name", model.Name).Err(err).Msg("failed to render model")
+		return err
+	}
+
+	content, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Error().Str("name", model.Name).Err(err).Msg("failed to format source code")
+		fmt.Println(string(buf.Bytes()))
+		return err
+	}
+
+	target := filepath.Join(dst, modelName)
+	err = ioutil.WriteFile(target, content, 0644)
+	if err != nil {
+		log.Error().Str("name", model.Name).Str("path", target).Err(err).Msg("failed to write model to file")
+		return err
 	}
 	return nil
 }

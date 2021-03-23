@@ -98,6 +98,37 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	return model, nil
 }
 
+func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error) {
+	model = &Model{
+		Kind: Struct,
+	}
+	for _, param := range params {
+		spec := PropSpec{
+			Name:        tpl.ToPascalCase(param.Value.Name),
+			Description: param.Value.Description,
+			GoType:      goTypeFromSpec(param.Value.Schema),
+			IsRequired:  param.Value.Required,
+		}
+
+		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
+			model.Imports = append(model.Imports, "time")
+		}
+
+		model.Imports = append(model.Imports, fillValidationRelatedProperties(param.Value.Schema, &spec)...)
+
+		spec.JSONTags = "`json:\"" + param.Value.Name
+		if !spec.IsRequired {
+			spec.JSONTags += ",omitempty"
+		}
+		spec.JSONTags += "\"`"
+
+		model.Properties = append(model.Properties, spec)
+	}
+
+	model.Imports = uniqueStrings(model.Imports)
+	return model, nil
+}
+
 func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	var tpl *template.Template
 	switch m.Kind {

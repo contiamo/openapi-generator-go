@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+paths:
+  "/foo/{id}":
+    parameters:
+      - name: param1
+        in: query
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        required: true
+        in: path
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getFoo
+      parameters:
+        - name: param2
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+        - name: param3
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: foobar
+
+components:
+  schemas: {}
