@@ -32,9 +32,19 @@ paths:
             type: array
             items:
               type: string
+        - name: param4
+          in: query
+          schema:
+            $ref: "#/components/schemas/Foo"
       responses:
         "200":
           description: foobar
 
 components:
-  schemas: {}
+  schemas:
+    Foo:
+      type: object
+      properties:
+        a:
+          description: property
+          type: string
