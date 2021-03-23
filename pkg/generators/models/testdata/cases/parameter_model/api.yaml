@@ -32,19 +32,20 @@ paths:
             type: array
             items:
               type: string
-        - name: param4
-          in: query
-          schema:
-            $ref: "#/components/schemas/Foo"
+        - $ref: "#/components/parameters/PageNumber"
       responses:
         "200":
           description: foobar
 
 components:
-  schemas:
-    Foo:
-      type: object
-      properties:
-        a:
-          description: property
-          type: string
+  parameters:
+    PageNumber:
+      name: page
+      description: The current set of paged results to display, based on a 1-based array index
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+  schemas: {}

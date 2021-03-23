@@ -20,8 +20,8 @@ type GetFooQueryParameters struct {
 	Param2 int32 `json:"param2,omitempty"`
 	// Param3:
 	Param3 []string `json:"param3,omitempty"`
-	// Param4:
-	Param4 Foo `json:"param4,omitempty"`
+	// Page: The current set of paged results to display, based on a 1-based array index
+	Page int32 `json:"page,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -39,8 +39,8 @@ func (m GetFooQueryParameters) Validate() error {
 		"param3": validation.Validate(
 			m.Param3,
 		),
-		"param4": validation.Validate(
-			m.Param4,
+		"page": validation.Validate(
+			m.Page, validation.Min(int32(1)),
 		),
 	}.Filter()
 }
@@ -85,12 +85,12 @@ func (m GetFooQueryParameters) SetParam3(val []string) {
 	m.Param3 = val
 }
 
-// GetParam4 returns the Param4 property
-func (m GetFooQueryParameters) GetParam4() Foo {
-	return m.Param4
+// GetPage returns the Page property
+func (m GetFooQueryParameters) GetPage() int32 {
+	return m.Page
 }
 
-// SetParam4 sets the Param4 property
-func (m GetFooQueryParameters) SetParam4(val Foo) {
-	m.Param4 = val
+// SetPage sets the Page property
+func (m GetFooQueryParameters) SetPage(val int32) {
+	m.Page = val
 }
