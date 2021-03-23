@@ -14,6 +14,8 @@ import (
 type GetFooQueryParameters struct {
 	// Param1:
 	Param1 string `json:"param1,omitempty"`
+	// Id:
+	Id string `json:"id"`
 	// Param2:
 	Param2 int32 `json:"param2,omitempty"`
 	// Param3:
@@ -25,6 +27,9 @@ func (m GetFooQueryParameters) Validate() error {
 	return validation.Errors{
 		"param1": validation.Validate(
 			m.Param1, is.UUID,
+		),
+		"id": validation.Validate(
+			m.Id, validation.Required, is.UUID,
 		),
 		"param2": validation.Validate(
 			m.Param2, validation.Min(int32(0)), validation.Max(int32(10)),
@@ -43,6 +48,16 @@ func (m GetFooQueryParameters) GetParam1() string {
 // SetParam1 sets the Param1 property
 func (m GetFooQueryParameters) SetParam1(val string) {
 	m.Param1 = val
+}
+
+// GetId returns the Id property
+func (m GetFooQueryParameters) GetId() string {
+	return m.Id
+}
+
+// SetId sets the Id property
+func (m GetFooQueryParameters) SetId(val string) {
+	m.Id = val
 }
 
 // GetParam2 returns the Param2 property

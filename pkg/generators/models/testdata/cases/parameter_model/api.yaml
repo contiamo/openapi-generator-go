@@ -4,10 +4,16 @@ info:
   title: Test
 
 paths:
-  "/foo":
+  "/foo/{id}":
     parameters:
       - name: param1
         in: query
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        required: true
+        in: path
         schema:
           type: string
           format: uuid
