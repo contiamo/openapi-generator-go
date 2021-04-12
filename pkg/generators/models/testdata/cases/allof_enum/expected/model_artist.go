@@ -12,7 +12,7 @@ import (
 // Artist is an object.
 type Artist struct {
 	// LeftHand:
-	LeftHand *Color `json:"leftHand,omitempty"`
+	LeftHand *AnyThing `json:"leftHand,omitempty"`
 	// RightHand:
 	RightHand *Color `json:"rightHand,omitempty"`
 }
@@ -23,12 +23,12 @@ func (m Artist) Validate() error {
 }
 
 // GetLeftHand returns the LeftHand property
-func (m Artist) GetLeftHand() *Color {
+func (m Artist) GetLeftHand() *AnyThing {
 	return m.LeftHand
 }
 
 // SetLeftHand sets the LeftHand property
-func (m Artist) SetLeftHand(val *Color) {
+func (m Artist) SetLeftHand(val *AnyThing) {
 	m.LeftHand = val
 }
 
