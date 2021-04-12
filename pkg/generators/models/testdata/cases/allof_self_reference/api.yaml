@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    ListItem:
+      type: object
+      properties:
+        value:
+          type: string
+        next:
+          allOf:
+            - $ref: "#/components/schemas/ListItem"
+            - description: the next item
+            - nullable: true

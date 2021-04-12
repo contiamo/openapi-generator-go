@@ -144,31 +144,66 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	return nil
 }
 
-func resolveAllOf(ref *openapi3.SchemaRef) *openapi3.SchemaRef {
-	if len(ref.Value.AllOf) > 0 {
-		ref.Value.Type = "object"
-		if len(ref.Value.AllOf) == 1 {
-			if ref.Value.AllOf[0].Ref != "" {
-				ref.Ref = ref.Value.AllOf[0].Ref
-			}
-		}
-		ref.Value.Properties = make(map[string]*openapi3.SchemaRef)
-		for _, subSpec := range ref.Value.AllOf {
-			for propName, propSpec := range subSpec.Value.Properties {
-				ref.Value.Properties[propName] = propSpec
-			}
-			// Here we bubble up the additionalProperties if we find it in any of the allof entrieref.
-			// If we find it, we delete all collected property information and will return an map[string]interface{}
-			if subSpec.Value.AdditionalPropertiesAllowed != nil && *subSpec.Value.AdditionalPropertiesAllowed {
-				ref.Value.AdditionalPropertiesAllowed = subSpec.Value.AdditionalPropertiesAllowed
-			}
-		}
-		if ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed {
-			ref.Value.Properties = nil
-		}
-		ref.Value.AllOf = nil
+func resolveAllOf(ref *openapi3.SchemaRef) (out *openapi3.SchemaRef) {
+	out = ref
+	for _, subSchema := range ref.Value.AllOf {
+		out = mergeSchemas(out, subSchema)
 	}
-	return ref
+	return out
+}
+
+func mergeSchemas(left *openapi3.SchemaRef, right *openapi3.SchemaRef) (out *openapi3.SchemaRef) {
+	out = left
+	if out == nil {
+		out = &openapi3.SchemaRef{
+			Value: &openapi3.Schema{},
+		}
+	}
+	if right.Ref != "" {
+		out.Ref = right.Ref
+	}
+	if right.Value.Type != "" {
+		out.Value.Type = right.Value.Type
+	}
+	if right.Value.Title != "" {
+		out.Value.Title = right.Value.Title
+	}
+	if right.Value.Description != "" {
+		out.Value.Description = right.Value.Description
+	}
+	if right.Value.Format != "" {
+		out.Value.Format = right.Value.Format
+	}
+	if len(out.Value.OneOf) > 0 {
+		out.Value.OneOf = append(out.Value.OneOf, right.Value.OneOf...)
+	}
+	if len(out.Value.AllOf) > 0 {
+		out.Value.AllOf = append(out.Value.AllOf, right.Value.AllOf...)
+	}
+	if len(out.Value.AnyOf) > 0 {
+		out.Value.AnyOf = append(out.Value.AnyOf, right.Value.AnyOf...)
+	}
+	if right.Value.AdditionalProperties != nil {
+		out.Value.AdditionalProperties = mergeSchemas(out.Value.AdditionalProperties, right.Value.AdditionalProperties)
+	}
+	if right.Value.AdditionalPropertiesAllowed != nil {
+		out.Value.AdditionalPropertiesAllowed = right.Value.AdditionalPropertiesAllowed
+	}
+	if right.Value.Nullable {
+		out.Value.Nullable = true
+	}
+	if len(right.Value.Properties) > 0 {
+		if out.Value == nil {
+			out.Value = &openapi3.Schema{}
+		}
+		if out.Value.Properties == nil {
+			out.Value.Properties = make(map[string]*openapi3.SchemaRef)
+		}
+		for k, v := range right.Value.Properties {
+			out.Value.Properties[k] = v
+		}
+	}
+	return out
 }
 
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
