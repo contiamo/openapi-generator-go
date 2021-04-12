@@ -10,16 +10,29 @@ components:
       properties:
         leftHand:
           allOf:
-            - $ref: "#/components/schemas/Color"
+            - $ref: "#/components/schemas/AnyThing"
             - nullable: true
         rightHand:
           allOf:
             - $ref: "#/components/schemas/Color"
             - nullable: true
     
+    AnyThing:
+      allOf:
+        - $ref: "#/components/schemas/Color"
+        - $ref: "#/components/schemas/Food"
+
     Color:
       type: string
       enum:
         - red
         - green
         - blue
+
+    Food:
+      type: string
+      enum:
+        - apple
+        - banana
+        - pizza
+    

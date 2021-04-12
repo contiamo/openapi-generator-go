@@ -196,7 +196,7 @@ func mergeSchemas(left *openapi3.SchemaRef, right *openapi3.SchemaRef) (out *ope
 		out.Value.Required = append(out.Value.Required, right.Value.Required...)
 	}
 	if len(right.Value.Enum) > 0 {
-		out.Value.Enum = right.Value.Enum
+		out.Value.Enum = append(out.Value.Enum, right.Value.Enum...)
 	}
 	if len(right.Value.Properties) > 0 {
 		if out.Value == nil {
