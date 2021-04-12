@@ -108,6 +108,10 @@ func TestModels(t *testing.T) {
 			name:      "allof merges required list",
 			directory: "testdata/cases/allof_merges_required_list",
 		},
+		{
+			name:      "allof merges enum list",
+			directory: "testdata/cases/allof_enum",
+		},
 	}
 
 	for _, tc := range cases {

@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Artist:
+      type: object
+      properties:
+        leftHand:
+          allOf:
+            - $ref: "#/components/schemas/Color"
+            - nullable: true
+        rightHand:
+          allOf:
+            - $ref: "#/components/schemas/Color"
+            - nullable: true
+    
+    Color:
+      type: string
+      enum:
+        - red
+        - green
+        - blue
