@@ -192,6 +192,9 @@ func mergeSchemas(left *openapi3.SchemaRef, right *openapi3.SchemaRef) (out *ope
 	if right.Value.Nullable {
 		out.Value.Nullable = true
 	}
+	if len(right.Value.Required) > 0 {
+		out.Value.Required = append(out.Value.Required, right.Value.Required...)
+	}
 	if len(right.Value.Properties) > 0 {
 		if out.Value == nil {
 			out.Value = &openapi3.Schema{}
