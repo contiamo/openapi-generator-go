@@ -104,6 +104,10 @@ func TestModels(t *testing.T) {
 			name:      "model with recursive definition within an allof",
 			directory: "testdata/cases/allof_self_reference",
 		},
+		{
+			name:      "allof merges required list",
+			directory: "testdata/cases/allof_merges_required_list",
+		},
 	}
 
 	for _, tc := range cases {
