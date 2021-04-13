@@ -100,6 +100,18 @@ func TestModels(t *testing.T) {
 			name:      "model from path parameters",
 			directory: "testdata/cases/parameter_model",
 		},
+		{
+			name:      "model with recursive definition within an allof",
+			directory: "testdata/cases/allof_self_reference",
+		},
+		{
+			name:      "allof merges required list",
+			directory: "testdata/cases/allof_merges_required_list",
+		},
+		{
+			name:      "allof merges enum list",
+			directory: "testdata/cases/allof_enum",
+		},
 	}
 
 	for _, tc := range cases {

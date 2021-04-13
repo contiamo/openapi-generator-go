@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    BaseEntity:
+      description: Contains shared properties for all the entities
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    UserEntity:
+      description: This is a short description of a user entity used for permission listing or assignments in other services.
+      allOf:
+        - $ref: '#/components/schemas/BaseEntity'
+        - type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              format: email
