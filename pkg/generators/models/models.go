@@ -67,6 +67,7 @@ type PropSpec struct {
 	IsIPv6                     bool
 }
 
+// NewModelFromRef creates a model out of a schema
 func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	model = &Model{
 		Description: ref.Value.Description,
@@ -101,6 +102,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	return model, nil
 }
 
+// NewModelFromParameters returns a model built from operation parameters
 func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error) {
 	model = &Model{
 		Kind: Struct,
@@ -132,6 +134,7 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	return model, nil
 }
 
+// Render renders the model to a Go file
 func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	var tpl *template.Template
 	switch m.Kind {
@@ -147,6 +150,9 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	return nil
 }
 
+// resolveAllOf resolves the list of `allOf` definitions in the schema to a complete type merging
+// all the mentioned types.
+// `passed` can be nil, it's used recursively in order to avoid infinite loops
 func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
 	if ref == nil {
 		ref = &openapi3.SchemaRef{}
@@ -172,6 +178,9 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	return out
 }
 
+// deepMerge merges `right` into `left` schema recursively resolving types (e.g. `allOf`).
+// `passed` map will be populated with all the visited types during the resolution process, so we can
+// avoid the infinite loop.
 func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
 	out = left
 
@@ -251,6 +260,7 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 	return out
 }
 
+// structPropsFromRef creates property descriptors for a Go struct from a schema
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
