@@ -11,41 +11,68 @@ import (
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 )
 
+// something is just something that does not have to be allocated
 type something struct{}
+
+// passedSchemas is a map of pointers to a schema.
+// Used for marking already visited types when recursively resolve `allOf` definitions and merging types.
 type passedSchemas map[*openapi3.SchemaRef]something
 
+// ModelKind is a kind of a Go model to render
 type ModelKind string
 
 const (
+	// Struct is a regular Go struct
 	Struct ModelKind = "struct"
-	Enum   ModelKind = "enum"
+	// Enum is a Go enum definition
+	Enum ModelKind = "enum"
 )
 
+// Model is a template model for rendering Go code for a given API schema
 type Model struct {
-	Name        string
+	// Name is a name of the generated type that follows the `type` keyword in the definition
+	// For example, `type Name GoType`.
+	Name string
+	// Description is a description that will become a comment on the generated type
 	Description string
-	Imports     []string
-	Kind        ModelKind
-	Properties  []PropSpec
-	GoType      string
-	SpecTitle   string
+	// Imports is a list of imports that will be present in the Go file
+	Imports []string
+	// Kind is a kind of generated model (e.g. `struct` or `enum`)
+	Kind ModelKind
+	// Properties is a list of type's property descriptors
+	Properties []PropSpec
+	// GoType is a string that represents the Go type that follows the model type name.
+	// For example, `type Name GoType`.
+	GoType string
+	// SpecTitle is the spec title used in the auto-generated header
+	SpecTitle string
+	// SpecVersion is the spec version used in the auto-generated header
 	SpecVersion string
+	// PackageName is the name of the package used in the Go code
 	PackageName string
 }
 
+// PropSpec is a Go property descriptor
 type PropSpec struct {
-	Name        string // Property name of structs, variable name of enumns
+	// Name is a property name in structs, variable name in enums, etc
+	Name string
+	// Description used in the comment of the property
 	Description string
-	GoType      string
-	JSONTags    string
-	Value       string
-	IsRequired  bool
-	IsEnum      bool
+	// GoType used for this property (e.g. `string`, `int`, etc)
+	GoType string
+	// JSONTags is a string of JSON tags used for marshaling (e.g. `json:omitempty`)
+	JSONTags string
+	// Value is a value used for a enum item
+	Value string
+	// IsRequired is true when the property is a required value and should not be omitted on marshaling
+	IsRequired bool
+	// IsEnum is true when the property is a enum item
+	IsEnum bool
 
 	// Validation stuff
+
 	IsNullable                 bool
 	NeedsValidation            bool
 	IsRequiredInValidation     bool
@@ -76,10 +103,12 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	ref = resolveAllOf(ref, nil)
 
 	switch {
+
 	case len(ref.Value.Enum) > 0:
 		model.Kind = Enum
 		model.Properties, err = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
+
 	case ref.Value.Type == "object" ||
 		len(ref.Value.Properties) > 0 ||
 		len(ref.Value.AllOf) > 0 ||
@@ -93,7 +122,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 			}
 		}
 	default:
-		return nil, errors.New("type not handled")
+		return nil, errors.New("cannot detect the model type")
 	}
 	if err != nil {
 		return nil, err
@@ -107,6 +136,7 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	model = &Model{
 		Kind: Struct,
 	}
+
 	for _, param := range params {
 		spec := PropSpec{
 			Name:        tpl.ToPascalCase(param.Value.Name),
@@ -131,22 +161,26 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	}
 
 	model.Imports = uniqueStrings(model.Imports)
+
 	return model, nil
 }
 
 // Render renders the model to a Go file
 func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	var tpl *template.Template
+
 	switch m.Kind {
 	case Struct:
 		tpl = modelTemplate
 	case Enum:
 		tpl = enumTemplate
 	}
+
 	err := tpl.Execute(writer, m)
 	if err != nil {
-		return errors.Wrap(err, "failed to render model")
+		return errors.Wrap(err, "failed to render the model")
 	}
+
 	return nil
 }
 
@@ -262,6 +296,10 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 
 // structPropsFromRef creates property descriptors for a Go struct from a schema
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
+	if ref == nil || ref.Value == nil {
+		return nil, nil, nil
+	}
+
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop, nil)
@@ -289,10 +327,16 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 
 		specs = append(specs, spec)
 	}
+
 	return specs, uniqueStrings(imports), err
 }
 
+// fillValidationRelatedProperties sets validation rules for the property descriptor out of format and
+// bounds in the spec.
+// Returns a list of unique imports in order to implement the validation.
 func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
+	importsMap := make(map[string]something)
+
 	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
 		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
 		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
@@ -309,6 +353,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		}
 	}
+
 	if ref.Value.Max != nil {
 		spec.NeedsValidation = true
 		spec.HasMax = true
@@ -317,6 +362,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		}
 	}
+
 	if ref.Value.MinLength > 0 {
 		spec.NeedsValidation = true
 		spec.HasMinLength = true
@@ -325,6 +371,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		}
 	}
+
 	if ref.Value.MaxLength != nil {
 		spec.NeedsValidation = true
 		spec.HasMaxLength = true
@@ -333,98 +380,124 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 			spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		}
 	}
+
 	if ref.Value.ExclusiveMin {
 		spec.Min += math.SmallestNonzeroFloat64
 	}
+
 	if ref.Value.ExclusiveMax {
 		spec.Min -= math.SmallestNonzeroFloat64
 	}
+
 	switch ref.Value.Format {
+
 	case "date":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.IsRequired = true
 		spec.IsDate = true
+
 	case "date-time":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.IsRequired = true
 		spec.IsDateTime = true
-		imports = append(imports, "time")
+		importsMap["time"] = something{}
+
 	case "byte":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsBase64 = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "email":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsEmail = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "uuid":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsUUID = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "url":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsURL = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "uri":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsURI = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "request-uri":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsRequestURI = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "hostname":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsHostname = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "ipv4":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsIPv4 = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "ipv6":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsIPv6 = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "ip":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.NeedsValidation = true
 		spec.IsIP = true
-		imports = append(imports, "github.com/go-ozzo/ozzo-validation/v4/is")
+		importsMap["github.com/go-ozzo/ozzo-validation/v4/is"] = something{}
+
 	case "", "int32", "int64", "float", "double":
 		break // do nothing
-	default:
-		log.Warn().Str("name", spec.Name).Str("format", ref.Value.Format).Msg("unknown format")
+
 	}
+
+	imports = make([]string, 0, len(importsMap))
+	for importStr := range importsMap {
+		imports = append(imports, importStr)
+	}
+
 	return imports
 }
 
+// enumPropsFromRef generates a list of enum property/item descriptors.
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
 	for idx, val := range ref.Value.Enum {
 		valueVarName := tpl.ToPascalCase(fmt.Sprintf("%v", val))
 		if valueVarName == "" {
 			valueVarName = fmt.Sprintf("Item%d", idx)
 		}
+
 		specs = append(specs, PropSpec{
 			Name:   valueVarName,
 			Value:  fmt.Sprintf(`"%v"`, val),
 			GoType: model.Name,
 		})
 	}
+
 	sort.Slice(specs, func(i, j int) bool {
 		return specs[i].Name < specs[j].Name
 	})
+
 	return specs, err
 }
 
+// checkIfRequired returns true if `name` is in the `list`
 func checkIfRequired(name string, list []string) bool {
 	for _, n := range list {
 		if n == name {
@@ -434,6 +507,7 @@ func checkIfRequired(name string, list []string) bool {
 	return false
 }
 
+// uniqueStrings filters out duplicates from `input` and forms a list of unique values `output`
 func uniqueStrings(input []string) (output []string) {
 	m := make(map[string]struct{})
 	for _, item := range input {
