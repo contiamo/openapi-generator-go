@@ -5,8 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/getkin/kin-openapi/openapi3"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
@@ -14,7 +12,10 @@ import (
 
 func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	if schemaRef == nil {
-		log.Fatal().Msg("got nil schema ref")
+		schemaRef = &openapi3.SchemaRef{}
+	}
+	if schemaRef.Value == nil {
+		schemaRef.Value = &openapi3.Schema{}
 	}
 	// add missing object types
 	if len(schemaRef.Value.Properties) > 0 {

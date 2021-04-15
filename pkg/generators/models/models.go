@@ -14,6 +14,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type something struct{}
+type passedSchemas map[*openapi3.SchemaRef]something
+
 type ModelKind string
 
 const (
@@ -69,7 +72,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		Description: ref.Value.Description,
 	}
 
-	ref = resolveAllOf(ref)
+	ref = resolveAllOf(ref, nil)
 
 	switch {
 	case len(ref.Value.Enum) > 0:
@@ -144,78 +147,114 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	return nil
 }
 
-func resolveAllOf(ref *openapi3.SchemaRef) (out *openapi3.SchemaRef) {
-	out = ref
-	for _, subSchema := range ref.Value.AllOf {
-		out = mergeSchemas(out, subSchema)
+func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
+	if ref == nil {
+		ref = &openapi3.SchemaRef{}
 	}
+	if ref.Value == nil {
+		ref.Value = &openapi3.Schema{}
+	}
+
+	out = ref
+
+	if passed == nil {
+		passed = make(passedSchemas)
+	}
+
+	for _, subSchema := range ref.Value.AllOf {
+		if _, exists := passed[subSchema]; exists {
+			continue
+		}
+		passed[subSchema] = something{}
+		out = deepMerge(out, subSchema, passed)
+	}
+
 	return out
 }
 
-func mergeSchemas(left *openapi3.SchemaRef, right *openapi3.SchemaRef) (out *openapi3.SchemaRef) {
+func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
 	out = left
+
 	if out == nil {
-		out = &openapi3.SchemaRef{
-			Value: &openapi3.Schema{},
-		}
+		out = &openapi3.SchemaRef{}
 	}
+	if out.Value == nil {
+		out.Value = &openapi3.Schema{}
+	}
+
+	if right == nil {
+		right = &openapi3.SchemaRef{}
+	}
+	if right.Value == nil {
+		right.Value = &openapi3.Schema{}
+	}
+
 	if right.Ref != "" {
 		out.Ref = right.Ref
 	}
 	if right.Value.Type != "" {
 		out.Value.Type = right.Value.Type
 	}
+
+	// merge docs
 	if right.Value.Title != "" {
 		out.Value.Title = right.Value.Title
 	}
 	if right.Value.Description != "" {
 		out.Value.Description = right.Value.Description
 	}
+	if right.Value.ExternalDocs != nil {
+		out.Value.ExternalDocs = right.Value.ExternalDocs
+	}
+	if right.Value.Example != nil {
+		out.Value.Example = right.Value.Example
+	}
+
+	// override main type properties
 	if right.Value.Format != "" {
 		out.Value.Format = right.Value.Format
 	}
-	if len(out.Value.OneOf) > 0 {
-		out.Value.OneOf = append(out.Value.OneOf, right.Value.OneOf...)
-	}
-	if len(out.Value.AllOf) > 0 {
-		out.Value.AllOf = append(out.Value.AllOf, right.Value.AllOf...)
-	}
-	if len(out.Value.AnyOf) > 0 {
-		out.Value.AnyOf = append(out.Value.AnyOf, right.Value.AnyOf...)
-	}
-	if right.Value.AdditionalProperties != nil {
-		out.Value.AdditionalProperties = mergeSchemas(out.Value.AdditionalProperties, right.Value.AdditionalProperties)
+	if right.Value.Nullable != out.Value.Nullable {
+		out.Value.Nullable = true
 	}
 	if right.Value.AdditionalPropertiesAllowed != nil {
 		out.Value.AdditionalPropertiesAllowed = right.Value.AdditionalPropertiesAllowed
 	}
-	if right.Value.Nullable {
-		out.Value.Nullable = true
+
+	out.Value.OneOf = append(out.Value.OneOf, right.Value.OneOf...)
+	out.Value.AllOf = append(out.Value.AllOf, right.Value.AllOf...)
+	out.Value.AnyOf = append(out.Value.AnyOf, right.Value.AnyOf...)
+	out.Value.Enum = append(out.Value.Enum, right.Value.Enum...)
+	out.Value.Required = append(out.Value.Required, right.Value.Required...)
+
+	if right.Value.AdditionalProperties != nil {
+		out.Value.AdditionalProperties = deepMerge(
+			out.Value.AdditionalProperties,
+			right.Value.AdditionalProperties,
+			nil, // here we merge all over, without `passed`
+		)
 	}
-	if len(right.Value.Required) > 0 {
-		out.Value.Required = append(out.Value.Required, right.Value.Required...)
-	}
-	if len(right.Value.Enum) > 0 {
-		out.Value.Enum = append(out.Value.Enum, right.Value.Enum...)
-	}
+
 	if len(right.Value.Properties) > 0 {
-		if out.Value == nil {
-			out.Value = &openapi3.Schema{}
-		}
 		if out.Value.Properties == nil {
 			out.Value.Properties = make(map[string]*openapi3.SchemaRef)
 		}
 		for k, v := range right.Value.Properties {
-			out.Value.Properties[k] = v
+			out.Value.Properties[k] = resolveAllOf(v, passed)
 		}
 	}
+
+	if right.Value.Type == "array" && right.Value.Items != nil {
+		out.Value.Items = resolveAllOf(right.Value.Items, passed)
+	}
+
 	return out
 }
 
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
-		prop = resolveAllOf(prop)
+		prop = resolveAllOf(prop, nil)
 
 		spec := PropSpec{
 			Name:        tpl.ToPascalCase(name),
@@ -360,7 +399,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
 	for idx, val := range ref.Value.Enum {
-		valueVarName := tpl.ToPascalCase(tpl.FirstUpper(fmt.Sprintf("%v", val)))
+		valueVarName := tpl.ToPascalCase(fmt.Sprintf("%v", val))
 		if valueVarName == "" {
 			valueVarName = fmt.Sprintf("Item%d", idx)
 		}

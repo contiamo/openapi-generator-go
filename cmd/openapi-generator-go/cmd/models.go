@@ -23,10 +23,13 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/contiamo/openapi-generator-go/pkg/generators/models"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -34,27 +37,67 @@ import (
 // modelsCmd represents the models command
 var modelsCmd = &cobra.Command{
 	Use:   "models",
-	Short: "generate a models",
-	Long:  `generate a models.`,
+	Short: "Generate Go code for models",
+	Long:  `This generates Go files for each model resolved from the given API spec.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		file, _ := cmd.Flags().GetString("spec")
-		outputDirectory, _ := cmd.Flags().GetString("output")
-		packageName, _ := cmd.Flags().GetString("package-name")
-		bs, err := ioutil.ReadFile(file)
-		if err != nil {
-			log.Fatal().Str("spec-file", file).Err(err).Msg("failed to read the spec file")
-		}
-		err = os.MkdirAll(outputDirectory, 0755)
-		if err != nil {
-			log.Fatal().Str("output", outputDirectory).Err(err).Msg("failed to create output folder")
-		}
-		reader := bytes.NewReader(bs)
-		err = models.Generate(reader, outputDirectory, models.Options{
-			PackageName: packageName,
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+
+		// human-readable
+		log := log.Output(zerolog.ConsoleWriter{
+			Out: cmd.OutOrStderr(),
 		})
+
+		spec, err := cmd.Flags().GetString("spec")
+		if err != nil {
+			log.Fatal().Err(err).Msg("wrong value for `spec`")
+		}
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			log.Fatal().Err(err).Msg("wrong value for `output`")
+		}
+		packageName, err := cmd.Flags().GetString("package-name")
+		if err != nil {
+			log.Fatal().Err(err).Msg("wrong value for `package-name`")
+		}
+
+		log = log.
+			With().
+			Str("spec", spec).
+			Str("output", output).
+			Str("package_name", packageName).
+			Logger()
+
+		log.Debug().Msg("Loading the spec file...")
+		bs, err := ioutil.ReadFile(spec)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to read the spec file")
+		}
+		log.Debug().Msg("The spec file has been loaded.")
+
+		log.Debug().Msg("Initializing the output directory...")
+		err = os.MkdirAll(output, 0755)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to create output folder")
+		}
+		log.Debug().Msg("Output directory has been initialized.")
+
+		log.Debug().Msg("Generating files...")
+		reader := bytes.NewReader(bs)
+		g, err := models.NewGenerator(reader, models.Options{
+			PackageName: packageName,
+			Destination: output,
+			Logger:      log,
+		})
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to initialize the generator")
+		}
+		err = g.Generate(ctx)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to generate models")
 		}
+
+		log.Debug().Msg("Files have been generated.")
 	},
 }
 
