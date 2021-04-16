@@ -2,12 +2,15 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -112,21 +115,36 @@ func TestModels(t *testing.T) {
 			name:      "allof merges enum list",
 			directory: "testdata/cases/allof_enum",
 		},
+		{
+			name:      "allof supports intermediate array types",
+			directory: "testdata/cases/allof_arrays",
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			ctx, cancel := context.
+				WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
 			dir := filepath.Join(tc.directory, "generated")
 			err := os.MkdirAll(dir, 0755)
 			require.NoError(t, err)
 			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
-			err = Generate(reader, dir, Options{
+
+			g, err := NewGenerator(reader, Options{
 				PackageName: "generatortest",
+				Destination: dir,
+				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
+				Logger: log.Output(ioutil.Discard), // swap for debugging
 			})
 			require.NoError(t, err)
-			reader = bytes.NewReader(bs)
+
+			err = g.Generate(ctx)
+			require.NoError(t, err)
+
 			files, err := filepath.Glob(filepath.Join(dir, "*"))
 			require.NoError(t, err)
 			for _, f := range files {

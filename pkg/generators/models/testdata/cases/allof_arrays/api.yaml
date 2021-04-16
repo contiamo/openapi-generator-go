@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Random:
+      type: object
+      required:
+        - list
+      properties:
+        list:
+          allOf:
+            - $ref: "#/components/schemas/Collection"
+    Collection:
+      items:
+        $ref: '#/components/schemas/Item'
+      type: array
+    Item:
+      required:
+        - first
+      properties:
+        first:
+          type: string

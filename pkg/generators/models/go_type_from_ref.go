@@ -5,26 +5,33 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/getkin/kin-openapi/openapi3"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 )
 
+// goTypeFromSpec gets a Go type that can represent the schema
+// For example, `type Name GoType` or `type Example string`.
 func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	if schemaRef == nil {
-		log.Fatal().Msg("got nil schema ref")
+		schemaRef = &openapi3.SchemaRef{}
 	}
+	if schemaRef.Value == nil {
+		schemaRef.Value = &openapi3.Schema{}
+	}
+
 	// add missing object types
 	if len(schemaRef.Value.Properties) > 0 {
 		schemaRef.Value.Type = "object"
 	}
 	schema := schemaRef.Value
 	propertyType := schemaRef.Value.Type
+
 	switch propertyType {
+
 	case "object":
 		propertyType = goTypeForObject(schemaRef)
+
 	case "string":
 		if schema.Format == "date-time" || schema.Format == "time" {
 			propertyType = "time.Time"
@@ -32,14 +39,17 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		if len(schema.Enum) > 0 && schemaRef.Ref != "" {
 			propertyType = filepath.Base(schemaRef.Ref)
 		}
+
 	case "array":
 		subType := "interface{}"
 		if schema.Items != nil {
 			subType = goTypeFromSpec(schema.Items)
 		}
 		propertyType = "[]" + subType
+
 	case "boolean":
 		propertyType = "bool"
+
 	case "integer":
 		switch schemaRef.Value.Format {
 		case "int32":
@@ -47,8 +57,11 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		case "int64":
 			propertyType = "int64"
 		default:
-			propertyType = "int32" // the default is int32 because this is always json-serialized to a proper number in contrast to int64 which will become a string
+			// the default is int32 because this is always json-serialized
+			// to a proper number in contrast to int64 which will become a string
+			propertyType = "int32"
 		}
+
 	case "number":
 		switch schemaRef.Value.Format {
 		case "float":
@@ -56,8 +69,11 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		case "double":
 			propertyType = "float64"
 		default:
-			propertyType = "float32" // the default is float32 because this is always json-serialized to a proper number in contrast to float64 which will become a string
+			// the default is float32 because this is always json-serialized
+			// to a proper number in contrast to float64 which will become a string
+			propertyType = "float32"
 		}
+
 	case "":
 		if schemaRef.Ref != "" {
 			propertyType = filepath.Base(schemaRef.Ref)
@@ -65,21 +81,30 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 			propertyType = "interface{}"
 		}
 	}
-	if schema.Nullable && !strings.HasPrefix(propertyType, "[]") && !strings.HasPrefix(propertyType, "map[") {
+
+	if schema.Nullable &&
+		!strings.HasPrefix(propertyType, "[]") &&
+		!strings.HasPrefix(propertyType, "map[") {
 		propertyType = "*" + propertyType
 	}
 	return propertyType
 }
 
+// goTypeForObject returns a string that can represent the entire object type of the given schema
 func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 	switch {
+
 	case schemaRef.Ref != "":
 		propType = filepath.Base(schemaRef.Ref)
+
 	case schemaRef.Value.AdditionalProperties != nil:
 		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
 		propType = "map[string]" + subType
-	case schemaRef.Value.AdditionalPropertiesAllowed != nil && *schemaRef.Value.AdditionalPropertiesAllowed:
+
+	case schemaRef.Value.AdditionalPropertiesAllowed != nil &&
+		*schemaRef.Value.AdditionalPropertiesAllowed:
 		propType = "map[string]interface{}"
+
 	case len(schemaRef.Value.Properties) > 0:
 		structBuilder := &strings.Builder{}
 		structBuilder.WriteString("struct {\n")
@@ -106,11 +131,14 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 		}
 		structBuilder.WriteString("}")
 		propType = structBuilder.String()
+
 	case len(schemaRef.Value.OneOf) > 0:
 		return "interface{}"
+
 	default:
 		return "map[string]interface{}"
 	}
+
 	return propType
 }
 
