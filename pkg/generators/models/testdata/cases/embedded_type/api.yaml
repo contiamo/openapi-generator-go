@@ -8,10 +8,21 @@ components:
     Top:
       type: object
       properties:
-        bar:
-          $ref: "#/components/schemas/Sub"
-    Sub:
+        obj:
+          $ref: "#/components/schemas/Sub1"
+        arr:
+          $ref: "#/components/schemas/Sub2"
+        boo:
+          $ref: "#/components/schemas/Sub3"
+    Sub1:
       type: object
       properties:
         foo:
           type: string
+    Sub2:
+      type: array
+      items:
+        $ref: "#/components/schemas/Sub1"
+    Sub3:
+      type: bool
+      description: Type alias for a value type

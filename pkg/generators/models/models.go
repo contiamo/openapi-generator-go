@@ -28,6 +28,8 @@ const (
 	Struct ModelKind = "struct"
 	// Enum is a Go enum definition
 	Enum ModelKind = "enum"
+	// Value is a value type
+	Value ModelKind = "value"
 )
 
 // Model is a template model for rendering Go code for a given API schema
@@ -122,7 +124,8 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 			}
 		}
 	default:
-		return nil, errors.New("cannot detect the model type")
+		model.Kind = Value
+		model.GoType = goTypeFromSpec(ref)
 	}
 	if err != nil {
 		return nil, err
@@ -174,6 +177,8 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 		tpl = modelTemplate
 	case Enum:
 		tpl = enumTemplate
+	case Value:
+		tpl = valueTemplate
 	}
 
 	err := tpl.Execute(writer, m)
