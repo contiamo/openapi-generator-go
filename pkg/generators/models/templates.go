@@ -19,6 +19,12 @@ var (
 			Parse(enumTemplateSource),
 	)
 
+	valueTemplate = template.Must(
+		template.New("value").
+			Funcs(fmap).
+			Parse(valueTemplateSource),
+	)
+
 	fmap = template.FuncMap{
 		"firstLower":   tpl.FirstLower,
 		"firstUpper":   tpl.FirstUpper,
@@ -142,5 +148,17 @@ var (
 		{{- end}}
 	)
 )
+`
+
+	valueTemplateSource = `
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+{{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
+type {{.Name}} {{.GoType}}
 `
 )
