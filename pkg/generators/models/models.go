@@ -342,10 +342,10 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
 	importsMap := make(map[string]something)
 
-	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
-		(len(spec.GoType) > 1 && spec.GoType[0] == '*' && spec.GoType[1] >= 'A' && spec.GoType[1] <= 'Z') ||
-		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
-		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
+	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') || // Exported types may have a Validate() function
+		(len(spec.GoType) > 1 && spec.GoType[0] == '*' && spec.GoType[1] >= 'A' && spec.GoType[1] <= 'Z') || // Exported types with a leading pointer may have a Validate() function
+		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") || // slices may contain data that is validatable (they are also never pointers)
+		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") { // maps may contain data that is validateable (they are also never pointers )
 		// enable recursive validation
 		spec.NeedsValidation = true
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
