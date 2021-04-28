@@ -5,12 +5,22 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"regexp"
 	"sort"
 	"text/template"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
+)
+
+var (
+	// validatedTypesRegExp helps to match a type to a type that we can generate validation for.
+	// Exported types may have a Validate() function
+	// Exported types with a leading pointer may have a Validate() function
+	// Slices may contain data that is validatable (they are also never pointers)
+	// Maps may contain data that is validateable (they are also never pointers )
+	validatedTypesRegExp = regexp.MustCompile(`^(\*?[A-Z])|(\[\])|(map\[)`)
 )
 
 // something is just something that does not have to be allocated
@@ -342,9 +352,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
 	importsMap := make(map[string]something)
 
-	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
-		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
-		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
+	if validatedTypesRegExp.MatchString(spec.GoType) {
 		// enable recursive validation
 		spec.NeedsValidation = true
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired

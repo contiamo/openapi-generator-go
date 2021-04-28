@@ -19,7 +19,11 @@ type ListItem struct {
 
 // Validate implements basic validation for this model
 func (m ListItem) Validate() error {
-	return validation.Errors{}.Filter()
+	return validation.Errors{
+		"next": validation.Validate(
+			m.Next,
+		),
+	}.Filter()
 }
 
 // GetNext returns the Next property

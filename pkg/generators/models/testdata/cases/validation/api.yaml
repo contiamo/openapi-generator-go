@@ -21,6 +21,10 @@ components:
           maximum: 120
         gender:
           $ref: "#/components/schemas/Gender"
+        secondGender:
+          allOf:
+            - nullable: true
+            - $ref: "#/components/schemas/Gender"
         address:
           $ref: "#/components/schemas/Address"
         favoriteColors:
