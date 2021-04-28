@@ -19,7 +19,14 @@ type Artist struct {
 
 // Validate implements basic validation for this model
 func (m Artist) Validate() error {
-	return validation.Errors{}.Filter()
+	return validation.Errors{
+		"leftHand": validation.Validate(
+			m.LeftHand,
+		),
+		"rightHand": validation.Validate(
+			m.RightHand,
+		),
+	}.Filter()
 }
 
 // GetLeftHand returns the LeftHand property

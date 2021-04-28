@@ -343,6 +343,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	importsMap := make(map[string]something)
 
 	if (len(spec.GoType) > 0 && spec.GoType[0] >= 'A' && spec.GoType[0] <= 'Z') ||
+		(len(spec.GoType) > 1 && spec.GoType[0] == '*' && spec.GoType[1] >= 'A' && spec.GoType[1] <= 'Z') ||
 		(len(spec.GoType) > 1 && spec.GoType[:2] == "[]") ||
 		(len(spec.GoType) > 2 && spec.GoType[:3] == "map") {
 		// enable recursive validation
