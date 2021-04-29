@@ -22,7 +22,7 @@ type BaseEntity struct {
 func (m BaseEntity) Validate() error {
 	return validation.Errors{
 		"id": validation.Validate(
-			m.Id, validation.Required, is.UUID,
+			m.Id, validation.NotNil, is.UUID,
 		),
 	}.Filter()
 }

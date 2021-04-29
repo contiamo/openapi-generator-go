@@ -24,10 +24,10 @@ type UserEntity struct {
 func (m UserEntity) Validate() error {
 	return validation.Errors{
 		"email": validation.Validate(
-			m.Email, validation.Required, is.EmailFormat,
+			m.Email, validation.NotNil, is.EmailFormat,
 		),
 		"id": validation.Validate(
-			m.Id, validation.Required, is.UUID,
+			m.Id, validation.NotNil, is.UUID,
 		),
 	}.Filter()
 }

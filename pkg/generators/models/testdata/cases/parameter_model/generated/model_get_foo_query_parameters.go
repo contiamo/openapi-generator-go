@@ -31,7 +31,7 @@ func (m GetFooQueryParameters) Validate() error {
 			m.Param1, is.UUID,
 		),
 		"id": validation.Validate(
-			m.Id, validation.Required, is.UUID,
+			m.Id, validation.NotNil, is.UUID,
 		),
 		"param2": validation.Validate(
 			m.Param2, validation.Min(int32(0)), validation.Max(int32(10)),
