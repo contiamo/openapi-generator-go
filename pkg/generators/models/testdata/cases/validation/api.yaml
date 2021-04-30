@@ -10,6 +10,7 @@ components:
       required:
         - name
         - gender
+        - favoriteColors
       properties:
         name:
           type: string

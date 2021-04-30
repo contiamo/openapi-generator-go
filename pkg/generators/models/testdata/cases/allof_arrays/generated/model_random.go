@@ -19,7 +19,7 @@ type Random struct {
 func (m Random) Validate() error {
 	return validation.Errors{
 		"list": validation.Validate(
-			m.List, validation.Required,
+			m.List, validation.NotNil,
 		),
 	}.Filter()
 }
