@@ -27,7 +27,7 @@ type Person struct {
 	// Email:
 	Email string `json:"email,omitempty"`
 	// FavoriteColors:
-	FavoriteColors []Color `json:"favoriteColors,omitempty"`
+	FavoriteColors []Color `json:"favoriteColors"`
 	// Gender:
 	Gender Gender `json:"gender"`
 	// Hostname:
@@ -68,10 +68,10 @@ func (m Person) Validate() error {
 			m.Email, is.EmailFormat,
 		),
 		"favoriteColors": validation.Validate(
-			m.FavoriteColors, validation.Length(1, 0),
+			m.FavoriteColors, validation.NotNil, validation.Length(1, 0),
 		),
 		"gender": validation.Validate(
-			m.Gender, validation.NotNil,
+			m.Gender, validation.Required,
 		),
 		"hostname": validation.Validate(
 			m.Hostname, is.Host,
