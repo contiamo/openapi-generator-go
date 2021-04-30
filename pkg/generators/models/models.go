@@ -92,6 +92,7 @@ type PropSpec struct {
 	Min, Max                   float64
 	HasMinLength, HasMaxLength bool
 	MinLength, MaxLength       uint64
+	HasFormat                  bool
 	IsDate                     bool
 	IsDateTime                 bool
 	IsBase64                   bool
@@ -400,6 +401,10 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 	if ref.Value.ExclusiveMax {
 		spec.Min -= math.SmallestNonzeroFloat64
+	}
+
+	if ref.Value.Format != "" {
+		spec.HasFormat = true
 	}
 
 	switch ref.Value.Format {

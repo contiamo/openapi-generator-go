@@ -68,7 +68,7 @@ func (m Person) Validate() error {
 			m.Email, is.EmailFormat,
 		),
 		"favoriteColors": validation.Validate(
-			m.FavoriteColors, validation.NotNil, validation.Length(1, 0),
+			m.FavoriteColors, validation.Required, validation.Length(1, 0),
 		),
 		"gender": validation.Validate(
 			m.Gender, validation.Required,
@@ -86,7 +86,7 @@ func (m Person) Validate() error {
 			m.Ipv6, is.IPv6,
 		),
 		"name": validation.Validate(
-			m.Name, validation.NotNil, validation.Length(2, 32),
+			m.Name, validation.Required, validation.Length(2, 32),
 		),
 		"requestURI": validation.Validate(
 			m.RequestURI, is.RequestURL.Error("must be valid URI with scheme"),

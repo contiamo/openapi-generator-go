@@ -26,7 +26,7 @@ func (m Address) Validate() error {
 			m.Name, validation.Length(2, 0),
 		),
 		"street": validation.Validate(
-			m.Street, validation.NotNil, validation.Length(2, 0),
+			m.Street, validation.Required, validation.Length(2, 0),
 		),
 	}.Filter()
 }
