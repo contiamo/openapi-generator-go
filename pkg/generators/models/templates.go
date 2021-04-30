@@ -68,7 +68,7 @@ func (m {{$modelName}}) Validate() error {
 				"{{ firstLower .Name }}": validation.Validate(
 					m.{{ .Name }},
 					{{- if and .IsRequiredInValidation}}
-						{{- if and .IsEnum}}validation.Required,{{ else }}validation.NotNil,{{- end }}
+						{{- if or .IsEnum .Min .MinLength}}validation.Required,{{ else }}validation.NotNil,{{- end }}
 					{{- end }}
 					{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
 					{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
