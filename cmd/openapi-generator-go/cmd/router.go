@@ -23,10 +23,10 @@ package cmd
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/contiamo/openapi-generator-go/pkg/filters"
 	"github.com/contiamo/openapi-generator-go/pkg/generators/router"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -43,10 +43,17 @@ var routerCmd = &cobra.Command{
 		packageName, _ := cmd.Flags().GetString("package-name")
 		failNoGroup, _ := cmd.Flags().GetBool("fail-no-group")
 		failNoOpID, _ := cmd.Flags().GetBool("fail-no-operation-id")
-		bs, err := ioutil.ReadFile(file)
+		specFile, err := os.Open(file)
 		if err != nil {
 			log.Fatal().Str("spec-file", file).Err(err).Msg("failed to read the spec file")
 		}
+
+		allowedPaths := getAllowedPaths(cmd.Flags())
+		bs, err := filters.ByPath(specFile, allowedPaths)
+		if err != nil {
+			log.Fatal().Err(err).Msg("can't filter by specified paths")
+		}
+
 		reader := bytes.NewReader(bs)
 		err = os.MkdirAll(outputDirectory, 0755)
 		if err != nil {

@@ -24,10 +24,10 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"os"
 	"time"
 
+	"github.com/contiamo/openapi-generator-go/pkg/filters"
 	"github.com/contiamo/openapi-generator-go/pkg/generators/models"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -48,7 +48,7 @@ var modelsCmd = &cobra.Command{
 			Out: cmd.OutOrStderr(),
 		})
 
-		spec, err := cmd.Flags().GetString("spec")
+		file, err := cmd.Flags().GetString("spec")
 		if err != nil {
 			log.Fatal().Err(err).Msg("wrong value for `spec`")
 		}
@@ -63,13 +63,13 @@ var modelsCmd = &cobra.Command{
 
 		log = log.
 			With().
-			Str("spec", spec).
+			Str("spec", file).
 			Str("output", output).
 			Str("package_name", packageName).
 			Logger()
 
 		log.Debug().Msg("Loading the spec file...")
-		bs, err := ioutil.ReadFile(spec)
+		specFile, err := os.Open(file)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to read the spec file")
 		}
@@ -83,6 +83,13 @@ var modelsCmd = &cobra.Command{
 		log.Debug().Msg("Output directory has been initialized.")
 
 		log.Debug().Msg("Generating files...")
+
+		allowedPaths := getAllowedPaths(cmd.Flags())
+		bs, err := filters.ByPath(specFile, allowedPaths)
+		if err != nil {
+			log.Fatal().Err(err).Msg("can't filter by specified paths")
+		}
+
 		reader := bytes.NewReader(bs)
 		g, err := models.NewGenerator(reader, models.Options{
 			PackageName: packageName,
