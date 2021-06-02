@@ -1,6 +1,6 @@
 module github.com/contiamo/openapi-generator-go
 
-go 1.15
+go 1.16
 
 require (
 	github.com/getkin/kin-openapi v0.14.0

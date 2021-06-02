@@ -1,0 +1,2 @@
+/api/v2/{projectId}/fields
+/api/v2/{projectId}/field-sets/{resourceKind}
