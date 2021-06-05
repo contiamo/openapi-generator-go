@@ -51,7 +51,7 @@ func (m GetFooQueryParameters) GetParam1() string {
 }
 
 // SetParam1 sets the Param1 property
-func (m GetFooQueryParameters) SetParam1(val string) {
+func (m *GetFooQueryParameters) SetParam1(val string) {
 	m.Param1 = val
 }
 
@@ -61,7 +61,7 @@ func (m GetFooQueryParameters) GetId() string {
 }
 
 // SetId sets the Id property
-func (m GetFooQueryParameters) SetId(val string) {
+func (m *GetFooQueryParameters) SetId(val string) {
 	m.Id = val
 }
 
@@ -71,7 +71,7 @@ func (m GetFooQueryParameters) GetParam2() int32 {
 }
 
 // SetParam2 sets the Param2 property
-func (m GetFooQueryParameters) SetParam2(val int32) {
+func (m *GetFooQueryParameters) SetParam2(val int32) {
 	m.Param2 = val
 }
 
@@ -81,7 +81,7 @@ func (m GetFooQueryParameters) GetParam3() []string {
 }
 
 // SetParam3 sets the Param3 property
-func (m GetFooQueryParameters) SetParam3(val []string) {
+func (m *GetFooQueryParameters) SetParam3(val []string) {
 	m.Param3 = val
 }
 
@@ -91,6 +91,6 @@ func (m GetFooQueryParameters) GetPage() int32 {
 }
 
 // SetPage sets the Page property
-func (m GetFooQueryParameters) SetPage(val int32) {
+func (m *GetFooQueryParameters) SetPage(val int32) {
 	m.Page = val
 }

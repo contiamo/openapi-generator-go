@@ -30,6 +30,6 @@ func (m Foo) GetBar() *Sub {
 }
 
 // SetBar sets the Bar property
-func (m Foo) SetBar(val *Sub) {
+func (m *Foo) SetBar(val *Sub) {
 	m.Bar = val
 }

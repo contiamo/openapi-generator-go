@@ -26,6 +26,6 @@ func (m Foo) GetBar() interface{} {
 }
 
 // SetBar sets the Bar property
-func (m Foo) SetBar(val interface{}) {
+func (m *Foo) SetBar(val interface{}) {
 	m.Bar = val
 }

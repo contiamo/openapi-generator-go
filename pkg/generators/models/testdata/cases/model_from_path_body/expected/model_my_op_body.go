@@ -26,6 +26,6 @@ func (m MyOpBody) GetFoo() string {
 }
 
 // SetFoo sets the Foo property
-func (m MyOpBody) SetFoo(val string) {
+func (m *MyOpBody) SetFoo(val string) {
 	m.Foo = val
 }

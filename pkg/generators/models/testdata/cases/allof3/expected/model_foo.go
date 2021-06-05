@@ -28,7 +28,7 @@ func (m Foo) GetMixin() string {
 }
 
 // SetMixin sets the Mixin property
-func (m Foo) SetMixin(val string) {
+func (m *Foo) SetMixin(val string) {
 	m.Mixin = val
 }
 
@@ -38,6 +38,6 @@ func (m Foo) GetSub() string {
 }
 
 // SetSub sets the Sub property
-func (m Foo) SetSub(val string) {
+func (m *Foo) SetSub(val string) {
 	m.Sub = val
 }

@@ -97,7 +97,7 @@ func (m {{$modelName}}) Get{{.Name}}() {{.GoType}} {
 }
 
 // Set{{.Name}} sets the {{.Name}} property
-func (m {{$modelName}}) Set{{.Name}}(val {{.GoType}}) {
+func (m *{{$modelName}}) Set{{.Name}}(val {{.GoType}}) {
 	m.{{.Name}} = val
 }
 {{ end}}`

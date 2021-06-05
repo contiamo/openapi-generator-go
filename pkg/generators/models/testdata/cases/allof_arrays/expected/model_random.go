@@ -30,6 +30,6 @@ func (m Random) GetList() []Item {
 }
 
 // SetList sets the List property
-func (m Random) SetList(val []Item) {
+func (m *Random) SetList(val []Item) {
 	m.List = val
 }

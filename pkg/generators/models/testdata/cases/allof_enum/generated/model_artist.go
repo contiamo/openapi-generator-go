@@ -35,7 +35,7 @@ func (m Artist) GetLeftHand() *AnyThing {
 }
 
 // SetLeftHand sets the LeftHand property
-func (m Artist) SetLeftHand(val *AnyThing) {
+func (m *Artist) SetLeftHand(val *AnyThing) {
 	m.LeftHand = val
 }
 
@@ -45,6 +45,6 @@ func (m Artist) GetRightHand() *Color {
 }
 
 // SetRightHand sets the RightHand property
-func (m Artist) SetRightHand(val *Color) {
+func (m *Artist) SetRightHand(val *Color) {
 	m.RightHand = val
 }

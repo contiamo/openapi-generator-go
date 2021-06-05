@@ -32,7 +32,7 @@ func (m Foo) GetBar() struct {
 }
 
 // SetBar sets the Bar property
-func (m Foo) SetBar(val struct {
+func (m *Foo) SetBar(val struct {
 	Bar string `json:"bar,omitempty"`
 	Foo string `json:"foo,omitempty"`
 }) {

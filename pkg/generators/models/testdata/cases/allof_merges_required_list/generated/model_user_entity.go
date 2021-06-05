@@ -38,7 +38,7 @@ func (m UserEntity) GetEmail() string {
 }
 
 // SetEmail sets the Email property
-func (m UserEntity) SetEmail(val string) {
+func (m *UserEntity) SetEmail(val string) {
 	m.Email = val
 }
 
@@ -48,7 +48,7 @@ func (m UserEntity) GetId() string {
 }
 
 // SetId sets the Id property
-func (m UserEntity) SetId(val string) {
+func (m *UserEntity) SetId(val string) {
 	m.Id = val
 }
 
@@ -58,6 +58,6 @@ func (m UserEntity) GetName() string {
 }
 
 // SetName sets the Name property
-func (m UserEntity) SetName(val string) {
+func (m *UserEntity) SetName(val string) {
 	m.Name = val
 }

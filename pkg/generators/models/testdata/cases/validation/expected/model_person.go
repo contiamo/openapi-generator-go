@@ -112,7 +112,7 @@ func (m Person) GetAddress() Address {
 }
 
 // SetAddress sets the Address property
-func (m Person) SetAddress(val Address) {
+func (m *Person) SetAddress(val Address) {
 	m.Address = val
 }
 
@@ -122,7 +122,7 @@ func (m Person) GetAge() float32 {
 }
 
 // SetAge sets the Age property
-func (m Person) SetAge(val float32) {
+func (m *Person) SetAge(val float32) {
 	m.Age = val
 }
 
@@ -132,7 +132,7 @@ func (m Person) GetBase64() string {
 }
 
 // SetBase64 sets the Base64 property
-func (m Person) SetBase64(val string) {
+func (m *Person) SetBase64(val string) {
 	m.Base64 = val
 }
 
@@ -142,7 +142,7 @@ func (m Person) GetDate() string {
 }
 
 // SetDate sets the Date property
-func (m Person) SetDate(val string) {
+func (m *Person) SetDate(val string) {
 	m.Date = val
 }
 
@@ -152,7 +152,7 @@ func (m Person) GetDatetime() time.Time {
 }
 
 // SetDatetime sets the Datetime property
-func (m Person) SetDatetime(val time.Time) {
+func (m *Person) SetDatetime(val time.Time) {
 	m.Datetime = val
 }
 
@@ -162,7 +162,7 @@ func (m Person) GetEmail() string {
 }
 
 // SetEmail sets the Email property
-func (m Person) SetEmail(val string) {
+func (m *Person) SetEmail(val string) {
 	m.Email = val
 }
 
@@ -172,7 +172,7 @@ func (m Person) GetFavoriteColors() []Color {
 }
 
 // SetFavoriteColors sets the FavoriteColors property
-func (m Person) SetFavoriteColors(val []Color) {
+func (m *Person) SetFavoriteColors(val []Color) {
 	m.FavoriteColors = val
 }
 
@@ -182,7 +182,7 @@ func (m Person) GetGender() Gender {
 }
 
 // SetGender sets the Gender property
-func (m Person) SetGender(val Gender) {
+func (m *Person) SetGender(val Gender) {
 	m.Gender = val
 }
 
@@ -192,7 +192,7 @@ func (m Person) GetHostname() string {
 }
 
 // SetHostname sets the Hostname property
-func (m Person) SetHostname(val string) {
+func (m *Person) SetHostname(val string) {
 	m.Hostname = val
 }
 
@@ -202,7 +202,7 @@ func (m Person) GetIp() string {
 }
 
 // SetIp sets the Ip property
-func (m Person) SetIp(val string) {
+func (m *Person) SetIp(val string) {
 	m.Ip = val
 }
 
@@ -212,7 +212,7 @@ func (m Person) GetIpv4() string {
 }
 
 // SetIpv4 sets the Ipv4 property
-func (m Person) SetIpv4(val string) {
+func (m *Person) SetIpv4(val string) {
 	m.Ipv4 = val
 }
 
@@ -222,7 +222,7 @@ func (m Person) GetIpv6() string {
 }
 
 // SetIpv6 sets the Ipv6 property
-func (m Person) SetIpv6(val string) {
+func (m *Person) SetIpv6(val string) {
 	m.Ipv6 = val
 }
 
@@ -232,7 +232,7 @@ func (m Person) GetName() string {
 }
 
 // SetName sets the Name property
-func (m Person) SetName(val string) {
+func (m *Person) SetName(val string) {
 	m.Name = val
 }
 
@@ -242,7 +242,7 @@ func (m Person) GetRequestURI() string {
 }
 
 // SetRequestURI sets the RequestURI property
-func (m Person) SetRequestURI(val string) {
+func (m *Person) SetRequestURI(val string) {
 	m.RequestURI = val
 }
 
@@ -252,7 +252,7 @@ func (m Person) GetSecondGender() *Gender {
 }
 
 // SetSecondGender sets the SecondGender property
-func (m Person) SetSecondGender(val *Gender) {
+func (m *Person) SetSecondGender(val *Gender) {
 	m.SecondGender = val
 }
 
@@ -262,7 +262,7 @@ func (m Person) GetUri() string {
 }
 
 // SetUri sets the Uri property
-func (m Person) SetUri(val string) {
+func (m *Person) SetUri(val string) {
 	m.Uri = val
 }
 
@@ -272,7 +272,7 @@ func (m Person) GetUrl() string {
 }
 
 // SetUrl sets the Url property
-func (m Person) SetUrl(val string) {
+func (m *Person) SetUrl(val string) {
 	m.Url = val
 }
 
@@ -282,6 +282,6 @@ func (m Person) GetUuid() string {
 }
 
 // SetUuid sets the Uuid property
-func (m Person) SetUuid(val string) {
+func (m *Person) SetUuid(val string) {
 	m.Uuid = val
 }
