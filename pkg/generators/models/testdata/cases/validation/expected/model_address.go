@@ -37,7 +37,7 @@ func (m Address) GetName() *string {
 }
 
 // SetName sets the Name property
-func (m Address) SetName(val *string) {
+func (m *Address) SetName(val *string) {
 	m.Name = val
 }
 
@@ -47,7 +47,7 @@ func (m Address) GetNumber() int32 {
 }
 
 // SetNumber sets the Number property
-func (m Address) SetNumber(val int32) {
+func (m *Address) SetNumber(val int32) {
 	m.Number = val
 }
 
@@ -57,6 +57,6 @@ func (m Address) GetStreet() string {
 }
 
 // SetStreet sets the Street property
-func (m Address) SetStreet(val string) {
+func (m *Address) SetStreet(val string) {
 	m.Street = val
 }

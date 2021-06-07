@@ -37,7 +37,7 @@ func (m Top) GetArr() []Sub1 {
 }
 
 // SetArr sets the Arr property
-func (m Top) SetArr(val []Sub1) {
+func (m *Top) SetArr(val []Sub1) {
 	m.Arr = val
 }
 
@@ -47,7 +47,7 @@ func (m Top) GetBoo() bool {
 }
 
 // SetBoo sets the Boo property
-func (m Top) SetBoo(val bool) {
+func (m *Top) SetBoo(val bool) {
 	m.Boo = val
 }
 
@@ -57,6 +57,6 @@ func (m Top) GetObj() Sub1 {
 }
 
 // SetObj sets the Obj property
-func (m Top) SetObj(val Sub1) {
+func (m *Top) SetObj(val Sub1) {
 	m.Obj = val
 }

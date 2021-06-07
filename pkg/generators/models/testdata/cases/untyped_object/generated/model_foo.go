@@ -30,6 +30,6 @@ func (m Foo) GetBar() map[string]interface{} {
 }
 
 // SetBar sets the Bar property
-func (m Foo) SetBar(val map[string]interface{}) {
+func (m *Foo) SetBar(val map[string]interface{}) {
 	m.Bar = val
 }

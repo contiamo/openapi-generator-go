@@ -30,6 +30,6 @@ func (m Foo) GetFoo() map[string]string {
 }
 
 // SetFoo sets the Foo property
-func (m Foo) SetFoo(val map[string]string) {
+func (m *Foo) SetFoo(val map[string]string) {
 	m.Foo = val
 }

@@ -26,6 +26,6 @@ func (m Item) GetFirst() string {
 }
 
 // SetFirst sets the First property
-func (m Item) SetFirst(val string) {
+func (m *Item) SetFirst(val string) {
 	m.First = val
 }

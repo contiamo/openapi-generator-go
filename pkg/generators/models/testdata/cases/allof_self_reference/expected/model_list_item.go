@@ -32,7 +32,7 @@ func (m ListItem) GetNext() *ListItem {
 }
 
 // SetNext sets the Next property
-func (m ListItem) SetNext(val *ListItem) {
+func (m *ListItem) SetNext(val *ListItem) {
 	m.Next = val
 }
 
@@ -42,6 +42,6 @@ func (m ListItem) GetValue() string {
 }
 
 // SetValue sets the Value property
-func (m ListItem) SetValue(val string) {
+func (m *ListItem) SetValue(val string) {
 	m.Value = val
 }

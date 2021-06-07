@@ -26,6 +26,6 @@ func (m Sub) GetSub() string {
 }
 
 // SetSub sets the Sub property
-func (m Sub) SetSub(val string) {
+func (m *Sub) SetSub(val string) {
 	m.Sub = val
 }

@@ -26,6 +26,6 @@ func (m Sub1) GetFoo() string {
 }
 
 // SetFoo sets the Foo property
-func (m Sub1) SetFoo(val string) {
+func (m *Sub1) SetFoo(val string) {
 	m.Foo = val
 }

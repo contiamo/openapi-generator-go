@@ -33,7 +33,7 @@ func (m BaseEntity) GetId() string {
 }
 
 // SetId sets the Id property
-func (m BaseEntity) SetId(val string) {
+func (m *BaseEntity) SetId(val string) {
 	m.Id = val
 }
 
@@ -43,6 +43,6 @@ func (m BaseEntity) GetName() string {
 }
 
 // SetName sets the Name property
-func (m BaseEntity) SetName(val string) {
+func (m *BaseEntity) SetName(val string) {
 	m.Name = val
 }

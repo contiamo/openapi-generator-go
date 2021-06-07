@@ -28,7 +28,7 @@ func (m Foo) GetBar() string {
 }
 
 // SetBar sets the Bar property
-func (m Foo) SetBar(val string) {
+func (m *Foo) SetBar(val string) {
 	m.Bar = val
 }
 
@@ -38,6 +38,6 @@ func (m Foo) GetFoo() string {
 }
 
 // SetFoo sets the Foo property
-func (m Foo) SetFoo(val string) {
+func (m *Foo) SetFoo(val string) {
 	m.Foo = val
 }
