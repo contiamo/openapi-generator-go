@@ -22,13 +22,16 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -69,6 +72,8 @@ func init() {
 	rootCmd.PersistentFlags().StringP("output", "o", "./models", "output directory")
 	rootCmd.PersistentFlags().String("package-name", "api", "package name")
 	rootCmd.PersistentFlags().String("log-level", "info", "log level")
+	rootCmd.PersistentFlags().StringArrayP("path", "p", []string{}, "path to include in the filtered output spec, can be repeated")
+	rootCmd.PersistentFlags().String("path-file", "", "file with list of paths to include in the filtered output spec, one path per line")
 }
 
 func initLogging() {
@@ -104,4 +109,40 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func getAllowedPaths(flags *pflag.FlagSet) []string {
+	allowedPaths, err := flags.GetStringArray("path")
+	if err != nil {
+		log.Fatal().Err(err).Msg("can't read path flag(s)")
+	}
+
+	allowedPathsFile, err := flags.GetString("path-file")
+	if err != nil {
+		log.Fatal().Err(err).Msg("can't read path-file flag")
+	}
+	if allowedPathsFile != "" {
+		additionalPathsFile, err := os.Open(allowedPathsFile)
+		if err != nil {
+			log.Fatal().Str("path-file", allowedPathsFile).Err(err).Msg("can't read path-file")
+		}
+
+		var line string
+		reader := bufio.NewReader(additionalPathsFile)
+		for {
+			line, err = reader.ReadString('\n')
+			if err != nil && err != io.EOF {
+				break
+			}
+			allowedPaths = append(allowedPaths, strings.TrimSpace(line))
+			if err != nil {
+				break
+			}
+		}
+		if err != io.EOF {
+			log.Fatal().Str("path-file", allowedPathsFile).Err(err).Msg("can't read paths in path file")
+		}
+	}
+
+	return allowedPaths
 }
