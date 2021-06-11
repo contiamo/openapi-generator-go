@@ -12,3 +12,8 @@ components:
           oneOf:
             - type: string
             - type: integer
+    Bar:
+      oneOf:
+        - type: string
+        - type: integer
+      

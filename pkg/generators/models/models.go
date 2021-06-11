@@ -122,10 +122,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		model.Properties, err = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
 
-	case ref.Value.Type == "object" ||
-		len(ref.Value.Properties) > 0 ||
-		len(ref.Value.AllOf) > 0 ||
-		len(ref.Value.OneOf) > 0:
+	case ref.Value.Type == "object" || len(ref.Value.Properties) > 0:
 		model.Kind = Struct
 		model.Properties, model.Imports, err = structPropsFromRef(ref)
 		if len(model.Properties) == 0 {
