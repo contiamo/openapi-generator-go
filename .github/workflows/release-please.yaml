@@ -11,4 +11,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: go-yoshi
-          package-name: go-base
+          package-name: ""
