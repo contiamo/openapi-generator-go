@@ -1,0 +1,17 @@
+on:
+  push:
+    branches:
+      - master
+name: release-please
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        with:
+          # use the CI token to pretend not to be a action?
+          # if this works then the resulting PRs will trigger
+          # the test-build-publish
+          token: ${{ secrets.CONTIAMO_CI_TOKEN }}
+          release-type: go-yoshi
+          package-name: ""
