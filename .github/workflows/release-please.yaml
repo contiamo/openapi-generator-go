@@ -9,6 +9,9 @@ jobs:
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # use the CI token to pretend not to be a action?
+          # if this works then the resulting PRs will trigger
+          # the test-build-publish
+          token: ${{ secrets.CONTIAMO_CI_TOKEN }}
           release-type: go-yoshi
           package-name: ""
