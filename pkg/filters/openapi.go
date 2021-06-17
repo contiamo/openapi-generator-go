@@ -59,9 +59,14 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 		return filteredSpec, fmt.Errorf("`schemas` is invalid type")
 	}
 
-	responses, ok := components["responses"].(Entry)
-	if !ok {
-		return filteredSpec, fmt.Errorf("`responses` is invalid type")
+	// responses are optional
+	var responses Entry
+	r := components["responses"]
+	if r != nil {
+		responses, ok = r.(Entry)
+		if !ok {
+			return filteredSpec, fmt.Errorf("`responses` is invalid type")
+		}
 	}
 
 	// filter out extra endpoints

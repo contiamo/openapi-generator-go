@@ -1,0 +1,320 @@
+components:
+  schemas:
+    CreateCustomFieldRequest:
+      properties:
+        description:
+          description: |
+            A description of the purpose of this field
+          maxLength: 255
+          type: string
+        displayName:
+          description: |
+            A nice human-readable name for that field
+          type: string
+        filterable:
+          default: false
+          description: |
+            Should this field show up as a filter in the catalog
+          type: boolean
+        hideIfEmpty:
+          default: false
+          description: |
+            Should this field be hidden when its value is empty
+          type: boolean
+        maxValue:
+          nullable: true
+          type: number
+        minValue:
+          nullable: true
+          type: number
+        name:
+          description: |
+            A nice computer-readable name for that field usable in postgres
+          type: string
+        searchable:
+          default: false
+          description: |
+            Should this field be used in the catalog fuzzy search
+          type: boolean
+        type:
+          $ref: '#/components/schemas/FieldType'
+        validValues:
+          items:
+            type: string
+          type: array
+      required:
+        - type
+        - name
+        - filterable
+        - searchable
+        - hideIfEmpty
+      type: object
+    FieldKind:
+      description: |
+        The source type of the field.
+
+        - System fields are non-editable default fields.  These can not be modified for deleted.
+
+        - Configurable fields are editable default fields. These can be modified but not deleted.
+
+        - Custom are user defined fields. These are fully defined by the user.
+      enum:
+        - system
+        - configurable
+        - custom
+      readOnly: true
+      type: string
+    FieldSpec:
+      properties:
+        description:
+          description: |
+            A description of the purpose of this field
+          maxLength: 255
+          type: string
+        displayName:
+          description: |
+            A nice human-readable name for that field
+          type: string
+        filterable:
+          default: false
+          description: |
+            Should this field show up as a filter in the catalog
+          type: boolean
+        hideIfEmpty:
+          default: false
+          description: |
+            Should this field be hidden when the value is empty
+          type: boolean
+        inherited:
+          default: false
+          description: |
+            Indicates that this field may be inherited from the parent resource
+          type: boolean
+        key:
+          description: |
+            lookup key for the field on the specific response types in dot notation.
+            Examples:
+              `name` -> name is found toplevel of the instance object, i.e. `obj.name`
+              `properties.category` -> category is found in the properties subobject, i.e. `obj.properties.category`
+          type: string
+        kind:
+          $ref: '#/components/schemas/FieldKind'
+        maxValue:
+          nullable: true
+          type: number
+        minValue:
+          nullable: true
+          type: number
+        name:
+          description: |
+            A nice computer-readable name for that field usable in postgres
+          type: string
+        searchable:
+          default: false
+          description: |
+            Should this field be used in the catalog fuzzy search
+          type: boolean
+        type:
+          $ref: '#/components/schemas/FieldType'
+        validValues:
+          items:
+            type: string
+          type: array
+      required:
+        - name
+        - key
+        - type
+        - kind
+        - filterable
+        - searchable
+        - description
+        - hideIfEmpty
+        - inherited
+      type: object
+    FieldType:
+      description: |
+        The data type of the field:
+
+        - `text` is an arbitrary string
+
+        - `multitext` is an arbitrary array of strings
+
+        - `select` a value which can be selected from a list
+
+        - `multiselect` is a `select` with multiple selected values, represented as an array
+
+        - `boolean` is `true` or `false` value
+
+        - `date` is a date string in `yyyy-mm-dd` format, e.g. `2019-08-21`
+
+        - `datetime` is an RFC3339 datetime string, e.g. `2019-08-21T11:54:30.369917Z`
+
+        - `number` is a numeric value, described by RFC8259, section 6.
+
+        - `link` is a link object with a displayed text and URL, e.g. `{"displayText": "text", "url": "http://example.com"}`. Only absolute URLs with HTTP/HTTPS protocol are allowed.
+      enum:
+        - text
+        - multitext
+        - select
+        - multiselect
+        - boolean
+        - date
+        - datetime
+        - number
+        - link
+      type: string
+    PageInfo:
+      description: Contains the pagination metadata for a response
+      properties:
+        current:
+          description: The current page number using 1-based array indexing
+          type: integer
+        itemCount:
+          description: Total number of items
+          type: integer
+        itemsPerPage:
+          description: |
+            Maximum items that can be on the page. They may be different from
+            the requested number of times
+          type: integer
+        unfilteredItemCount:
+          description: Item count if filters were not applied
+          type: integer
+      required:
+        - itemCount
+        - itemsPerPage
+        - unfilteredItemCount
+        - current
+      type: object
+    PagedCustomFieldResponse:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/FieldSpec'
+          type: array
+        page:
+          $ref: '#/components/schemas/PageInfo'
+      required:
+        - page
+        - data
+      type: object
+    ResourceKind:
+      description: A list of supported resource kinds
+      enum:
+        - datasource
+        - table
+        - column
+        - usecase
+        - bireport
+        - glossaryitem
+        - application
+        - pipeline
+        - api
+        - model
+        - stream
+        - filestorage
+      type: string
+  securitySchemes:
+    doubleCookieAuth:
+      description: Cookie value set during login, automatically sent by the browser
+      in: header
+      name: double-cookie
+      type: apiKey
+    doubleCookieHeader:
+      in: header
+      name: X-Double-Cookie
+      type: apiKey
+    tokenAuth:
+      bearerFormat: Personal Access Token or Service Account Token
+      scheme: bearer
+      type: http
+info:
+  contact:
+    email: developer@contiamo.com
+  description: Fields API
+  title: Fields Service
+  version: 0.2.0
+openapi: 3.0.0
+paths:
+  /api/v2/{projectId}/fields:
+    get:
+      operationId: ListCustomFields
+      parameters:
+        - description: Search fields by name and description
+          in: query
+          name: search
+          schema:
+            type: string
+        - description: Filter the response to only those unassigned for the named kind
+          in: query
+          name: unassigned
+          schema:
+            $ref: '#/components/schemas/ResourceKind'
+        - description: The current set of paged results to display, based on a 1-based array index
+          in: query
+          name: page
+          schema:
+            type: integer
+        - description: Maximum items to return in the response per page
+          in: query
+          name: pageSize
+          schema:
+            default: 20
+            maximum: 100
+            minimum: 5
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCustomFieldResponse'
+          description: Here are the fields
+      summary: List the available custom Fields
+      tags:
+        - fields
+      x-handler-group: FieldsV2
+    parameters:
+      - description: UUID of the project
+        in: path
+        name: projectId
+        required: true
+        schema:
+          format: uuid
+          type: string
+    post:
+      operationId: CreateCustomField
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomFieldRequest'
+        description: The fields spec to set
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldSpec'
+          description: Successfully create the Field
+      summary: Create new custom Field
+      tags:
+        - fields
+      x-handler-group: FieldsV2
+security:
+  - tokenAuth: []
+servers:
+  - description: Locally running
+    url: http://localhost:{port}
+    variables:
+      port:
+        default: "9191"
+  - description: Production environment
+    url: https://cloud.example.com/{tenantId}
+    variables:
+      tenantId:
+        default: demo
+tags:
+  - description: Endpoints for managing the catalog structure
+    name: fields
