@@ -25,12 +25,17 @@ func (m *Bar) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// BarAsString converts Bar to a string
+// As converts Bar to a user defined structure.
+func (m Bar) As(target interface{}) error {
+	return mapstructure.Decode(m.data, target)
+}
+
+// AsString converts Bar to a string
 func (m Bar) AsString() (result string, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
-// BarAsInt32 converts Bar to a int32
+// AsInt32 converts Bar to a int32
 func (m Bar) AsInt32() (result int32, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }

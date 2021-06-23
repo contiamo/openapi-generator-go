@@ -168,9 +168,7 @@ package {{ .PackageName }}
 
 import (
 	"encoding/json"
-{{- if not (eq (len .ConvertSpecs) 0)}}
 	"github.com/mitchellh/mapstructure"
-{{- end}}
 )
 
 {{ (printf "%s is a oneOf type. %s" .Name .Description) | commentBlock }}
@@ -190,8 +188,13 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+// As converts {{$modelName}} to a user defined structure.
+func (m {{$modelName}}) As(target interface{}) error {
+	return mapstructure.Decode(m.data, target)
+}
+
 {{- range $convert := .ConvertSpecs }}
-// {{$modelName}}As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+// As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
 func (m {{$modelName}}) As{{firstUpper $convert.TargetGoType}}() (result {{$convert.TargetGoType}}, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }

@@ -25,17 +25,22 @@ func (m *Baz) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// BazAsFoo converts Baz to a Foo
+// As converts Baz to a user defined structure.
+func (m Baz) As(target interface{}) error {
+	return mapstructure.Decode(m.data, target)
+}
+
+// AsFoo converts Baz to a Foo
 func (m Baz) AsFoo() (result Foo, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
-// BazAsBar converts Baz to a Bar
+// AsBar converts Baz to a Bar
 func (m Baz) AsBar() (result Bar, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
-// BazAsPerson converts Baz to a Person
+// AsPerson converts Baz to a Person
 func (m Baz) AsPerson() (result Person, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
