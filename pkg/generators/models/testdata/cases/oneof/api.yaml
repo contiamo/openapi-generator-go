@@ -17,3 +17,7 @@ components:
         - type: string
         - type: integer
       
+    Baz:
+      oneOf:
+        - $ref: "#/components/schemas/Foo"
+        - $ref: "#/components/schemas/Bar"

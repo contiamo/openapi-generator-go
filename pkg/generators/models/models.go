@@ -55,6 +55,8 @@ type Model struct {
 	Kind ModelKind
 	// Properties is a list of type's property descriptors
 	Properties []PropSpec
+	// ConvertSpecs contains a list of convert functions for this model
+	ConvertSpecs []ConvertSpec
 	// GoType is a string that represents the Go type that follows the model type name.
 	// For example, `type Name GoType`.
 	GoType string
@@ -64,6 +66,12 @@ type Model struct {
 	SpecVersion string
 	// PackageName is the name of the package used in the Go code
 	PackageName string
+}
+
+// ConvertSpec holds all info to build one As{Type}() function
+type ConvertSpec struct {
+	// TargetGoType is the target type of the conversion
+	TargetGoType string
 }
 
 // PropSpec is a Go property descriptor
@@ -134,6 +142,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	default:
 		model.Kind = Value
 		model.GoType = goTypeFromSpec(ref)
+		model.fillConvertSpecs(ref)
 	}
 	if err != nil {
 		return nil, err
@@ -174,6 +183,15 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	model.Imports = uniqueStrings(model.Imports)
 
 	return model, nil
+}
+
+func (m *Model) fillConvertSpecs(ref *openapi3.SchemaRef) {
+	for _, oneOf := range ref.Value.OneOf {
+		m.ConvertSpecs = append(m.ConvertSpecs, ConvertSpec{
+			TargetGoType: goTypeFromSpec(oneOf),
+		})
+	}
+
 }
 
 // Render renders the model to a Go file

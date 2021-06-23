@@ -160,7 +160,20 @@ var (
 //     Version: {{.SpecVersion}}
 package {{ .PackageName }}
 
+{{- if not (eq (len .ConvertSpecs) 0)}}
+import "github.com/mitchellh/mapstructure"
+{{- end}}
+
 {{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
+
+{{- $modelName := .Name }}
+{{- range $convert := .ConvertSpecs }}
+// {{$modelName}}As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+func {{$modelName}}As{{firstUpper $convert.TargetGoType}}(m {{$modelName}}) (result {{$convert.TargetGoType}}, err error) {
+	return result, mapstructure.Decode(m, &result)
+}
+
+{{- end}}
 `
 )

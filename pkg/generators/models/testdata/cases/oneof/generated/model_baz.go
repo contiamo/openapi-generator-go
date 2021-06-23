@@ -7,15 +7,15 @@ package generatortest
 
 import "github.com/mitchellh/mapstructure"
 
-// Bar is a value type.
-type Bar interface{}
+// Baz is a value type.
+type Baz interface{}
 
-// BarAsString converts Bar to a string
-func BarAsString(m Bar) (result string, err error) {
+// BazAsFoo converts Baz to a Foo
+func BazAsFoo(m Baz) (result Foo, err error) {
 	return result, mapstructure.Decode(m, &result)
 }
 
-// BarAsInt32 converts Bar to a int32
-func BarAsInt32(m Bar) (result int32, err error) {
+// BazAsBar converts Baz to a Bar
+func BazAsBar(m Baz) (result Bar, err error) {
 	return result, mapstructure.Decode(m, &result)
 }
