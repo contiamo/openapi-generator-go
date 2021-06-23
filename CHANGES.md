@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.8.1...v1.0.0) (2021-06-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* add convert functions for toplevel oneofs. (#41)
+
+### Features
+
+* add convert functions for toplevel oneofs. ([#41](https://www.github.com/contiamo/openapi-generator-go/issues/41)) ([93d7cc8](https://www.github.com/contiamo/openapi-generator-go/commit/93d7cc8e4c66226352317be5ec33ee50f7580f6b))
+
 ### [0.8.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.8.0...v0.8.1) (2021-06-17)
 
 
