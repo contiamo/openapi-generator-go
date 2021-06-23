@@ -25,6 +25,12 @@ var (
 			Parse(valueTemplateSource),
 	)
 
+	oneOfTemplate = template.Must(
+		template.New("oneof").
+			Funcs(fmap).
+			Parse(oneOfTemplateSource),
+	)
+
 	fmap = template.FuncMap{
 		"firstLower":   tpl.FirstLower,
 		"firstUpper":   tpl.FirstUpper,
@@ -150,6 +156,50 @@ var (
 		{{- end}}
 	)
 )
+`
+
+	oneOfTemplateSource = `
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+import (
+	"encoding/json"
+	"github.com/mitchellh/mapstructure"
+)
+
+{{ (printf "%s is a oneOf type. %s" .Name .Description) | commentBlock }}
+type {{.Name}} struct {
+	data interface{}
+}
+
+{{- $modelName := .Name }}
+
+// MarshalJSON implementes the json.Marshaller interface
+func (m *{{$modelName}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.data)
+}
+
+// UnmarshalJSON implementes the json.Unmarshaller interface
+func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
+	return json.Unmarshal(bs, &m.data)
+}
+
+// As converts {{$modelName}} to a user defined structure.
+func (m {{$modelName}}) As(target interface{}) error {
+	return mapstructure.Decode(m.data, target)
+}
+
+{{- range $convert := .ConvertSpecs }}
+// As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+func (m {{$modelName}}) As{{firstUpper $convert.TargetGoType}}() (result {{$convert.TargetGoType}}, err error) {
+	return result, mapstructure.Decode(m.data, &result)
+}
+
+{{- end}}
 `
 
 	valueTemplateSource = `

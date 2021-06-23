@@ -40,6 +40,8 @@ const (
 	Enum ModelKind = "enum"
 	// Value is a value type
 	Value ModelKind = "value"
+	// OneOf is a oneof value
+	OneOf ModelKind = "oneof"
 )
 
 // Model is a template model for rendering Go code for a given API schema
@@ -55,6 +57,8 @@ type Model struct {
 	Kind ModelKind
 	// Properties is a list of type's property descriptors
 	Properties []PropSpec
+	// ConvertSpecs contains a list of convert functions for this model
+	ConvertSpecs []ConvertSpec
 	// GoType is a string that represents the Go type that follows the model type name.
 	// For example, `type Name GoType`.
 	GoType string
@@ -64,6 +68,12 @@ type Model struct {
 	SpecVersion string
 	// PackageName is the name of the package used in the Go code
 	PackageName string
+}
+
+// ConvertSpec holds all info to build one As{Type}() function
+type ConvertSpec struct {
+	// TargetGoType is the target type of the conversion
+	TargetGoType string
 }
 
 // PropSpec is a Go property descriptor
@@ -131,6 +141,9 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
 			}
 		}
+	case len(ref.Value.OneOf) > 0:
+		model.Kind = OneOf
+		model.fillConvertSpecs(ref)
 	default:
 		model.Kind = Value
 		model.GoType = goTypeFromSpec(ref)
@@ -176,6 +189,15 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	return model, nil
 }
 
+func (m *Model) fillConvertSpecs(ref *openapi3.SchemaRef) {
+	for _, oneOf := range ref.Value.OneOf {
+		m.ConvertSpecs = append(m.ConvertSpecs, ConvertSpec{
+			TargetGoType: goTypeFromSpec(oneOf),
+		})
+	}
+
+}
+
 // Render renders the model to a Go file
 func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 	var tpl *template.Template
@@ -187,6 +209,8 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 		tpl = enumTemplate
 	case Value:
 		tpl = valueTemplate
+	case OneOf:
+		tpl = oneOfTemplate
 	}
 
 	err := tpl.Execute(writer, m)

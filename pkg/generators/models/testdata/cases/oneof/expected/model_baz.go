@@ -10,32 +10,37 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// Bar is a oneOf type.
-type Bar struct {
+// Baz is a oneOf type.
+type Baz struct {
 	data interface{}
 }
 
 // MarshalJSON implementes the json.Marshaller interface
-func (m *Bar) MarshalJSON() ([]byte, error) {
+func (m *Baz) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
 }
 
 // UnmarshalJSON implementes the json.Unmarshaller interface
-func (m *Bar) UnmarshalJSON(bs []byte) error {
+func (m *Baz) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// As converts Bar to a user defined structure.
-func (m Bar) As(target interface{}) error {
+// As converts Baz to a user defined structure.
+func (m Baz) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)
 }
 
-// AsString converts Bar to a string
-func (m Bar) AsString() (result string, err error) {
+// AsFoo converts Baz to a Foo
+func (m Baz) AsFoo() (result Foo, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
-// AsInt32 converts Bar to a int32
-func (m Bar) AsInt32() (result int32, err error) {
+// AsBar converts Baz to a Bar
+func (m Baz) AsBar() (result Bar, err error) {
+	return result, mapstructure.Decode(m.data, &result)
+}
+
+// AsPerson converts Baz to a Person
+func (m Baz) AsPerson() (result Person, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
