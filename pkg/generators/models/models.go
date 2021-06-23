@@ -40,6 +40,8 @@ const (
 	Enum ModelKind = "enum"
 	// Value is a value type
 	Value ModelKind = "value"
+	// OneOf is a oneof value
+	OneOf ModelKind = "oneof"
 )
 
 // Model is a template model for rendering Go code for a given API schema
@@ -139,10 +141,12 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
 			}
 		}
+	case len(ref.Value.OneOf) > 0:
+		model.Kind = OneOf
+		model.fillConvertSpecs(ref)
 	default:
 		model.Kind = Value
 		model.GoType = goTypeFromSpec(ref)
-		model.fillConvertSpecs(ref)
 	}
 	if err != nil {
 		return nil, err
@@ -205,6 +209,8 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 		tpl = enumTemplate
 	case Value:
 		tpl = valueTemplate
+	case OneOf:
+		tpl = oneOfTemplate
 	}
 
 	err := tpl.Execute(writer, m)

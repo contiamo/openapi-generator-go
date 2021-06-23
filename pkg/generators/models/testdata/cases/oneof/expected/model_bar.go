@@ -5,17 +5,32 @@
 //     Version: 0.1.0
 package generatortest
 
-import "github.com/mitchellh/mapstructure"
+import (
+	"encoding/json"
+	"github.com/mitchellh/mapstructure"
+)
 
-// Bar is a value type.
-type Bar interface{}
+// Bar is a oneOf type.
+type Bar struct {
+	data interface{}
+}
+
+// MarshalJSON implementes the json.Marshaller interface
+func (m *Bar) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.data)
+}
+
+// UnmarshalJSON implementes the json.Unmarshaller interface
+func (m *Bar) UnmarshalJSON(bs []byte) error {
+	return json.Unmarshal(bs, &m.data)
+}
 
 // BarAsString converts Bar to a string
-func BarAsString(m Bar) (result string, err error) {
-	return result, mapstructure.Decode(m, &result)
+func (m Bar) AsString() (result string, err error) {
+	return result, mapstructure.Decode(m.data, &result)
 }
 
 // BarAsInt32 converts Bar to a int32
-func BarAsInt32(m Bar) (result int32, err error) {
-	return result, mapstructure.Decode(m, &result)
+func (m Bar) AsInt32() (result int32, err error) {
+	return result, mapstructure.Decode(m.data, &result)
 }

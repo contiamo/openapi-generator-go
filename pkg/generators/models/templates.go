@@ -25,6 +25,12 @@ var (
 			Parse(valueTemplateSource),
 	)
 
+	oneOfTemplate = template.Must(
+		template.New("oneof").
+			Funcs(fmap).
+			Parse(oneOfTemplateSource),
+	)
+
 	fmap = template.FuncMap{
 		"firstLower":   tpl.FirstLower,
 		"firstUpper":   tpl.FirstUpper,
@@ -152,6 +158,47 @@ var (
 )
 `
 
+	oneOfTemplateSource = `
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+import (
+	"encoding/json"
+{{- if not (eq (len .ConvertSpecs) 0)}}
+	"github.com/mitchellh/mapstructure"
+{{- end}}
+)
+
+{{ (printf "%s is a oneOf type. %s" .Name .Description) | commentBlock }}
+type {{.Name}} struct {
+	data interface{}
+}
+
+{{- $modelName := .Name }}
+
+// MarshalJSON implementes the json.Marshaller interface
+func (m *{{$modelName}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.data)
+}
+
+// UnmarshalJSON implementes the json.Unmarshaller interface
+func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
+	return json.Unmarshal(bs, &m.data)
+}
+
+{{- range $convert := .ConvertSpecs }}
+// {{$modelName}}As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+func (m {{$modelName}}) As{{firstUpper $convert.TargetGoType}}() (result {{$convert.TargetGoType}}, err error) {
+	return result, mapstructure.Decode(m.data, &result)
+}
+
+{{- end}}
+`
+
 	valueTemplateSource = `
 // This file is auto-generated, DO NOT EDIT.
 //
@@ -160,20 +207,7 @@ var (
 //     Version: {{.SpecVersion}}
 package {{ .PackageName }}
 
-{{- if not (eq (len .ConvertSpecs) 0)}}
-import "github.com/mitchellh/mapstructure"
-{{- end}}
-
 {{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
-
-{{- $modelName := .Name }}
-{{- range $convert := .ConvertSpecs }}
-// {{$modelName}}As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
-func {{$modelName}}As{{firstUpper $convert.TargetGoType}}(m {{$modelName}}) (result {{$convert.TargetGoType}}, err error) {
-	return result, mapstructure.Decode(m, &result)
-}
-
-{{- end}}
 `
 )
