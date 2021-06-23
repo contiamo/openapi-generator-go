@@ -34,3 +34,8 @@ func (m Baz) AsFoo() (result Foo, err error) {
 func (m Baz) AsBar() (result Bar, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
+
+// BazAsPerson converts Baz to a Person
+func (m Baz) AsPerson() (result Person, err error) {
+	return result, mapstructure.Decode(m.data, &result)
+}

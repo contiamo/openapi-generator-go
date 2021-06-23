@@ -21,3 +21,12 @@ components:
       oneOf:
         - $ref: "#/components/schemas/Foo"
         - $ref: "#/components/schemas/Bar"
+        - $ref: "#/components/schemas/Person"
+
+    Person:
+      type: object
+      properties:
+        name: 
+          type: string
+        age:
+          type: integer
