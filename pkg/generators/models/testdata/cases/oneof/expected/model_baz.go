@@ -25,6 +25,21 @@ func (m *Baz) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+// FromFoo sets the Baz data.
+func (m *Baz) FromFoo(data Foo) {
+	m.data = data
+}
+
+// FromBar sets the Baz data.
+func (m *Baz) FromBar(data Bar) {
+	m.data = data
+}
+
+// FromPerson sets the Baz data.
+func (m *Baz) FromPerson(data Person) {
+	m.data = data
+}
+
 // As converts Baz to a user defined structure.
 func (m Baz) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)

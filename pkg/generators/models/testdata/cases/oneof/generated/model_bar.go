@@ -25,6 +25,16 @@ func (m *Bar) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+// FromString sets the Bar data.
+func (m *Bar) FromString(data string) {
+	m.data = data
+}
+
+// FromInt32 sets the Bar data.
+func (m *Bar) FromInt32(data int32) {
+	m.data = data
+}
+
 // As converts Bar to a user defined structure.
 func (m Bar) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)

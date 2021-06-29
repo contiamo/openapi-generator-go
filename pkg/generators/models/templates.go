@@ -188,6 +188,15 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+
+{{- range $convert := .ConvertSpecs }}
+// From{{firstUpper $convert.TargetGoType}} sets the {{$modelName}} data.
+func (m *{{$modelName}}) From{{firstUpper $convert.TargetGoType}}(data {{$convert.TargetGoType}}) {
+	m.data = data
+}
+
+{{- end }}
+
 // As converts {{$modelName}} to a user defined structure.
 func (m {{$modelName}}) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)
