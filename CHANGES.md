@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.9.0...v0.10.0) (2021-06-29)
+
+
+### Features
+
+* Add From* methods to set oneOf data models ([#45](https://www.github.com/contiamo/openapi-generator-go/issues/45)) ([4bc1140](https://www.github.com/contiamo/openapi-generator-go/commit/4bc11402f23e615422f23e3f224779d0e250dad1))
+
 ## [0.9.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.8.1...v0.9.0) (2021-06-23)
 
 
