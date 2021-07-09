@@ -188,6 +188,10 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+// Set sets the {{$modelName}} data.
+func (m *{{$modelName}}) Set(data interface{}) {
+	m.data = data
+}
 
 {{- range $convert := .ConvertSpecs }}
 // From{{firstUpper $convert.TargetGoType}} sets the {{$modelName}} data.

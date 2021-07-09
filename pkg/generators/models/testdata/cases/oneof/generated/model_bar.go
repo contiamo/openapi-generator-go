@@ -25,6 +25,11 @@ func (m *Bar) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
+// Set sets the Bar data.
+func (m *Bar) Set(data interface{}) {
+	m.data = data
+}
+
 // FromString sets the Bar data.
 func (m *Bar) FromString(data string) {
 	m.data = data
