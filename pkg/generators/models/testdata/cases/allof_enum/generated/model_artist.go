@@ -12,7 +12,7 @@ import (
 // Artist is an object.
 type Artist struct {
 	// LeftHand:
-	LeftHand *string `json:"leftHand,omitempty"`
+	LeftHand *AnyThing `json:"leftHand,omitempty"`
 	// RightHand:
 	RightHand *Color `json:"rightHand,omitempty"`
 }
@@ -20,6 +20,9 @@ type Artist struct {
 // Validate implements basic validation for this model
 func (m Artist) Validate() error {
 	return validation.Errors{
+		"leftHand": validation.Validate(
+			m.LeftHand,
+		),
 		"rightHand": validation.Validate(
 			m.RightHand,
 		),
@@ -27,12 +30,12 @@ func (m Artist) Validate() error {
 }
 
 // GetLeftHand returns the LeftHand property
-func (m Artist) GetLeftHand() *string {
+func (m Artist) GetLeftHand() *AnyThing {
 	return m.LeftHand
 }
 
 // SetLeftHand sets the LeftHand property
-func (m *Artist) SetLeftHand(val *string) {
+func (m *Artist) SetLeftHand(val *AnyThing) {
 	m.LeftHand = val
 }
 

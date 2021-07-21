@@ -10,7 +10,7 @@ import (
 )
 
 // AnyThing is an enum.
-type AnyThing Food
+type AnyThing string
 
 // Validate implements basic validation for this model
 func (m AnyThing) Validate() error {
@@ -34,14 +34,14 @@ var (
 		AnyThingPizza,
 		AnyThingRed,
 	}
-	// KnownAnyThingFood is the list of valid AnyThing as Food
-	KnownAnyThingFood = []Food{
-		Food(AnyThingApple),
-		Food(AnyThingBanana),
-		Food(AnyThingBlue),
-		Food(AnyThingGreen),
-		Food(AnyThingPizza),
-		Food(AnyThingRed),
+	// KnownAnyThingString is the list of valid AnyThing as string
+	KnownAnyThingString = []string{
+		string(AnyThingApple),
+		string(AnyThingBanana),
+		string(AnyThingBlue),
+		string(AnyThingGreen),
+		string(AnyThingPizza),
+		string(AnyThingRed),
 	}
 
 	// InKnownAnyThing is an ozzo-validator for AnyThing
