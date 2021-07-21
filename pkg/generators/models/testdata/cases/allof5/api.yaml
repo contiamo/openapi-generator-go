@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Foo:
+      type: object
+      properties:
+        # we expect bar to be a pointer to an inlined struct
+        bar:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Sub"
+            - type: object
+              properties:
+                extraField:
+                  type: string
+
+    Sub:
+      type: object
+      properties:
+        subField:
+          type: string
