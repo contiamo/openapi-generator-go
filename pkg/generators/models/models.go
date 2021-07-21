@@ -238,12 +238,25 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 		passed = make(passedSchemas)
 	}
 
+	isSelfRef := false
 	for _, subSchema := range ref.Value.AllOf {
 		if _, exists := passed[subSchema]; exists {
+			isSelfRef = true
 			continue
 		}
 		passed[subSchema] = something{}
 		out = deepMerge(out, subSchema, passed)
+	}
+
+	// remove the reference field on AllOf values, these should be
+	// flattened into a single (potentially inlined) struct.
+	// We make exceptions for
+	// 		* types are contain a self-reference, these can not be flattened
+	// 		* types are a single allOf, these usually indicate merging in nullable properties, etc
+	// 		  it is not a _real_ allOf, rather we are just overriding fields on a single type
+	//
+	if !isSelfRef && len(ref.Value.AllOf) > 1 {
+		out.Ref = ""
 	}
 
 	return out

@@ -43,7 +43,7 @@ type Person struct {
 	// RequestURI:
 	RequestURI string `json:"requestURI,omitempty"`
 	// SecondGender:
-	SecondGender *Gender `json:"secondGender,omitempty"`
+	SecondGender *string `json:"secondGender,omitempty"`
 	// Uri:
 	Uri string `json:"uri,omitempty"`
 	// Url:
@@ -90,9 +90,6 @@ func (m Person) Validate() error {
 		),
 		"requestURI": validation.Validate(
 			m.RequestURI, is.RequestURL.Error("must be valid URI with scheme"),
-		),
-		"secondGender": validation.Validate(
-			m.SecondGender,
 		),
 		"uri": validation.Validate(
 			m.Uri, is.RequestURI,
@@ -247,12 +244,12 @@ func (m *Person) SetRequestURI(val string) {
 }
 
 // GetSecondGender returns the SecondGender property
-func (m Person) GetSecondGender() *Gender {
+func (m Person) GetSecondGender() *string {
 	return m.SecondGender
 }
 
 // SetSecondGender sets the SecondGender property
-func (m *Person) SetSecondGender(val *Gender) {
+func (m *Person) SetSecondGender(val *string) {
 	m.SecondGender = val
 }
 

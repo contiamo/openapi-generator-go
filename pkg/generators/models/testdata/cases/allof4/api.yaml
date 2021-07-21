@@ -8,6 +8,7 @@ components:
     Foo:
       type: object
       properties:
+        # we expect bar to be a pointer to Sub
         bar:
           nullable: true
           allOf:
@@ -16,5 +17,5 @@ components:
     Sub:
       type: object
       properties:
-        sub:
+        subField:
           type: string
