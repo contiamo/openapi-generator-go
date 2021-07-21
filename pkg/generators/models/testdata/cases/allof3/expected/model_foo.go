@@ -9,7 +9,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// Foo is an object.
+// Foo is an object. this is a foo object
 type Foo struct {
 	// Mixin:
 	Mixin string `json:"mixin,omitempty"`

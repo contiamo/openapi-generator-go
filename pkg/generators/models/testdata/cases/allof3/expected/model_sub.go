@@ -9,7 +9,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// Sub is an object.
+// Sub is an object. this is a sub object
 type Sub struct {
 	// SubField:
 	SubField string `json:"subField,omitempty"`
