@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.10.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.0...v0.10.1) (2021-07-30)
+
+
+### Bug Fixes
+
+* improve allOf type generation ([#48](https://www.github.com/contiamo/openapi-generator-go/issues/48)) ([c31f173](https://www.github.com/contiamo/openapi-generator-go/commit/c31f1733f4dddcea02c1c6ca6a0ecdf74312b72e))
+
 ## [0.10.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.9.0...v0.10.0) (2021-06-29)
 
 
