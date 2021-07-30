@@ -9,14 +9,14 @@ components:
       type: object
       properties:
         leftHand:
+          nullable: true
           allOf:
             - $ref: "#/components/schemas/AnyThing"
-            - nullable: true
         rightHand:
+          nullable: true
           allOf:
             - $ref: "#/components/schemas/Color"
-            - nullable: true
-    
+
     AnyThing:
       allOf:
         - $ref: "#/components/schemas/Color"
@@ -35,4 +35,3 @@ components:
         - apple
         - banana
         - pizza
-    

@@ -11,8 +11,8 @@ import (
 
 // Sub is an object.
 type Sub struct {
-	// Sub:
-	Sub string `json:"sub,omitempty"`
+	// SubField:
+	SubField string `json:"subField,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -20,12 +20,12 @@ func (m Sub) Validate() error {
 	return validation.Errors{}.Filter()
 }
 
-// GetSub returns the Sub property
-func (m Sub) GetSub() string {
-	return m.Sub
+// GetSubField returns the SubField property
+func (m Sub) GetSubField() string {
+	return m.SubField
 }
 
-// SetSub sets the Sub property
-func (m *Sub) SetSub(val string) {
-	m.Sub = val
+// SetSubField sets the SubField property
+func (m *Sub) SetSubField(val string) {
+	m.SubField = val
 }

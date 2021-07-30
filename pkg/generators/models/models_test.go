@@ -64,6 +64,10 @@ func TestModels(t *testing.T) {
 			directory: "testdata/cases/allof4",
 		},
 		{
+			name:      "allOf can flatten fields and inline as subtypes of a struct",
+			directory: "testdata/cases/allof5",
+		},
+		{
 			name:      "typed arrays generated typed arrays in go",
 			directory: "testdata/cases/typed_arrays",
 		},

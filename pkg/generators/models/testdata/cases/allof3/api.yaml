@@ -5,7 +5,11 @@ info:
 
 components:
   schemas:
+    # we expect the fields of Sub and the anonymous
+    # object to be merged into a single struct with
+    # both fields
     Foo:
+      description: this is a foo object
       allOf:
         - $ref: "#/components/schemas/Sub"
         - type: object
@@ -15,6 +19,7 @@ components:
 
     Sub:
       type: object
+      description: "this is a sub object"
       properties:
-        sub:
+        subField:
           type: string

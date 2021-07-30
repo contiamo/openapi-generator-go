@@ -9,12 +9,12 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// Foo is an object.
+// Foo is an object. this is a foo object
 type Foo struct {
 	// Mixin:
 	Mixin string `json:"mixin,omitempty"`
-	// Sub:
-	Sub string `json:"sub,omitempty"`
+	// SubField:
+	SubField string `json:"subField,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -32,12 +32,12 @@ func (m *Foo) SetMixin(val string) {
 	m.Mixin = val
 }
 
-// GetSub returns the Sub property
-func (m Foo) GetSub() string {
-	return m.Sub
+// GetSubField returns the SubField property
+func (m Foo) GetSubField() string {
+	return m.SubField
 }
 
-// SetSub sets the Sub property
-func (m *Foo) SetSub(val string) {
-	m.Sub = val
+// SetSubField sets the SubField property
+func (m *Foo) SetSubField(val string) {
+	m.SubField = val
 }

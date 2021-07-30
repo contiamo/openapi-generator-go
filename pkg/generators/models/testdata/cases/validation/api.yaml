@@ -23,8 +23,8 @@ components:
         gender:
           $ref: "#/components/schemas/Gender"
         secondGender:
+          nullable: true
           allOf:
-            - nullable: true
             - $ref: "#/components/schemas/Gender"
         address:
           $ref: "#/components/schemas/Address"
