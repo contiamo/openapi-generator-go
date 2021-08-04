@@ -179,7 +179,7 @@ type {{.Name}} struct {
 {{- $modelName := .Name }}
 
 // MarshalJSON implementes the json.Marshaller interface
-func (m *{{$modelName}}) MarshalJSON() ([]byte, error) {
+func (m {{$modelName}}) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
 }
 

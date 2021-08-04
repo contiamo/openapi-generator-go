@@ -16,7 +16,7 @@ type Bar struct {
 }
 
 // MarshalJSON implementes the json.Marshaller interface
-func (m *Bar) MarshalJSON() ([]byte, error) {
+func (m Bar) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
 }
 

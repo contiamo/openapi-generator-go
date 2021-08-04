@@ -16,7 +16,7 @@ type Baz struct {
 }
 
 // MarshalJSON implementes the json.Marshaller interface
-func (m *Baz) MarshalJSON() ([]byte, error) {
+func (m Baz) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
 }
 
