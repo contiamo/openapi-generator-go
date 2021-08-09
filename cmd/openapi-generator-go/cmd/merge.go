@@ -47,9 +47,9 @@ var mergeCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("can't read dir flag")
 		}
 
-		destinationFile, err := cmd.Flags().GetString("output")
+		destinationFile, err := cmd.Flags().GetString("spec")
 		if err != nil {
-			log.Fatal().Err(err).Msg("can't read output flag")
+			log.Fatal().Err(err).Msg("can't read spec flag")
 		}
 
 		f, err := os.Open(baseFile)
