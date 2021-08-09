@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.10.2](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.1...v0.10.2) (2021-08-09)
+
+
+### Bug Fixes
+
+* MarshalJSON should not have pointer reciever ([#50](https://www.github.com/contiamo/openapi-generator-go/issues/50)) ([4946b37](https://www.github.com/contiamo/openapi-generator-go/commit/4946b3735971663689344c77432e6aef18880b34))
+
 ### [0.10.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.0...v0.10.1) (2021-07-30)
 
 
