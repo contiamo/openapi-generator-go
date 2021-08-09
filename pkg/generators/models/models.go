@@ -303,16 +303,16 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 	}
 
 	// merge docs
-	if right.Value.Title != "" {
+	if right.Value.Title != "" && out.Value.Title == "" {
 		out.Value.Title = right.Value.Title
 	}
-	if right.Value.Description != "" {
+	if right.Value.Description != "" && out.Value.Description == "" {
 		out.Value.Description = right.Value.Description
 	}
-	if right.Value.ExternalDocs != nil {
+	if right.Value.ExternalDocs != nil && out.Value.ExternalDocs == nil {
 		out.Value.ExternalDocs = right.Value.ExternalDocs
 	}
-	if right.Value.Example != nil {
+	if right.Value.Example != nil && out.Value.Example == nil {
 		out.Value.Example = right.Value.Example
 	}
 
