@@ -47,9 +47,9 @@ var mergeCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("can't read dir flag")
 		}
 
-		destinationFile, err := cmd.Flags().GetString("spec")
+		destinationFile, err := cmd.Flags().GetString("merged-spec")
 		if err != nil {
-			log.Fatal().Err(err).Msg("can't read spec flag")
+			log.Fatal().Err(err).Msg("can't read merged-spec flag")
 		}
 
 		f, err := os.Open(baseFile)
@@ -79,4 +79,5 @@ func init() {
 
 	mergeCmd.Flags().StringP("base", "b", "base.yaml", "base spec")
 	mergeCmd.Flags().StringP("dir", "d", "./parts", "part directory")
+	mergeCmd.Flags().StringP("merged-spec", "m", "api.yaml", "output spec file")
 }
