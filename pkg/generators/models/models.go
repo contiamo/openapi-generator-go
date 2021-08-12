@@ -249,6 +249,16 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 		return out
 	}
 
+	// this is used for the special edge cases like this
+	//   allOf:
+	//      - description: "this will only set the description value"
+	// 	- $ref: '#/components/schemas/ColumnTypeMetadata'
+	//
+	// without this method, the allOf will generate an inline type, but the resulting code
+	// is much better and easier to use if we drop the first allOf item and just treat it like
+	// the special case of a single `ref`, which will used the named `ColumnTypeMetadata` type.
+	ref.Value.AllOf = removeSemanticallyEmptyRefs(ref.Value.AllOf)
+
 	isSelfRef := false
 	for _, subSchema := range ref.Value.AllOf {
 		if _, exists := passed[subSchema]; exists {
@@ -273,6 +283,92 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	}
 
 	return out
+}
+
+// removeSemanticallyEmptyRefs removes SchemaRefs from an allOf list  that will not produce any
+// meaningful changes to the generated type. Specifically this will remove things like
+//
+//   allOf:
+//      - description: "this will only set the description value"
+func removeSemanticallyEmptyRefs(allOf []*openapi3.SchemaRef) []*openapi3.SchemaRef {
+	if allOf == nil {
+		return allOf
+	}
+
+	refCount := 0
+	for _, subRef := range allOf {
+		if subRef.Ref != "" {
+			refCount++
+		}
+	}
+
+	// nothing we can do here, there are multiple references, so any
+	// difficult mixins can be handled by the deepMerge
+	if refCount != 1 {
+		return allOf
+	}
+
+	reduced := []*openapi3.SchemaRef{}
+	for _, subRef := range allOf {
+		if isNonEmptySchemaRef(subRef) {
+			reduced = append(reduced, subRef)
+		}
+	}
+
+	return reduced
+}
+
+// isNonEmptySchemaRef tests if the given SchemaRef has a non-trivial
+// definition. This means that at least one of its properties has an impact
+// on the resulting type or validation of the generated model. Changes
+// to the description, title, etc, are considered "trivial" changes that
+// we can choose to ignore.
+func isNonEmptySchemaRef(ref *openapi3.SchemaRef) bool {
+	if ref == nil {
+		return false
+	}
+
+	// it refers to another schema
+	if ref.Ref != "" {
+		return true
+	}
+
+	// has empty ref _and_ empty value
+	if ref.Value == nil {
+		return false
+	}
+
+	val := ref.Value
+	switch {
+	case
+		// schema properties
+		val.Nullable, val.ReadOnly, val.WriteOnly,
+		val.Format != "",
+		val.Default != nil,
+		val.Type != "",
+		// string related
+		val.MinLength != 0,
+		val.MaxLength != nil,
+		val.Pattern != "",
+		// number related
+		val.Min != nil,
+		val.Max != nil,
+		val.MultipleOf != nil,
+		// array related
+		val.Items != nil,
+		val.MinItems != 0,
+		val.MaxItems != nil,
+		// object related
+		val.MinProps != 0,
+		val.MaxProps != nil,
+		// array values properties
+		len(val.Required) != 0,
+		len(val.Properties) != 0, len(val.Enum) != 0,
+		len(val.AllOf) != 0, len(val.AnyOf) != 0:
+		return true
+	default:
+		return false
+	}
 }
 
 // deepMerge merges `right` into `left` schema recursively resolving types (e.g. `allOf`).

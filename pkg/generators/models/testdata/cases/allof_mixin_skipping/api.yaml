@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    ColumnMetadata:
+      description: Metadata for single column
+      properties:
+        comment:
+          description: Column description
+          type: string
+        name:
+          description: Column name
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ColumnTypeMetadata'
+          - description: Column type
+      required:
+      - name
+      - type
+      type: object
+
+    ColumnTypeMetadata:
+      description: Type metadata
+      properties:
+        columns:
+          description: List of columns if this type is structural
+          items:
+            $ref: '#/components/schemas/ColumnMetadata'
+          type: array
+        itemType:
+          allOf:
+          - $ref: '#/components/schemas/ColumnTypeMetadata'
+          - description: Array item type if this type is array
+            nullable: true
+        nullable:
+          $ref: '#/components/schemas/Nullability'
+        originalName:
+          description: Original column type as given by data source
+          type: string
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ColumnType'
+          - description: Column type
+      required:
+      - nullable
+      - originalName
+      - type
+      type: object
+
+    ColumnType:
+      default: other
+      description: Normalized column type. If type cannot be determined or is not
+        compatible, then 'other'.
+      enum:
+      - varchar array
+      - boolean
+      - date
+      - numeric
+      - double precision
+      - float
+      - integer
+      - bigint
+      - other
+      - smallint
+      - varchar
+      - time
+      - timestamp
+      type: string
+
+    Nullability:
+      default: NullableUnknown
+      description: Column nullability
+      enum:
+      - NoNulls
+      - Nullable
+      - NullableUnknown
+      type: string

@@ -11,9 +11,7 @@ components:
         value:
           type: string
         next:
+          description: the next item
           allOf:
             - $ref: "#/components/schemas/ListItem"
-            - description: the next item
             - nullable: true
-    
- 
