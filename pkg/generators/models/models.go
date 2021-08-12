@@ -252,7 +252,7 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	// this is used for the special edge cases like this
 	//   allOf:
 	//      - description: "this will only set the description value"
-	// 		- $ref: '#/components/schemas/ColumnTypeMetadata'
+	// 	- $ref: '#/components/schemas/ColumnTypeMetadata'
 	//
 	// without this method, the allOf will generate an inline type, but the resulting code
 	// is much better and easier to use if we drop the first allOf item and just treat it like
