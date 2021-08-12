@@ -68,6 +68,10 @@ func TestModels(t *testing.T) {
 			directory: "testdata/cases/allof5",
 		},
 		{
+			name:      "allOf can skip certain mixins",
+			directory: "testdata/cases/allof_mixin_skipping",
+		},
+		{
 			name:      "typed arrays generated typed arrays in go",
 			directory: "testdata/cases/typed_arrays",
 		},
