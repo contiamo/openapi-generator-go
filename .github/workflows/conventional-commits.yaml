@@ -1,0 +1,21 @@
+name: 'Conventional commit titles'
+on:
+  pull_request:
+    types:
+      # Check title when opened.
+      - opened
+      # Check title when new commits are pushed.
+      # Required to use as a status check.
+      - synchronize
+      # When the title or description change
+      - edited
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: deepakputhraya/action-pr-title@master
+        with:
+          # Ensure pull request titles match the Conventional Commits specification https://www.conventionalcommits.org/en/v1.0.0/
+          regex: '^(feat|fix|chore|ci|refactor|test)!?:'
