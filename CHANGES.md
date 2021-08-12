@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.1...v0.11.0) (2021-08-12)
+
+
+### Features
+
+* expose the merge package as command ([#52](https://www.github.com/contiamo/openapi-generator-go/issues/52)) ([cd2fcf9](https://www.github.com/contiamo/openapi-generator-go/commit/cd2fcf98ddb8ee39d659741f9866732e4c32ff69))
+* improve description handling in allOfs ([#55](https://www.github.com/contiamo/openapi-generator-go/issues/55)) ([f6feffe](https://www.github.com/contiamo/openapi-generator-go/commit/f6feffe7cd47d292ab52ed14ef75331f67655aa6))
+
+
+### Bug Fixes
+
+* MarshalJSON should not have pointer reciever ([#50](https://www.github.com/contiamo/openapi-generator-go/issues/50)) ([4946b37](https://www.github.com/contiamo/openapi-generator-go/commit/4946b3735971663689344c77432e6aef18880b34))
+
 ### [0.10.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.0...v0.10.1) (2021-07-30)
 
 
