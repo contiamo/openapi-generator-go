@@ -127,6 +127,14 @@ func TestModels(t *testing.T) {
 			name:      "allof supports intermediate array types",
 			directory: "testdata/cases/allof_arrays",
 		},
+		{
+			name:      "oneOf supports mapped discriminators",
+			directory: "testdata/cases/oneof_mapped_discriminator",
+		},
+		{
+			name:      "oneOf supports unmapped discriminators",
+			directory: "testdata/cases/oneof_unmapped_discriminator",
+		},
 	}
 
 	for _, tc := range cases {

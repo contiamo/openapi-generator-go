@@ -1,0 +1,47 @@
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+import (
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+{{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
+type {{.Name}} {{.GoType}}
+
+// Validate implements basic validation for this model
+func (m {{.Name}}) Validate() error {
+	return InKnown{{.Name}}.Validate(m)
+}
+
+var (
+	{{- $enum :=. }}
+	{{- range $v := .Properties }}
+	{{$enum.Name}}{{$v.Name}} {{$enum.Name}} = {{$v.Value}}
+	{{- end}}
+
+	// Known{{.Name}} is the list of valid {{.Name}}
+	Known{{.Name }} = []{{.Name}}{
+		{{- range $v := .Properties }}
+		{{$enum.Name}}{{$v.Name}},
+		{{- end}}
+	}
+
+	{{- $enum :=. }}
+	// Known{{$enum.Name}}{{$enum.GoType | firstUpper}} is the list of valid {{$enum.Name}} as {{$enum.GoType}}
+	Known{{$enum.Name}}{{$enum.GoType | firstUpper}} = []{{$enum.GoType}}{
+		{{- range $v := .Properties }}
+		{{$enum.GoType}}({{$enum.Name}}{{$v.Name}}),
+		{{- end}}
+	}
+
+	// InKnown{{.Name}} is an ozzo-validator for {{.Name}}
+	InKnown{{.Name}} = validation.In(
+		{{- range $v := .Properties }}
+		{{$enum.Name}}{{$v.Name}},
+		{{- end}}
+	)
+)

@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test oneOf discriminator support
+
+components:
+  schemas:
+    GenericError:
+      type: object
+      description: Represents and unknown error. The system may be unstable, it is unknown if retrying the request will succeed.
+      properties:
+        kind:
+          type: string
+          enum:
+            - "generic"
+            - "auth"
+        message:
+          type: string
+          description: the user friendly error message.
+        code:
+          type: string
+          description: machine friendly error code.
+        traceId:
+          type: string
+          description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
+      required:
+        - kind
+        - message
+
+    FieldError:
+      type: object
+      description: Represents a validation error. The request must be corrected before retrying.
+      properties:
+        kind:
+          type: string
+          enum:
+            - "field"
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+        traceId:
+          type: string
+          description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
+      required:
+        - kind
+        - errors
+        - traceId
+
+    ValidationError:
+      type: object
+      description: a validation error for a form field
+      properties:
+        name:
+          type: string
+          description: the field name
+        message:
+          type: string
+          description: the user friendly validation error message
+
+    ExternalError:
+      type: object
+      description: Represents an error from an external service. The system is stable, but can not complete the request. Try again later.
+      properties:
+        kind:
+          type: string
+          enum:
+            - "external"
+        service:
+          type: string
+          description: name of the service that is returning errors
+        traceId:
+          type: string
+          description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
+      required:
+        - kind
+        - traceId
+
+    Error:
+      oneOf:
+        - $ref: "#/components/schemas/GenericError"
+        - $ref: "#/components/schemas/FieldError"
+        - $ref: "#/components/schemas/ExternalError"
+      discriminator:
+        propertyName: kind
+        mapping:
+          generic: '#/components/schemas/GenericError'
+          field: '#/components/schemas/FieldError'
+          external: '#/components/schemas/ExternalError'
+          auth: '#/components/schemas/GenericError'
