@@ -15,7 +15,7 @@ type ColumnMetadata struct {
 	Comment string `json:"comment,omitempty"`
 	// Name: Column name
 	Name string `json:"name"`
-	// Type: Type metadata
+	// Type: Type metadata Column type
 	Type ColumnTypeMetadata `json:"type"`
 }
 

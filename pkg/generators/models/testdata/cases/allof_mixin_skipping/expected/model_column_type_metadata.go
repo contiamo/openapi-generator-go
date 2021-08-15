@@ -13,13 +13,13 @@ import (
 type ColumnTypeMetadata struct {
 	// Columns: List of columns if this type is structural
 	Columns []ColumnMetadata `json:"columns,omitempty"`
-	// ItemType: Type metadata
+	// ItemType: Type metadata Array item type if this type is array
 	ItemType *ColumnTypeMetadata `json:"itemType,omitempty"`
 	// Nullable: Column nullability
 	Nullable Nullability `json:"nullable"`
 	// OriginalName: Original column type as given by data source
 	OriginalName string `json:"originalName"`
-	// Type: Normalized column type. If type cannot be determined or is not compatible, then 'other'.
+	// Type: Normalized column type. If type cannot be determined or is not compatible, then 'other'. Column type
 	Type ColumnType `json:"type"`
 }
 

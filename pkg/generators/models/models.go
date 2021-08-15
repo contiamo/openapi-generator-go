@@ -7,6 +7,7 @@ import (
 	"math"
 	"regexp"
 	"sort"
+	"strings"
 	"text/template"
 
 	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
@@ -249,16 +250,6 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 		return out
 	}
 
-	// this is used for the special edge cases like this
-	//   allOf:
-	//      - description: "this will only set the description value"
-	// 	- $ref: '#/components/schemas/ColumnTypeMetadata'
-	//
-	// without this method, the allOf will generate an inline type, but the resulting code
-	// is much better and easier to use if we drop the first allOf item and just treat it like
-	// the special case of a single `ref`, which will used the named `ColumnTypeMetadata` type.
-	ref.Value.AllOf = removeSemanticallyEmptyRefs(ref.Value.AllOf)
-
 	isSelfRef := false
 	for _, subSchema := range ref.Value.AllOf {
 		if _, exists := passed[subSchema]; exists {
@@ -269,6 +260,21 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 		out = deepMerge(out, subSchema, passed)
 	}
 
+	// this is used for the special edge cases like this
+	//   allOf:
+	//      - description: "this will only set the description value"
+	//      - $ref: '#/components/schemas/ColumnTypeMetadata'
+	//
+	// without this method, the allOf will generate an inline type, but the resulting code
+	// is much better and easier to use if we ignore the first allOf item and just treat it like
+	// the special case of a single `ref`, (see the next if-block) which will used the named
+	// `ColumnTypeMetadata` type.
+	//
+	structural := structuralRefs(ref.Value.AllOf)
+
+	// len(structural) > 1 implies that there are multiple schemas that change the resulting type,
+	// so we can not use the references.
+	//
 	// remove the reference field on AllOf values, these should be
 	// flattened into a single (potentially inlined) struct.
 	// We make exceptions for
@@ -277,40 +283,28 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	// 		  it is not a _real_ allOf, rather we are just overriding fields on a single type.
 	// 		  this case should already be handled above, so this is really checking if AllOf > 0,
 	// 		  but checking >1 is more semantically correct
-	//
-	if !isSelfRef && len(ref.Value.AllOf) > 1 {
+	if !isSelfRef && len(structural) > 1 {
 		out.Ref = ""
 	}
 
 	return out
 }
 
-// removeSemanticallyEmptyRefs removes SchemaRefs from an allOf list  that will not produce any
-// meaningful changes to the generated type. Specifically this will remove things like
+// structuralRefs returns the slice of SchemaRefs an allOf list  that will produce
+// structural changes to the generated type. These are references that change a field
+// a type, or a validation. Conversley, we can think of this as removing SchemaRefs that
+// only contain documentation change, specifically this will remove things like
 //
 //   allOf:
 //      - description: "this will only set the description value"
-func removeSemanticallyEmptyRefs(allOf []*openapi3.SchemaRef) []*openapi3.SchemaRef {
+func structuralRefs(allOf []*openapi3.SchemaRef) []*openapi3.SchemaRef {
 	if allOf == nil {
-		return allOf
-	}
-
-	refCount := 0
-	for _, subRef := range allOf {
-		if subRef.Ref != "" {
-			refCount++
-		}
-	}
-
-	// nothing we can do here, there are multiple references, so any
-	// difficult mixins can be handled by the deepMerge
-	if refCount != 1 {
 		return allOf
 	}
 
 	reduced := []*openapi3.SchemaRef{}
 	for _, subRef := range allOf {
-		if isNonEmptySchemaRef(subRef) {
+		if isStructuralRef(subRef) {
 			reduced = append(reduced, subRef)
 		}
 	}
@@ -318,12 +312,12 @@ func removeSemanticallyEmptyRefs(allOf []*openapi3.SchemaRef) []*openapi3.Schema
 	return reduced
 }
 
-// isNonEmptySchemaRef tests if the given SchemaRef has a non-trivial
+// isStructuralRef tests if the given SchemaRef has a non-trivial
 // definition. This means that at least one of its properties has an impact
 // on the resulting type or validation of the generated model. Changes
 // to the description, title, etc, are considered "trivial" changes that
 // we can choose to ignore.
-func isNonEmptySchemaRef(ref *openapi3.SchemaRef) bool {
+func isStructuralRef(ref *openapi3.SchemaRef) bool {
 	if ref == nil {
 		return false
 	}
@@ -402,8 +396,11 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 	if right.Value.Title != "" && out.Value.Title == "" {
 		out.Value.Title = right.Value.Title
 	}
-	if right.Value.Description != "" && out.Value.Description == "" {
-		out.Value.Description = right.Value.Description
+
+	outDesc := strings.TrimSpace(out.Value.Description)
+	rightDesc := strings.TrimSpace(right.Value.Description)
+	if rightDesc != "" && !strings.Contains(outDesc, rightDesc) {
+		out.Value.Description = strings.TrimSpace(fmt.Sprintf("%s %s", outDesc, rightDesc))
 	}
 	if right.Value.ExternalDocs != nil && out.Value.ExternalDocs == nil {
 		out.Value.ExternalDocs = right.Value.ExternalDocs
