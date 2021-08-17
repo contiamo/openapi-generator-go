@@ -43,20 +43,20 @@ func (m {{$modelName}}) MarshalJSON() ([]byte, error) {
 func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 	{{- if .Discriminator.Field }}
 	discriminator := struct {
-		value string  `json:"{{.Discriminator.Field}}"`
+		Value string  `json:"{{.Discriminator.Field}}"`
 	}{}
 	err := json.Unmarshal(bs, &discriminator)
 	if err != nil {
 		return err
 	}
 
-	if discriminator.value == "" {
+	if discriminator.Value == "" {
 		return validation.Errors{
 			"{{.Discriminator.Field}}": fmt.Errorf("can not be empty"),
 		}.Filter()
 	}
 
-	switch discriminator.value {
+	switch discriminator.Value {
 	{{- range $value, $type := .Discriminator.Map }}
 	case "{{$value}}":
 		data := {{$type|toPascalCase}}{}
@@ -66,6 +66,10 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 		}
 		m.data = data
 	{{- end}}
+	default:
+		return validation.Errors{
+			"{{.Discriminator.Field}}": fmt.Errorf("invalid value"),
+		}.Filter()
 	}
 	return nil
 	{{- else}}

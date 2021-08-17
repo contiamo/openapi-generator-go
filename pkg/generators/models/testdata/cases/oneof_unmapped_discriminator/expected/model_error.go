@@ -30,20 +30,20 @@ func (m Error) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements the json.Unmarshaller interface
 func (m *Error) UnmarshalJSON(bs []byte) error {
 	discriminator := struct {
-		value string `json:"kind"`
+		Value string `json:"kind"`
 	}{}
 	err := json.Unmarshal(bs, &discriminator)
 	if err != nil {
 		return err
 	}
 
-	if discriminator.value == "" {
+	if discriminator.Value == "" {
 		return validation.Errors{
 			"kind": fmt.Errorf("can not be empty"),
 		}.Filter()
 	}
 
-	switch discriminator.value {
+	switch discriminator.Value {
 	case "ExternalError":
 		data := ExternalError{}
 		err := json.Unmarshal(bs, &data)
@@ -65,6 +65,10 @@ func (m *Error) UnmarshalJSON(bs []byte) error {
 			return err
 		}
 		m.data = data
+	default:
+		return validation.Errors{
+			"kind": fmt.Errorf("invalid value"),
+		}.Filter()
 	}
 	return nil
 }
