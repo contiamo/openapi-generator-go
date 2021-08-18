@@ -18,10 +18,12 @@ var (
 	valueTemplate = modelTpls.Lookup("value.gotpl")
 
 	fmap = template.FuncMap{
-		"firstLower":   tpl.FirstLower,
-		"firstUpper":   tpl.FirstUpper,
-		"commentBlock": tpl.CommentBlock,
-		"toPascalCase": tpl.ToPascalCase,
-		"toSnakeCase":  tpl.ToSnakeCase,
+		"firstLower":      tpl.FirstLower,
+		"firstUpper":      tpl.FirstUpper,
+		"commentBlock":    tpl.CommentBlock,
+		"toPascalCase":    tpl.ToPascalCase,
+		"toSnakeCase":     tpl.ToSnakeCase,
+		"removeSpecial":   tpl.RemoveSpecial,
+		"typeDisplayName": tpl.TypeDisplayName,
 	}
 )

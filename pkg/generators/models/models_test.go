@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
@@ -150,10 +151,11 @@ func TestModels(t *testing.T) {
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
 
+			zerolog.SetGlobalLevel(zerolog.DebugLevel)
 			g, err := NewGenerator(reader, Options{
 				PackageName: "generatortest",
 				Destination: dir,
-				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
+				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}),
 				Logger: log.Output(ioutil.Discard), // swap for debugging
 			})
 			require.NoError(t, err)

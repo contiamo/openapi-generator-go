@@ -16,7 +16,7 @@ components:
       oneOf:
         - type: string
         - type: integer
-      
+
     Baz:
       oneOf:
         - $ref: "#/components/schemas/Foo"
@@ -26,7 +26,16 @@ components:
     Person:
       type: object
       properties:
-        name: 
+        name:
           type: string
         age:
           type: integer
+
+    QueryResponseRowEntry:
+      description: One field from query results
+      nullable: true
+      oneOf:
+      - nullable: true
+        type: string
+      - type: boolean
+      - type: number
