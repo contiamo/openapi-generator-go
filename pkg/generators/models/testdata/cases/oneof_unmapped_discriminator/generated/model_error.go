@@ -13,7 +13,7 @@ import (
 )
 
 type errorer interface {
-	GetKind() string
+	ErrorDiscriminator() string
 	Validate() error
 }
 
@@ -110,7 +110,7 @@ func (m Error) AsExternalError() (result ExternalError, err error) {
 
 // Validate implements basic validation for this model
 func (m Error) Validate() error {
-	discriminator := m.data.GetKind()
+	discriminator := m.data.ErrorDiscriminator()
 	switch discriminator {
 	case "ExternalError":
 		return m.Validate()
@@ -127,6 +127,35 @@ func (m Error) Validate() error {
 
 // IsError tests if data is one of the discriminated sub-types of Error.
 func IsError(data interface{}) bool {
-	_, ok := data.(errorer)
-	return ok
+	t, ok := data.(errorer)
+	if !ok {
+		return false
+	}
+
+	discriminator := t.ErrorDiscriminator()
+	switch discriminator {
+	case "ExternalError":
+		return true
+	case "FieldError":
+		return true
+	case "GenericError":
+		return true
+	default:
+		return false
+	}
+}
+
+// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
+func (m GenericError) ErrorDiscriminator() string {
+	return string(m.GetKind())
+}
+
+// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
+func (m FieldError) ErrorDiscriminator() string {
+	return string(m.GetKind())
+}
+
+// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
+func (m ExternalError) ErrorDiscriminator() string {
+	return string(m.GetKind())
 }

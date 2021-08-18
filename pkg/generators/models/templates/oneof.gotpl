@@ -16,10 +16,12 @@ import (
 
 {{- $modelName := .Name }}
 {{- $interfaceName := (printf "%ser" .Name) | firstLower}}
+{{ $discriminator := .Discriminator.Field|toPascalCase }}
+
 
 {{- if .Discriminator.Field }}
 type {{$interfaceName}} interface {
-	Get{{.Discriminator.Field|toPascalCase}}() string
+	{{$modelName}}Discriminator() string
 	Validate() error
 }
 {{- end}}
@@ -101,7 +103,7 @@ func (m {{$modelName}}) As{{firstUpper $convert.TargetGoType}}() (result {{$conv
 {{ if .Discriminator.Field }}
 // Validate implements basic validation for this model
 func (m {{$modelName}}) Validate() error {
-	discriminator := m.data.Get{{.Discriminator.Field|toPascalCase}}()
+	discriminator := m.data.{{$modelName}}Discriminator()
 	switch discriminator {
 	{{- range $value, $type := .Discriminator.Map }}
 	case "{{$value}}":
@@ -116,7 +118,27 @@ func (m {{$modelName}}) Validate() error {
 
 // Is{{$modelName}} tests if data is one of the discriminated sub-types of {{$modelName}}.
 func Is{{$modelName}}(data interface{}) bool {
-	_, ok := data.({{$interfaceName}})
-	return ok
+	t, ok := data.({{$interfaceName}})
+	if !ok {
+		return false
+	}
+
+	discriminator := t.{{$modelName}}Discriminator()
+	switch discriminator {
+	{{- range $value, $type := .Discriminator.Map }}
+	case "{{$value}}":
+		return true
+	{{- end}}
+	default:
+		return false
+	}
 }
+
+{{- range $convert := .ConvertSpecs }}
+// {{$modelName}}Discriminator implements {{$interfaceName}} and returns the discriminator value as a string.
+func (m {{$convert.TargetGoType}}) {{$modelName}}Discriminator() string {
+	return string(m.Get{{$discriminator}}())
+}
+
+{{- end }}
 {{- end }}
