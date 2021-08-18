@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.11.0...v0.12.0) (2021-08-18)
+
+
+### Features
+
+* Add discriminator support for oneOfs ([#57](https://www.github.com/contiamo/openapi-generator-go/issues/57)) ([78080f0](https://www.github.com/contiamo/openapi-generator-go/commit/78080f097ffdaba8ecd8207f8d2e13e236493f2f))
+
 ## [0.11.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.10.1...v0.11.0) (2021-08-12)
 
 
