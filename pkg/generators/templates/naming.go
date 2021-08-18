@@ -1,6 +1,9 @@
 package templates
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // TypeDisplayName returns the value with special characters replaced with
 // there semantic meaning and then converted to pascal case. For example,
@@ -18,7 +21,13 @@ func TypeDisplayName(value string) string {
 	}
 
 	if strings.Contains(value, "[]") {
-		out = strings.ReplaceAll(out, "[]", "slice_")
+		out = strings.ReplaceAll(out, "[]", "")
+
+		sliceCount := strings.Count(value, "[]")
+		for sliceCount > 0 {
+			out = fmt.Sprintf("%s_slice", out)
+			sliceCount--
+		}
 	}
 
 	return ToPascalCase(out)

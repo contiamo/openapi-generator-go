@@ -136,6 +136,10 @@ func TestModels(t *testing.T) {
 			name:      "oneOf supports unmapped discriminators",
 			directory: "testdata/cases/oneof_unmapped_discriminator",
 		},
+		{
+			name:      "example of naming for nested inline arrays",
+			directory: "testdata/cases/nested_inline_arrays",
+		},
 	}
 
 	for _, tc := range cases {
