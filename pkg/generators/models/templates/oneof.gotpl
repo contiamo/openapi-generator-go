@@ -1,0 +1,144 @@
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+import (
+	"encoding/json"
+	"github.com/mitchellh/mapstructure"
+	{{- if .Discriminator.Field }}
+	"fmt"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	{{- end}}
+)
+
+{{- $modelName := .Name }}
+{{- $interfaceName := (printf "%ser" .Name) | firstLower}}
+{{ $discriminator := .Discriminator.Field|toPascalCase }}
+
+
+{{- if .Discriminator.Field }}
+type {{$interfaceName}} interface {
+	{{$modelName}}Discriminator() string
+	Validate() error
+}
+{{- end}}
+
+{{ (printf "%s is a oneOf type. %s" .Name .Description) | commentBlock }}
+type {{$modelName}} struct {
+	{{- if .Discriminator.Field }}
+	data {{$interfaceName}}
+	{{- else }}
+	data interface{}
+	{{- end }}
+}
+
+
+// MarshalJSON implements the json.Marshaller interface
+func (m {{$modelName}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.data)
+}
+
+// UnmarshalJSON implements the json.Unmarshaller interface
+func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
+	{{- if .Discriminator.Field }}
+	discriminator := struct {
+		Value string  `json:"{{.Discriminator.Field}}"`
+	}{}
+	err := json.Unmarshal(bs, &discriminator)
+	if err != nil {
+		return err
+	}
+
+	if discriminator.Value == "" {
+		return validation.Errors{
+			"{{.Discriminator.Field}}": fmt.Errorf("can not be empty"),
+		}.Filter()
+	}
+
+	switch discriminator.Value {
+	{{- range $value, $type := .Discriminator.Map }}
+	case "{{$value}}":
+		data := {{$type|toPascalCase}}{}
+		err := json.Unmarshal(bs, &data)
+		if err != nil {
+			return err
+		}
+		m.data = data
+	{{- end}}
+	default:
+		return validation.Errors{
+			"{{.Discriminator.Field}}": fmt.Errorf("invalid value"),
+		}.Filter()
+	}
+	return nil
+	{{- else}}
+	return json.Unmarshal(bs, &m.data)
+	{{- end}}
+}
+
+{{- range $convert := .ConvertSpecs }}
+// From{{firstUpper $convert.TargetGoType}} sets the {{$modelName}} data.
+func (m *{{$modelName}}) From{{$convert.TargetGoType | typeDisplayName}}(data {{$convert.TargetGoType}}) {
+	m.data = data
+}
+
+{{- end }}
+
+// As converts {{$modelName}} to a user defined structure.
+func (m {{$modelName}}) As(target interface{}) error {
+	return mapstructure.Decode(m.data, target)
+}
+
+{{- range $convert := .ConvertSpecs }}
+// As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+func (m {{$modelName}}) As{{$convert.TargetGoType | typeDisplayName }}() (result {{$convert.TargetGoType}}, err error) {
+	return result, mapstructure.Decode(m.data, &result)
+}
+{{- end}}
+
+
+{{ if .Discriminator.Field }}
+// Validate implements basic validation for this model
+func (m {{$modelName}}) Validate() error {
+	discriminator := m.data.{{$modelName}}Discriminator()
+	switch discriminator {
+	{{- range $value, $type := .Discriminator.Map }}
+	case "{{$value}}":
+		return m.Validate()
+	{{- end}}
+	default:
+		return validation.Errors{
+			"{{.Discriminator.Field}}": fmt.Errorf("unknown {{.Discriminator.Field}} value"),
+		}.Filter()
+	}
+}
+
+// Is{{$modelName}} tests if data is one of the discriminated sub-types of {{$modelName}}.
+func Is{{$modelName}}(data interface{}) bool {
+	t, ok := data.({{$interfaceName}})
+	if !ok {
+		return false
+	}
+
+	discriminator := t.{{$modelName}}Discriminator()
+	switch discriminator {
+	{{- range $value, $type := .Discriminator.Map }}
+	case "{{$value}}":
+		return true
+	{{- end}}
+	default:
+		return false
+	}
+}
+
+{{- range $convert := .ConvertSpecs }}
+// {{$modelName}}Discriminator implements {{$interfaceName}} and returns the discriminator value as a string.
+func (m {{$convert.TargetGoType}}) {{$modelName}}Discriminator() string {
+	return string(m.Get{{$discriminator}}())
+}
+
+{{- end }}
+{{- end }}

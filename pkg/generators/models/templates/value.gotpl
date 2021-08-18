@@ -1,0 +1,9 @@
+// This file is auto-generated, DO NOT EDIT.
+//
+// Source:
+//     Title: {{.SpecTitle}}
+//     Version: {{.SpecVersion}}
+package {{ .PackageName }}
+
+{{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
+type {{.Name}} {{.GoType}}

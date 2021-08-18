@@ -59,6 +59,8 @@ type Model struct {
 	Properties []PropSpec
 	// ConvertSpecs contains a list of convert functions for this model
 	ConvertSpecs []ConvertSpec
+	// Discriminator contains the optional oneOf discriminator
+	Discriminator Discriminator
 	// GoType is a string that represents the Go type that follows the model type name.
 	// For example, `type Name GoType`.
 	GoType string
@@ -117,6 +119,13 @@ type PropSpec struct {
 	IsIPv6                     bool
 }
 
+type Discriminator struct {
+	// Field points to the property that specifies the data type name
+	Field string
+	// Map contains the mapping from Field values to target schemas
+	Map map[string]string
+}
+
 // NewModelFromRef creates a model out of a schema
 func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	model = &Model{
@@ -143,7 +152,7 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		}
 	case len(ref.Value.OneOf) > 0:
 		model.Kind = OneOf
-		model.fillConvertSpecs(ref)
+		model.configureOneOf(ref)
 	default:
 		model.Kind = Value
 		model.GoType = goTypeFromSpec(ref)
@@ -189,11 +198,32 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	return model, nil
 }
 
-func (m *Model) fillConvertSpecs(ref *openapi3.SchemaRef) {
+func (m *Model) configureOneOf(ref *openapi3.SchemaRef) {
 	for _, oneOf := range ref.Value.OneOf {
 		m.ConvertSpecs = append(m.ConvertSpecs, ConvertSpec{
 			TargetGoType: goTypeFromSpec(oneOf),
 		})
+	}
+
+	if ref.Value.Discriminator != nil {
+		m.Discriminator.Field = ref.Value.Discriminator.PropertyName
+		m.Discriminator.Map = map[string]string{}
+
+		for value, ref := range ref.Value.Discriminator.Mapping {
+			m.Discriminator.Map[value] = typeNameFromRef(ref)
+		}
+
+		// the default mapping is to use the name of the model as the field value.
+		if len(ref.Value.Discriminator.Mapping) == 0 {
+			for _, schema := range ref.Value.OneOf {
+				name := typeNameFromRef(schema.Ref)
+				if name == "" {
+					// skip mappings for inlined types, ie non-references
+					continue
+				}
+				m.Discriminator.Map[name] = name
+			}
+		}
 	}
 
 }

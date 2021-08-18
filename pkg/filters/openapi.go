@@ -111,15 +111,19 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 
 	// ensure we don't return an invalid spec
 	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(filteredYAML)
+	if err != nil {
+		return filteredYAML, err
+	}
+
 	err = swagger.Validate(context.Background())
 	if err != nil {
-		return filteredSpec, err
+		return filteredYAML, err
 	}
 
 	// can't directly marshal to yaml because of extra fields
 	outJSON, err := swagger.MarshalJSON()
 	if err != nil {
-		return filteredSpec, err
+		return filteredYAML, err
 	}
 
 	return JSONToYAML(outJSON)

@@ -15,12 +15,12 @@ type Baz struct {
 	data interface{}
 }
 
-// MarshalJSON implementes the json.Marshaller interface
+// MarshalJSON implements the json.Marshaller interface
 func (m Baz) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
 }
 
-// UnmarshalJSON implementes the json.Unmarshaller interface
+// UnmarshalJSON implements the json.Unmarshaller interface
 func (m *Baz) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }

@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Geometry:
+      oneOf:
+        - $ref: "#/components/schemas/Line"
+        - $ref: "#/components/schemas/Shape"
+      discriminator:
+        propertyName: type
+
+    Line:
+      type: object
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              description: 3 dimensional point
+              minItems: 3
+              maxItems: 3
+          minItems: 2
+          maxItems: 2
+
+    Shape:
+      type: object
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Line"

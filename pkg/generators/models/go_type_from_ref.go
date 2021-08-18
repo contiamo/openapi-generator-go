@@ -95,7 +95,7 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 	switch {
 
 	case schemaRef.Ref != "":
-		propType = filepath.Base(schemaRef.Ref)
+		propType = typeNameFromRef(schemaRef.Ref)
 
 	case schemaRef.Value.AdditionalProperties != nil:
 		subType := goTypeFromSpec(schemaRef.Value.AdditionalProperties)
@@ -141,6 +141,8 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 
 	return propType
 }
+
+var typeNameFromRef = filepath.Base
 
 func sortedKeys(obj map[string]*openapi3.SchemaRef) (res []string) {
 	for k := range obj {

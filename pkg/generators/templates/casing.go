@@ -53,10 +53,16 @@ func ToPascalCase(value string) string {
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+var matchNonASCII = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 // ToSnakeCase converts the
 func ToSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+// RemoveSpecial removes any non-ascii characters from the string
+func RemoveSpecial(value string) string {
+	return matchNonASCII.ReplaceAllLiteralString(value, "")
 }

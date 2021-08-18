@@ -28,6 +28,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -59,8 +60,11 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-	cobra.OnInitialize(initLogging)
+	cobra.OnInitialize(
+		initConfig,
+		initLogging,
+		initAllowedStringFormats,
+	)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -74,6 +78,8 @@ func init() {
 	rootCmd.PersistentFlags().String("log-level", "info", "log level")
 	rootCmd.PersistentFlags().StringArrayP("path", "p", []string{}, "path to include in the filtered output spec, can be repeated")
 	rootCmd.PersistentFlags().String("path-file", "", "file with list of paths to include in the filtered output spec, one path per line")
+
+	rootCmd.PersistentFlags().StringArray("formats", []string{"uuid"}, "additional string formats to allow during schema validation, only required when using the filter flags/command")
 }
 
 func initLogging() {
@@ -83,6 +89,20 @@ func initLogging() {
 		log.Fatal().Err(err).Msg("failed to parse --log-level")
 	}
 	zerolog.SetGlobalLevel(lvl)
+}
+
+func initAllowedStringFormats() {
+	additionalFormats, err := rootCmd.PersistentFlags().GetStringArray("formats")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to parse --formats")
+	}
+
+	for _, value := range additionalFormats {
+		// the openapi validation is very strict about the allowed string formats
+		// this method allows us to register additional values for it to accept.
+		// This is only required when we filter the spec.
+		openapi3.DefineStringFormat(value, `.*`)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.

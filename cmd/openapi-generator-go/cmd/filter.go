@@ -23,8 +23,10 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -56,6 +58,9 @@ var filterCmd = &cobra.Command{
 		spec := bytes.NewReader(bs)
 		filteredSpec, err := filters.ByPath(spec, allowedPaths)
 		if err != nil {
+			if zerolog.GlobalLevel() == zerolog.DebugLevel {
+				fmt.Println(string(filteredSpec))
+			}
 			log.Fatal().Err(err).Msg("failed to filter the api spec")
 		}
 
