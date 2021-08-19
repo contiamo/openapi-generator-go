@@ -21,7 +21,14 @@ type ExternalError struct {
 
 // Validate implements basic validation for this model
 func (m ExternalError) Validate() error {
-	return validation.Errors{}.Filter()
+	return validation.Errors{
+		"service": validation.Validate(
+			m.Service, validation.Length(1, 0),
+		),
+		"traceId": validation.Validate(
+			m.TraceId, validation.Required, validation.Length(1, 0),
+		),
+	}.Filter()
 }
 
 // GetKind returns the Kind property

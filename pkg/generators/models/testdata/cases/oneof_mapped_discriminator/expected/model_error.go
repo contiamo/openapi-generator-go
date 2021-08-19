@@ -120,13 +120,13 @@ func (m Error) Validate() error {
 	discriminator := m.data.ErrorDiscriminator()
 	switch discriminator {
 	case "auth":
-		return m.Validate()
+		return m.data.Validate()
 	case "external":
-		return m.Validate()
+		return m.data.Validate()
 	case "field":
-		return m.Validate()
+		return m.data.Validate()
 	case "generic":
-		return m.Validate()
+		return m.data.Validate()
 	default:
 		return validation.Errors{
 			"kind": fmt.Errorf("unknown kind value"),
