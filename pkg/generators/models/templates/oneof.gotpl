@@ -107,7 +107,7 @@ func (m {{$modelName}}) Validate() error {
 	switch discriminator {
 	{{- range $value, $type := .Discriminator.Map }}
 	case "{{$value}}":
-		return m.Validate()
+		return m.data.Validate()
 	{{- end}}
 	default:
 		return validation.Errors{

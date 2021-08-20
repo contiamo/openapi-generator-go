@@ -69,9 +69,11 @@ components:
         service:
           type: string
           description: name of the service that is returning errors
+          minLength: 1
         traceId:
           type: string
           description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
+          minLength: 1
       required:
         - kind
         - traceId

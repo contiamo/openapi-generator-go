@@ -58,3 +58,14 @@ func TestSerialization(t *testing.T) {
 	})
 
 }
+
+func TestValidation(t *testing.T) {
+	rawMsg := `{"kind": "external", "service": "", "traceId": ""}`
+	resp := Error{}
+
+	err := json.Unmarshal([]byte(rawMsg), &resp)
+	require.NoError(t, err)
+
+	err = resp.Validate()
+	require.EqualError(t, err, "traceId: cannot be blank.")
+}

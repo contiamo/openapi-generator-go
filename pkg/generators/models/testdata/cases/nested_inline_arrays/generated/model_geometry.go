@@ -96,9 +96,9 @@ func (m Geometry) Validate() error {
 	discriminator := m.data.GeometryDiscriminator()
 	switch discriminator {
 	case "Line":
-		return m.Validate()
+		return m.data.Validate()
 	case "Shape":
-		return m.Validate()
+		return m.data.Validate()
 	default:
 		return validation.Errors{
 			"type": fmt.Errorf("unknown type value"),
