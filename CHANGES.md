@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.12.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.12.0...v0.12.1) (2021-08-20)
+
+
+### Bug Fixes
+
+* prevent validation loop in discriminated oneOf ([#59](https://www.github.com/contiamo/openapi-generator-go/issues/59)) ([5d47c8e](https://www.github.com/contiamo/openapi-generator-go/commit/5d47c8e9779797aa2357546bd7c87ba476b9216f))
+
 ## [0.12.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.11.0...v0.12.0) (2021-08-18)
 
 
