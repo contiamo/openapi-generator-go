@@ -11,6 +11,7 @@ import (
 func TestPerson(t *testing.T) {
 	name := "foo"
 	require.NoError(t, validation.Validate(&Person{
+		Cron:           "@daily",
 		Age:            18,
 		Gender:         GenderDefault,
 		Name:           "Foo",

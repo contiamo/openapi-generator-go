@@ -96,7 +96,7 @@ type PropSpec struct {
 	IsEnum bool
 
 	// Validation stuff
-
+	Pattern                    string
 	IsNullable                 bool
 	NeedsValidation            bool
 	IsRequiredInValidation     bool
@@ -578,6 +578,12 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 	if ref.Value.Format != "" {
 		spec.HasFormat = true
+	}
+
+	if ref.Value.Pattern != "" {
+		spec.NeedsValidation = true
+		spec.Pattern = ref.Value.Pattern
+		importsMap["regexp"] = something{}
 	}
 
 	switch ref.Value.Format {

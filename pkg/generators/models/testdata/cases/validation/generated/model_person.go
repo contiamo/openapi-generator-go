@@ -9,6 +9,8 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 
+	"regexp"
+
 	"time"
 )
 
@@ -20,6 +22,8 @@ type Person struct {
 	Age float32 `json:"age,omitempty"`
 	// Base64:
 	Base64 string `json:"base64,omitempty"`
+	// Cron:
+	Cron string `json:"cron"`
 	// Date:
 	Date string `json:"date,omitempty"`
 	// Datetime:
@@ -63,6 +67,9 @@ func (m Person) Validate() error {
 		),
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
+		),
+		"cron": validation.Validate(
+			m.Cron, validation.Match(regexp.MustCompile(`(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})`)),
 		),
 		"email": validation.Validate(
 			m.Email, is.EmailFormat,
@@ -134,6 +141,16 @@ func (m Person) GetBase64() string {
 // SetBase64 sets the Base64 property
 func (m *Person) SetBase64(val string) {
 	m.Base64 = val
+}
+
+// GetCron returns the Cron property
+func (m Person) GetCron() string {
+	return m.Cron
+}
+
+// SetCron sets the Cron property
+func (m *Person) SetCron(val string) {
+	m.Cron = val
 }
 
 // GetDate returns the Date property
