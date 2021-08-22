@@ -12,6 +12,19 @@ import (
 {{ end}}
 )
 
+{{- $modelName := .Name }}
+
+{{- range .Properties}}
+{{- if .PatternErrorMsg}}
+// {{ $modelName}}{{.Name}}PatternError is the error message returned for pattern validation errors on {{ $modelName}}.{{.Name}}
+var {{ $modelName}}{{.Name}}PatternError = validation.NewError("validation_{{.Name }}_pattern_invalid", "{{.PatternErrorMsg}}")
+{{- end }}
+{{- if .Pattern }}
+// {{ $modelName | firstLower}}{{.Name}}Pattern is the validation pattern for {{ $modelName}}.{{.Name}}
+var {{ $modelName | firstLower }}{{.Name}}Pattern = regexp.MustCompile(`{{ .Pattern }}`)
+{{ end }}
+{{- end}}
+
 {{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
 {{- if not .Properties }}
 type {{.Name}} {{ .GoType }}
@@ -24,7 +37,7 @@ type {{.Name}} struct {
 }
 {{- end}}
 
-{{- $modelName := .Name }}
+
 // Validate implements basic validation for this model
 func (m {{$modelName}}) Validate() error {
 	return validation.Errors{
@@ -50,7 +63,7 @@ func (m {{$modelName}}) Validate() error {
 					{{- if .IsIPv4 }}is.IPv4,{{ end }}
 					{{- if .IsIPv6 }}is.IPv6,{{ end }}
 					{{- if .IsIP }}is.IP,{{ end }}
-					{{- if .Pattern }}validation.Match(regexp.MustCompile(`{{ .Pattern }}`)),{{ end }}
+					{{- if .Pattern }}validation.Match({{ $modelName | firstLower }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
 				),
 			{{- end }}
 		{{- end }}

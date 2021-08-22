@@ -14,6 +14,15 @@ import (
 	"time"
 )
 
+// PersonCronPatternError is the error message returned for pattern validation errors on Person.Cron
+var PersonCronPatternError = validation.NewError("validation_Cron_pattern_invalid", "must be a valid cron value")
+
+// personCronPattern is the validation pattern for Person.Cron
+var personCronPattern = regexp.MustCompile(`(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})`)
+
+// personPomodoroPattern is the validation pattern for Person.Pomodoro
+var personPomodoroPattern = regexp.MustCompile(`^\d{1,2}m$`)
+
 // Person is an object.
 type Person struct {
 	// Address:
@@ -44,6 +53,8 @@ type Person struct {
 	Ipv6 string `json:"ipv6,omitempty"`
 	// Name:
 	Name string `json:"name"`
+	// Pomodoro:
+	Pomodoro string `json:"pomodoro,omitempty"`
 	// RequestURI:
 	RequestURI string `json:"requestURI,omitempty"`
 	// SecondGender:
@@ -69,7 +80,7 @@ func (m Person) Validate() error {
 			m.Base64, is.Base64,
 		),
 		"cron": validation.Validate(
-			m.Cron, validation.Match(regexp.MustCompile(`(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})`)),
+			m.Cron, validation.Match(personCronPattern).ErrorObject(PersonCronPatternError),
 		),
 		"email": validation.Validate(
 			m.Email, is.EmailFormat,
@@ -94,6 +105,9 @@ func (m Person) Validate() error {
 		),
 		"name": validation.Validate(
 			m.Name, validation.Required, validation.Length(2, 32),
+		),
+		"pomodoro": validation.Validate(
+			m.Pomodoro, validation.Match(personPomodoroPattern),
 		),
 		"requestURI": validation.Validate(
 			m.RequestURI, is.RequestURL.Error("must be valid URI with scheme"),
@@ -251,6 +265,16 @@ func (m Person) GetName() string {
 // SetName sets the Name property
 func (m *Person) SetName(val string) {
 	m.Name = val
+}
+
+// GetPomodoro returns the Pomodoro property
+func (m Person) GetPomodoro() string {
+	return m.Pomodoro
+}
+
+// SetPomodoro sets the Pomodoro property
+func (m *Person) SetPomodoro(val string) {
+	m.Pomodoro = val
 }
 
 // GetRequestURI returns the RequestURI property
