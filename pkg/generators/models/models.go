@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -13,6 +14,10 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
 )
+
+// ExtensionPatternError is an extension property that, if set, allows the API author
+// to control the error message for pattern validation failures.
+const ExtensionPatternError = "x-pattern-error"
 
 var (
 	// validatedTypesRegExp helps to match a type to a type that we can generate validation for.
@@ -96,7 +101,8 @@ type PropSpec struct {
 	IsEnum bool
 
 	// Validation stuff
-
+	Pattern                    string
+	PatternErrorMsg            string
 	IsNullable                 bool
 	NeedsValidation            bool
 	IsRequiredInValidation     bool
@@ -181,8 +187,11 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
 			model.Imports = append(model.Imports, "time")
 		}
-
-		model.Imports = append(model.Imports, fillValidationRelatedProperties(param.Value.Schema, &spec)...)
+		extraImports, err := fillValidationRelatedProperties(param.Value.Schema, &spec)
+		if err != nil {
+			return nil, fmt.Errorf("invalid parameter %q:%w", param.Value.Name, err)
+		}
+		model.Imports = append(model.Imports, extraImports...)
 
 		spec.JSONTags = "`json:\"" + param.Value.Name
 		if !spec.IsRequired {
@@ -512,7 +521,11 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		}
 		spec.JSONTags += "\"`"
 
-		imports = append(imports, fillValidationRelatedProperties(prop, &spec)...)
+		extraImports, err := fillValidationRelatedProperties(prop, &spec)
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid %s property %q: %w", ExtensionPatternError, name, err)
+		}
+		imports = append(imports, extraImports...)
 
 		specs = append(specs, spec)
 	}
@@ -523,7 +536,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 // fillValidationRelatedProperties sets validation rules for the property descriptor out of format and
 // bounds in the spec.
 // Returns a list of unique imports in order to implement the validation.
-func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string) {
+func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (imports []string, err error) {
 	importsMap := make(map[string]something)
 
 	if validatedTypesRegExp.MatchString(spec.GoType) {
@@ -578,6 +591,23 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 	if ref.Value.Format != "" {
 		spec.HasFormat = true
+	}
+
+	if ref.Value.Pattern != "" {
+		spec.NeedsValidation = true
+		spec.Pattern = ref.Value.Pattern
+		importsMap["regexp"] = something{}
+		msg, ok := ref.Value.ExtensionProps.Extensions[ExtensionPatternError]
+		if ok {
+			rawMsg, ok := msg.(json.RawMessage)
+			if !ok {
+				return nil, fmt.Errorf("invalid %s value, expected json msg, got %T", ExtensionPatternError, msg)
+			}
+			err = json.Unmarshal(rawMsg, &spec.PatternErrorMsg)
+			if err != nil {
+				return nil, fmt.Errorf("invalid %s value, must be a string", ExtensionPatternError)
+			}
+		}
 	}
 
 	switch ref.Value.Format {
@@ -663,7 +693,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 		imports = append(imports, importStr)
 	}
 
-	return imports
+	return imports, nil
 }
 
 // enumPropsFromRef generates a list of enum property/item descriptors.
