@@ -196,7 +196,7 @@ func TestModels(t *testing.T) {
 func TestModelsSingleCase(t *testing.T) {
 	t.Skip("only used during local development")
 
-	tc := cases[1]
+	tc := cases[27]
 	t.Run(tc.name, func(t *testing.T) {
 		ctx, cancel := context.
 			WithTimeout(context.Background(), 30*time.Second)

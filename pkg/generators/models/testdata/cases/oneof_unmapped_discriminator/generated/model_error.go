@@ -12,8 +12,21 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// ErrorDiscriminator is the discriminator value used during serialization and validation.
+// Retrieve this value using  the ErrorDiscriminator() method
+type ErrorDiscriminator string
+
+const (
+	// ErrorDiscriminatorExternalError maps Error to ExternalError
+	ErrorDiscriminatorExternalError ErrorDiscriminator = "ExternalError"
+	// ErrorDiscriminatorFieldError maps Error to FieldError
+	ErrorDiscriminatorFieldError ErrorDiscriminator = "FieldError"
+	// ErrorDiscriminatorGenericError maps Error to GenericError
+	ErrorDiscriminatorGenericError ErrorDiscriminator = "GenericError"
+)
+
 type errorer interface {
-	ErrorDiscriminator() string
+	ErrorDiscriminator() ErrorDiscriminator
 	Validate() error
 }
 
@@ -43,22 +56,23 @@ func (m *Error) UnmarshalJSON(bs []byte) error {
 		}.Filter()
 	}
 
-	switch discriminator.Value {
-	case "ExternalError":
+	value := fmt.Sprintf("%v", discriminator.Value)
+	switch ErrorDiscriminator(value) {
+	case ErrorDiscriminatorExternalError:
 		data := ExternalError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "FieldError":
+	case ErrorDiscriminatorFieldError:
 		data := FieldError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "GenericError":
+	case ErrorDiscriminatorGenericError:
 		data := GenericError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
@@ -108,15 +122,20 @@ func (m Error) AsExternalError() (result ExternalError, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
+// Discriminator returns the ErrorDiscriminator oneOf value
+func (m Error) Discriminator() ErrorDiscriminator {
+	return m.data.ErrorDiscriminator()
+}
+
 // Validate implements basic validation for this model
 func (m Error) Validate() error {
 	discriminator := m.data.ErrorDiscriminator()
 	switch discriminator {
-	case "ExternalError":
+	case ErrorDiscriminatorExternalError:
 		return m.data.Validate()
-	case "FieldError":
+	case ErrorDiscriminatorFieldError:
 		return m.data.Validate()
-	case "GenericError":
+	case ErrorDiscriminatorGenericError:
 		return m.data.Validate()
 	default:
 		return validation.Errors{
@@ -134,28 +153,31 @@ func IsError(data interface{}) bool {
 
 	discriminator := t.ErrorDiscriminator()
 	switch discriminator {
-	case "ExternalError":
+	case ErrorDiscriminatorExternalError:
 		return true
-	case "FieldError":
+	case ErrorDiscriminatorFieldError:
 		return true
-	case "GenericError":
+	case ErrorDiscriminatorGenericError:
 		return true
 	default:
 		return false
 	}
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m GenericError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m GenericError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m FieldError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m FieldError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m ExternalError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m ExternalError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
