@@ -280,7 +280,6 @@ func (g generator) writeModelToFile(ctx context.Context, model *Model, dst strin
 	log.Debug().Msg("Formatting the rendered code...")
 	content, err := format.Source(buf.Bytes())
 	if err != nil {
-		fmt.Println(string(buf.Bytes()))
 		return errors.Wrap(err, "cannot format model code")
 	}
 	log.Debug().Msg("Code has been formatted.")
