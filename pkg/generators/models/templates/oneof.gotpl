@@ -20,8 +20,19 @@ import (
 
 
 {{- if .Discriminator.Field }}
+// {{$modelName}}Discriminator is the discriminator value used during serialization and validation.
+// Retrieve this value using  the {{$modelName}}Discriminator() method
+type {{$modelName}}Discriminator string
+
+const (
+{{- range $value, $type := .Discriminator.Map }}
+	// {{$modelName}}Discriminator{{$value | toPascalCase | firstUpper}} maps {{$modelName}} to {{$type}}
+	{{$modelName}}Discriminator{{$value | toPascalCase | firstUpper}} {{$modelName}}Discriminator = "{{$value}}"
+{{- end}}
+)
+
 type {{$interfaceName}} interface {
-	{{$modelName}}Discriminator() string
+	{{$modelName}}Discriminator() {{$modelName}}Discriminator
 	Validate() error
 }
 {{- end}}
@@ -58,9 +69,10 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 		}.Filter()
 	}
 
-	switch discriminator.Value {
+	value := fmt.Sprintf("%v",discriminator.Value)
+	switch {{$modelName}}Discriminator(value) {
 	{{- range $value, $type := .Discriminator.Map }}
-	case "{{$value}}":
+	case {{$modelName}}Discriminator{{$value | toPascalCase | firstUpper}}:
 		data := {{$type|toPascalCase}}{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
@@ -101,12 +113,17 @@ func (m {{$modelName}}) As{{$convert.TargetGoType | typeDisplayName }}() (result
 
 
 {{ if .Discriminator.Field }}
+// Discriminator returns the {{$modelName}}Discriminator oneOf value
+func (m {{$modelName}}) Discriminator() {{$modelName}}Discriminator {
+	return m.data.{{$modelName}}Discriminator()
+}
+
 // Validate implements basic validation for this model
 func (m {{$modelName}}) Validate() error {
 	discriminator := m.data.{{$modelName}}Discriminator()
 	switch discriminator {
 	{{- range $value, $type := .Discriminator.Map }}
-	case "{{$value}}":
+	case {{$modelName}}Discriminator{{$value | toPascalCase | firstUpper}}:
 		return m.data.Validate()
 	{{- end}}
 	default:
@@ -126,7 +143,7 @@ func Is{{$modelName}}(data interface{}) bool {
 	discriminator := t.{{$modelName}}Discriminator()
 	switch discriminator {
 	{{- range $value, $type := .Discriminator.Map }}
-	case "{{$value}}":
+	case {{$modelName}}Discriminator{{$value | toPascalCase | firstUpper}}:
 		return true
 	{{- end}}
 	default:
@@ -135,9 +152,10 @@ func Is{{$modelName}}(data interface{}) bool {
 }
 
 {{- range $convert := .ConvertSpecs }}
-// {{$modelName}}Discriminator implements {{$interfaceName}} and returns the discriminator value as a string.
-func (m {{$convert.TargetGoType}}) {{$modelName}}Discriminator() string {
-	return string(m.Get{{$discriminator}}())
+// {{$modelName}}Discriminator implements {{$interfaceName}} and returns the discriminator value.
+func (m {{$convert.TargetGoType}}) {{$modelName}}Discriminator() {{$modelName}}Discriminator {
+	value := fmt.Sprintf("%v", m.Get{{$discriminator}}())
+	return {{$modelName}}Discriminator(value)
 }
 
 {{- end }}

@@ -12,8 +12,19 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// GeometryDiscriminator is the discriminator value used during serialization and validation.
+// Retrieve this value using  the GeometryDiscriminator() method
+type GeometryDiscriminator string
+
+const (
+	// GeometryDiscriminatorLine maps Geometry to Line
+	GeometryDiscriminatorLine GeometryDiscriminator = "Line"
+	// GeometryDiscriminatorShape maps Geometry to Shape
+	GeometryDiscriminatorShape GeometryDiscriminator = "Shape"
+)
+
 type geometryer interface {
-	GeometryDiscriminator() string
+	GeometryDiscriminator() GeometryDiscriminator
 	Validate() error
 }
 
@@ -43,15 +54,16 @@ func (m *Geometry) UnmarshalJSON(bs []byte) error {
 		}.Filter()
 	}
 
-	switch discriminator.Value {
-	case "Line":
+	value := fmt.Sprintf("%v", discriminator.Value)
+	switch GeometryDiscriminator(value) {
+	case GeometryDiscriminatorLine:
 		data := Line{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "Shape":
+	case GeometryDiscriminatorShape:
 		data := Shape{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
@@ -91,13 +103,18 @@ func (m Geometry) AsShape() (result Shape, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
+// Discriminator returns the GeometryDiscriminator oneOf value
+func (m Geometry) Discriminator() GeometryDiscriminator {
+	return m.data.GeometryDiscriminator()
+}
+
 // Validate implements basic validation for this model
 func (m Geometry) Validate() error {
 	discriminator := m.data.GeometryDiscriminator()
 	switch discriminator {
-	case "Line":
+	case GeometryDiscriminatorLine:
 		return m.data.Validate()
-	case "Shape":
+	case GeometryDiscriminatorShape:
 		return m.data.Validate()
 	default:
 		return validation.Errors{
@@ -115,21 +132,23 @@ func IsGeometry(data interface{}) bool {
 
 	discriminator := t.GeometryDiscriminator()
 	switch discriminator {
-	case "Line":
+	case GeometryDiscriminatorLine:
 		return true
-	case "Shape":
+	case GeometryDiscriminatorShape:
 		return true
 	default:
 		return false
 	}
 }
 
-// GeometryDiscriminator implements geometryer and returns the discriminator value as a string.
-func (m Line) GeometryDiscriminator() string {
-	return string(m.GetType())
+// GeometryDiscriminator implements geometryer and returns the discriminator value.
+func (m Line) GeometryDiscriminator() GeometryDiscriminator {
+	value := fmt.Sprintf("%v", m.GetType())
+	return GeometryDiscriminator(value)
 }
 
-// GeometryDiscriminator implements geometryer and returns the discriminator value as a string.
-func (m Shape) GeometryDiscriminator() string {
-	return string(m.GetType())
+// GeometryDiscriminator implements geometryer and returns the discriminator value.
+func (m Shape) GeometryDiscriminator() GeometryDiscriminator {
+	value := fmt.Sprintf("%v", m.GetType())
+	return GeometryDiscriminator(value)
 }

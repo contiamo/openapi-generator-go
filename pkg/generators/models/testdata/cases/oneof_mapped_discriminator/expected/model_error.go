@@ -12,8 +12,23 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// ErrorDiscriminator is the discriminator value used during serialization and validation.
+// Retrieve this value using  the ErrorDiscriminator() method
+type ErrorDiscriminator string
+
+const (
+	// ErrorDiscriminatorAuth maps Error to GenericError
+	ErrorDiscriminatorAuth ErrorDiscriminator = "auth"
+	// ErrorDiscriminatorExternal maps Error to ExternalError
+	ErrorDiscriminatorExternal ErrorDiscriminator = "external"
+	// ErrorDiscriminatorField maps Error to FieldError
+	ErrorDiscriminatorField ErrorDiscriminator = "field"
+	// ErrorDiscriminatorGeneric maps Error to GenericError
+	ErrorDiscriminatorGeneric ErrorDiscriminator = "generic"
+)
+
 type errorer interface {
-	ErrorDiscriminator() string
+	ErrorDiscriminator() ErrorDiscriminator
 	Validate() error
 }
 
@@ -43,29 +58,30 @@ func (m *Error) UnmarshalJSON(bs []byte) error {
 		}.Filter()
 	}
 
-	switch discriminator.Value {
-	case "auth":
+	value := fmt.Sprintf("%v", discriminator.Value)
+	switch ErrorDiscriminator(value) {
+	case ErrorDiscriminatorAuth:
 		data := GenericError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "external":
+	case ErrorDiscriminatorExternal:
 		data := ExternalError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "field":
+	case ErrorDiscriminatorField:
 		data := FieldError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
 			return err
 		}
 		m.data = data
-	case "generic":
+	case ErrorDiscriminatorGeneric:
 		data := GenericError{}
 		err := json.Unmarshal(bs, &data)
 		if err != nil {
@@ -115,17 +131,22 @@ func (m Error) AsExternalError() (result ExternalError, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
 
+// Discriminator returns the ErrorDiscriminator oneOf value
+func (m Error) Discriminator() ErrorDiscriminator {
+	return m.data.ErrorDiscriminator()
+}
+
 // Validate implements basic validation for this model
 func (m Error) Validate() error {
 	discriminator := m.data.ErrorDiscriminator()
 	switch discriminator {
-	case "auth":
+	case ErrorDiscriminatorAuth:
 		return m.data.Validate()
-	case "external":
+	case ErrorDiscriminatorExternal:
 		return m.data.Validate()
-	case "field":
+	case ErrorDiscriminatorField:
 		return m.data.Validate()
-	case "generic":
+	case ErrorDiscriminatorGeneric:
 		return m.data.Validate()
 	default:
 		return validation.Errors{
@@ -143,30 +164,33 @@ func IsError(data interface{}) bool {
 
 	discriminator := t.ErrorDiscriminator()
 	switch discriminator {
-	case "auth":
+	case ErrorDiscriminatorAuth:
 		return true
-	case "external":
+	case ErrorDiscriminatorExternal:
 		return true
-	case "field":
+	case ErrorDiscriminatorField:
 		return true
-	case "generic":
+	case ErrorDiscriminatorGeneric:
 		return true
 	default:
 		return false
 	}
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m GenericError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m GenericError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m FieldError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m FieldError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
 
-// ErrorDiscriminator implements errorer and returns the discriminator value as a string.
-func (m ExternalError) ErrorDiscriminator() string {
-	return string(m.GetKind())
+// ErrorDiscriminator implements errorer and returns the discriminator value.
+func (m ExternalError) ErrorDiscriminator() ErrorDiscriminator {
+	value := fmt.Sprintf("%v", m.GetKind())
+	return ErrorDiscriminator(value)
 }
