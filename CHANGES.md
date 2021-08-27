@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.12.1...v0.13.0) (2021-08-26)
+
+
+### Features
+
+* add support for pattern based validation ([#62](https://www.github.com/contiamo/openapi-generator-go/issues/62)) ([2f02ad4](https://www.github.com/contiamo/openapi-generator-go/commit/2f02ad457e539abb3e9bf15489cf2914bf6afe2e))
+* use enum for discriminators ([#64](https://www.github.com/contiamo/openapi-generator-go/issues/64)) ([637f11a](https://www.github.com/contiamo/openapi-generator-go/commit/637f11a435c9286396ce857903eb21b8768af34f))
+
 ### [0.12.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.12.0...v0.12.1) (2021-08-20)
 
 
