@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.13.0...v0.14.0) (2021-08-30)
+
+
+### Features
+
+* ignore non-yaml files in the merge command ([#65](https://www.github.com/contiamo/openapi-generator-go/issues/65)) ([1e2b8c9](https://www.github.com/contiamo/openapi-generator-go/commit/1e2b8c9456e79efbd92da5d581406c78f312014f))
+
 ## [0.13.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.12.1...v0.13.0) (2021-08-26)
 
 
