@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -85,6 +87,12 @@ func walkerMergeSpec(dst *OpenAPISpec) filepath.WalkFunc {
 		}
 
 		if info.IsDir() {
+			return nil
+		}
+
+		if ext := strings.ToLower(filepath.Ext(path)); ext != ".yaml" && ext != ".yml" {
+			// skip because this is not a YAML file
+			logrus.WithField("path", path).Debug("skipping non-YAML file")
 			return nil
 		}
 
