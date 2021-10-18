@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -145,18 +146,25 @@ var cases = []struct {
 		name:      "example of naming for nested inline arrays",
 		directory: "testdata/cases/nested_inline_arrays",
 	},
-	// 28
+	{
+		name:      "example of nested allOf to create a merged enum with validation",
+		directory: "testdata/cases/allOf_enum_merging_and_validation",
+	},
+	// 29
 }
 
 func TestModels(t *testing.T) {
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+	for idx, tc := range cases {
+		t.Run(fmt.Sprintf("%d-%s", idx, tc.name), func(t *testing.T) {
 			ctx, cancel := context.
 				WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
 
 			dir := filepath.Join(tc.directory, "generated")
-			err := os.MkdirAll(dir, 0755)
+			err := os.RemoveAll(dir)
+			require.NoError(t, err)
+
+			err = os.MkdirAll(dir, 0755)
 			require.NoError(t, err)
 			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
@@ -196,39 +204,47 @@ func TestModels(t *testing.T) {
 func TestModelsSingleCase(t *testing.T) {
 	t.Skip("only used during local development")
 
-	tc := cases[27]
-	t.Run(tc.name, func(t *testing.T) {
-		ctx, cancel := context.
-			WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
+	tc := cases[2]
+	count := 100
+	for i := 0; i < count; i++ {
+		t.Run(fmt.Sprintf("trial_%d_%s", i, tc.name), func(t *testing.T) {
+			ctx, cancel := context.
+				WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
 
-		dir := filepath.Join(tc.directory, "generated")
-		err := os.MkdirAll(dir, 0755)
-		require.NoError(t, err)
-		bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
-		require.NoError(t, err)
-		reader := bytes.NewReader(bs)
+			dir := filepath.Join(tc.directory, "generated")
+			err := os.RemoveAll(dir)
+			require.NoError(t, err)
 
-		g, err := NewGenerator(reader, Options{
-			PackageName: "generatortest",
-			Destination: dir,
-			// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
-			Logger: log.Output(ioutil.Discard), // swap for debugging
+			err = os.MkdirAll(dir, 0755)
+			require.NoError(t, err)
+			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
+			require.NoError(t, err)
+			reader := bytes.NewReader(bs)
+
+			g, err := NewGenerator(reader, Options{
+				PackageName: "generatortest",
+				Destination: dir,
+				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
+				Logger: log.Output(ioutil.Discard), // swap for debugging
+			})
+			require.NoError(t, err)
+
+			err = g.Generate(ctx)
+			require.NoError(t, err)
+
+			files, err := filepath.Glob(filepath.Join(dir, "*"))
+			require.NoError(t, err)
+			for _, f := range files {
+				equalFiles(t,
+					filepath.Join(tc.directory, "expected", filepath.Base(f)),
+					filepath.Join(tc.directory, "generated", filepath.Base(f)),
+				)
+			}
 		})
-		require.NoError(t, err)
 
-		err = g.Generate(ctx)
-		require.NoError(t, err)
+	}
 
-		files, err := filepath.Glob(filepath.Join(dir, "*"))
-		require.NoError(t, err)
-		for _, f := range files {
-			equalFiles(t,
-				filepath.Join(tc.directory, "expected", filepath.Base(f)),
-				filepath.Join(tc.directory, "generated", filepath.Base(f)),
-			)
-		}
-	})
 }
 
 func equalFiles(t *testing.T, expected, actual string) {
