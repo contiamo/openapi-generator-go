@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Connection:
+      type: object
+      required:
+        - createdAt
+        - updatedAt
+        - id
+        - name
+        - technology
+        - properties
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+          pattern: ^([a-zA-z_]+[a-z0-9_]*){2}$
+        technology:
+          allOf:
+            - $ref: "#/components/schemas/ConnectionTechnology"
+        properties:
+          $ref: "#/components/schemas/ConnectionProperties"
+
+    ConnectionProperties:
+      type: object
+
+    ConnectionTechnology:
+      description: "The connection technology is either the technology value of the related data source or the integration type"
+      allOf:
+        - $ref: "#/components/schemas/DataSourceTechnology"
+        - $ref: "#/components/schemas/IntegrationType"
+
+    DataSourceTechnology:
+      type: string
+      description: |
+          Technology of a data source. For external data sources this also specifies the type of connection (driver) being used to connect to the data source. Generic data sources may use any technology value (but no connection will be established). Generic data sources may also use the value "other" for technology in case no technology should be shown in the catalog or the technology is not known to the catalog.
+      enum:
+          - mssql
+          - mysql
+          - oracle
+          - postgresql
+          - other
+
+    IntegrationType:
+      type: string
+      enum:
+        - generic
+        - tableau

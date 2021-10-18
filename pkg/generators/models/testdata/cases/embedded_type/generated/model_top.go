@@ -14,7 +14,7 @@ type Top struct {
 	// Arr:
 	Arr []Sub1 `json:"arr,omitempty"`
 	// Boo: Type alias for a value type
-	Boo bool `json:"boo,omitempty"`
+	Boo Sub3 `json:"boo,omitempty"`
 	// Obj:
 	Obj Sub1 `json:"obj,omitempty"`
 }
@@ -24,6 +24,9 @@ func (m Top) Validate() error {
 	return validation.Errors{
 		"arr": validation.Validate(
 			m.Arr,
+		),
+		"boo": validation.Validate(
+			m.Boo,
 		),
 		"obj": validation.Validate(
 			m.Obj,
@@ -42,12 +45,12 @@ func (m *Top) SetArr(val []Sub1) {
 }
 
 // GetBoo returns the Boo property
-func (m Top) GetBoo() bool {
+func (m Top) GetBoo() Sub3 {
 	return m.Boo
 }
 
 // SetBoo sets the Boo property
-func (m *Top) SetBoo(val bool) {
+func (m *Top) SetBoo(val Sub3) {
 	m.Boo = val
 }
 

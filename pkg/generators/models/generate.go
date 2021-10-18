@@ -139,7 +139,8 @@ func (g generator) Generate(ctx context.Context) (err error) {
 	log.Debug().Msg("Paths have been processed.")
 
 	log.Debug().Msg("Processing schemas...")
-	for name, ref := range g.spec.Components.Schemas {
+	for _, name := range sortedKeys(g.spec.Components.Schemas) {
+		ref := g.spec.Components.Schemas[name]
 		err = ctx.Err()
 		if err != nil {
 			return err

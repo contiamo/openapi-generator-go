@@ -24,8 +24,14 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	if len(schemaRef.Value.Properties) > 0 {
 		schemaRef.Value.Type = "object"
 	}
+
 	schema := schemaRef.Value
 	propertyType := schemaRef.Value.Type
+	// special case for references, we prefer named types,
+	// except for arrays, we don't want to create an reference slice aliases
+	if schemaRef.Ref != "" && propertyType != "array" {
+		propertyType = "ref"
+	}
 
 	switch propertyType {
 
@@ -74,12 +80,10 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 			propertyType = "float32"
 		}
 
+	case "ref":
+		propertyType = filepath.Base(schemaRef.Ref)
 	case "":
-		if schemaRef.Ref != "" {
-			propertyType = filepath.Base(schemaRef.Ref)
-		} else {
-			propertyType = "interface{}"
-		}
+		propertyType = "interface{}"
 	}
 
 	if schema.Nullable &&
