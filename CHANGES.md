@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.14.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.0...v0.14.1) (2021-10-18)
+
+
+### Bug Fixes
+
+* update cobra to get rid of old jwt lib ([#67](https://www.github.com/contiamo/openapi-generator-go/issues/67)) ([e86c3b5](https://www.github.com/contiamo/openapi-generator-go/commit/e86c3b522d4d01df948c6f8beb6a32e55184df7c))
+
 ## [0.14.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.13.0...v0.14.0) (2021-08-30)
 
 
