@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.14.2](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.1...v0.14.2) (2021-10-18)
+
+
+### Bug Fixes
+
+* sort model names prior to generation to improve stability ([#69](https://www.github.com/contiamo/openapi-generator-go/issues/69)) ([f2ba6a9](https://www.github.com/contiamo/openapi-generator-go/commit/f2ba6a93a56e213ea1354805972ad1231bee5708))
+
 ### [0.14.1](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.0...v0.14.1) (2021-10-18)
 
 
