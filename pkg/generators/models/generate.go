@@ -203,6 +203,7 @@ func (g generator) processOperation(ctx context.Context, p *openapi3.PathItem, o
 	if o.RequestBody != nil &&
 		o.RequestBody.Value != nil &&
 		o.RequestBody.Value.Content != nil {
+
 		content, ok := o.RequestBody.Value.Content["application/json"]
 		if ok {
 			reqSchema = content.Schema

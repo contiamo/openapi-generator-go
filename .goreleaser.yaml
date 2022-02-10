@@ -1,0 +1,34 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+project_name: openapi-generator-go
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    flags:
+      - -v
+    tags:
+      - osusergo
+      - netgo
+      - static
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/openapi-generator-go/main.go
+    ldflags:
+      - -s -w
+      - -X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.GitCommit={{.Commit}}
+      - -X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.Version={{.Version}}
+archives:
+  - format: binary
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  skip: true
+announce:
+  skip: true

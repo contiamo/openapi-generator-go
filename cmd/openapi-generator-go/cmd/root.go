@@ -54,11 +54,13 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
+		//nolint:forbidigo  // printing in commands is allowed
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	cobra.OnInitialize(
 		initConfig,
@@ -114,6 +116,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
+			//nolint:forbidigo  // printing in commands is allowed
 			fmt.Println(err)
 			os.Exit(1)
 		}
@@ -127,6 +130,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
+		//nolint:forbidigo  // printing in commands is allowed
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }

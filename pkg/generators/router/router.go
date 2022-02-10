@@ -206,7 +206,6 @@ func sortContext(out *templateCtx) {
 				paths.AllowedMethodsByPaths[path].MethodsSorted = append(paths.AllowedMethodsByPaths[path].MethodsSorted, method)
 			}
 			sort.Strings(paths.AllowedMethodsByPaths[path].MethodsSorted)
-
 		}
 		sort.Strings(out.PathsByGroups[g].PathsSorted)
 	}

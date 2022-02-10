@@ -34,7 +34,6 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	}
 
 	switch propertyType {
-
 	case "object":
 		propertyType = goTypeForObject(schemaRef)
 
@@ -89,6 +88,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 	if schema.Nullable &&
 		!strings.HasPrefix(propertyType, "[]") &&
 		!strings.HasPrefix(propertyType, "map[") {
+
 		propertyType = "*" + propertyType
 	}
 	return propertyType
@@ -97,7 +97,6 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 // goTypeForObject returns a string that can represent the entire object type of the given schema
 func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 	switch {
-
 	case schemaRef.Ref != "":
 		propType = typeNameFromRef(schemaRef.Ref)
 

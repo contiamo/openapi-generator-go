@@ -143,7 +143,7 @@ func findReferences(entry Entry, results map[string]Nothing) {
 			findReferences(subEntry, results)
 		}
 
-		// handles entries like "paramaters"
+		// handles entries like "parameters"
 		subList, ok := entry[key].([]interface{})
 		if ok {
 			for _, entry := range subList {
