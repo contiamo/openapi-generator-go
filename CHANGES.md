@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.2...v0.15.0) (2022-02-11)
+
+
+### Features
+
+* create prebuilt binaries for releases ([#72](https://www.github.com/contiamo/openapi-generator-go/issues/72)) ([351c158](https://www.github.com/contiamo/openapi-generator-go/commit/351c15816630d09b966511939c69b050303b52fe))
+
 ### [0.14.2](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.1...v0.14.2) (2021-10-18)
 
 
