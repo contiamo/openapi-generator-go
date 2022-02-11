@@ -108,6 +108,7 @@ var modelsCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	generateCmd.AddCommand(modelsCmd)
 	// Here you will define your flags and configuration settings.

@@ -1,12 +1,20 @@
 name: test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
 
 jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.16.x]
+        go-version: [1.17.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -17,7 +25,19 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
+
+      ######
+      # lint
+      ######
+      - name: Format
+        run: make fmt
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.43.0
+          skip-go-installation: true
+
       - name: Test
         run: make test
       - name: Build
-        run: make binary
+        run: make install

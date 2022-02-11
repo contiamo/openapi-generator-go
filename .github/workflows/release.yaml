@@ -1,0 +1,81 @@
+name: Release
+on:
+  release:
+    types:
+      - created
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    env:
+      registry: ghcr.io
+      name: openapi-generator-go
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get metadata
+        id: metadata
+        uses: contiamo/git-metadata-action@main
+
+      - name: Get Repo Owner
+        id: get_repo_owner
+        run: >
+          echo ::set-output name=repo_owner::$(echo ${{ github.repository_owner }} |
+          tr '[:upper:]' '[:lower:]')
+
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/${{ steps.get_repo_owner.outputs.repo_owner }}/${{ env.name}}
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ steps.get_repo_owner.outputs.repo_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.registry }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Push containers
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          outputs: "type=registry,push=true"
+          platforms: linux/amd64,linux/arm64
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          tags: |
+            ${{ env.registry }}/${{ steps.get_repo_owner.outputs.repo_owner }}/${{ env.name}}:${{ steps.metadata.outputs.semver }}
+            ${{ env.registry }}/${{ steps.get_repo_owner.outputs.repo_owner }}/${{ env.name}}:latest

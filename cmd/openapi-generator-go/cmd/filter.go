@@ -59,6 +59,7 @@ var filterCmd = &cobra.Command{
 		filteredSpec, err := filters.ByPath(spec, allowedPaths)
 		if err != nil {
 			if zerolog.GlobalLevel() == zerolog.DebugLevel {
+				//nolint:forbidigo  // printing in commands is allowed
 				fmt.Println(string(filteredSpec))
 			}
 			log.Fatal().Err(err).Msg("failed to filter the api spec")
@@ -71,6 +72,7 @@ var filterCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	rootCmd.AddCommand(filterCmd)
 	// Here you will define your flags and configuration settings.

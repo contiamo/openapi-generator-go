@@ -38,11 +38,14 @@ var versionCmd = &cobra.Command{
 	Short: "show version info",
 	Long:  `show version info.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		//nolint:forbidigo  // printing in commands is allowed
 		fmt.Println("version:", Version)
+		//nolint:forbidigo  // printing in commands is allowed
 		fmt.Println("commit: ", GitCommit)
 	},
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	rootCmd.AddCommand(versionCmd)
 

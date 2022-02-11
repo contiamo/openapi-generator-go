@@ -141,10 +141,9 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	ref = resolveAllOf(ref, nil)
 
 	switch {
-
 	case len(ref.Value.Enum) > 0:
 		model.Kind = Enum
-		model.Properties, err = enumPropsFromRef(ref, model)
+		model.Properties = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
 
 	case ref.Value.Type == "object" || len(ref.Value.Properties) > 0:
@@ -234,7 +233,6 @@ func (m *Model) configureOneOf(ref *openapi3.SchemaRef) {
 			}
 		}
 	}
-
 }
 
 // Render renders the model to a Go file
@@ -611,7 +609,6 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 	}
 
 	switch ref.Value.Format {
-
 	case "date":
 		spec.IsRequiredInValidation = !spec.IsNullable && spec.IsRequired
 		spec.IsRequired = true
@@ -685,7 +682,6 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 
 	case "", "int32", "int64", "float", "double":
 		break // do nothing
-
 	}
 
 	imports = make([]string, 0, len(importsMap))
@@ -697,7 +693,7 @@ func fillValidationRelatedProperties(ref *openapi3.SchemaRef, spec *PropSpec) (i
 }
 
 // enumPropsFromRef generates a list of enum property/item descriptors.
-func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, err error) {
+func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec) {
 	for idx, val := range ref.Value.Enum {
 		valueVarName := tpl.ToPascalCase(fmt.Sprintf("%v", val))
 		if valueVarName == "" {
@@ -715,7 +711,7 @@ func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec, 
 		return specs[i].Name < specs[j].Name
 	})
 
-	return specs, err
+	return specs
 }
 
 // checkIfRequired returns true if `name` is in the `list`

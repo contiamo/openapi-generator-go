@@ -77,6 +77,7 @@ var routerCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	routerCmd.Flags().Bool("fail-no-group", false, "fail when there is no x-handler-group defined for any of the endpoints")
 	routerCmd.Flags().Bool("fail-no-operation-id", false, "fail when there is no operationId defined for any of the methods")

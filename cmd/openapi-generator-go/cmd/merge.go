@@ -74,6 +74,7 @@ var mergeCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits  // init is allowed for cobra commands
 func init() {
 	rootCmd.AddCommand(mergeCmd)
 
