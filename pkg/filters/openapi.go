@@ -110,7 +110,7 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 	}
 
 	// ensure we don't return an invalid spec
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(filteredYAML)
+	swagger, err := openapi3.NewLoader().LoadFromData(filteredYAML)
 	if err != nil {
 		return filteredYAML, err
 	}

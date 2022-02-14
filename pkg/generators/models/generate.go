@@ -56,7 +56,7 @@ func NewGenerator(specFile io.Reader, opts Options) (Generator, error) {
 	log.Debug().Msg("File has been read.")
 
 	log.Debug().Msg("Parsing the spec...")
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(data)
+	swagger, err := openapi3.NewLoader().LoadFromData(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "can not parse the OpenAPI spec")
 	}
@@ -77,7 +77,7 @@ type Generator interface {
 // generator implements the whole generation process based on input parameters
 type generator struct {
 	// spec is the initial Open API spec read from a file
-	spec *openapi3.Swagger
+	spec *openapi3.T
 	// opts are various options set for the generation process
 	opts Options
 }

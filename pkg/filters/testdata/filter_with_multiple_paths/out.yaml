@@ -4,31 +4,31 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: User forbidden
     NotFound:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: Object not found
     ServerError:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: Internal server error
     Unauthorized:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: User unauthorized
     ValidationError:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/FieldErrorResponse'
+            $ref: "#/components/schemas/FieldErrorResponse"
       description: Some of the give parameters are not correct
   schemas:
     CreateCustomFieldRequest:
@@ -68,17 +68,17 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
           type: array
       required:
-      - type
-      - name
-      - filterable
-      - searchable
-      - hideIfEmpty
+        - type
+        - name
+        - filterable
+        - searchable
+        - hideIfEmpty
       type: object
     FieldError:
       properties:
@@ -87,26 +87,26 @@ components:
         message:
           type: string
         type:
-          $ref: '#/components/schemas/FieldErrorType'
+          $ref: "#/components/schemas/FieldErrorType"
       required:
-      - type
-      - key
-      - message
+        - type
+        - key
+        - message
       type: object
     FieldErrorResponse:
       description: Error message that contains detailed information about certain parameters being incorrect
       properties:
         errors:
           items:
-            $ref: '#/components/schemas/FieldError'
+            $ref: "#/components/schemas/FieldError"
           type: array
       required:
-      - errors
+        - errors
       type: object
     FieldErrorType:
       description: The type of the field error response
       enum:
-      - FieldError
+        - FieldError
       type: string
     FieldKind:
       description: |
@@ -118,9 +118,9 @@ components:
 
         - Custom are user defined fields. These are fully defined by the user.
       enum:
-      - system
-      - configurable
-      - custom
+        - system
+        - configurable
+        - custom
       readOnly: true
       type: string
     FieldSpec:
@@ -157,7 +157,7 @@ components:
               `properties.category` -> category is found in the properties subobject, i.e. `obj.properties.category`
           type: string
         kind:
-          $ref: '#/components/schemas/FieldKind'
+          $ref: "#/components/schemas/FieldKind"
         maxValue:
           nullable: true
           type: number
@@ -174,21 +174,21 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
           type: array
       required:
-      - name
-      - key
-      - type
-      - kind
-      - filterable
-      - searchable
-      - description
-      - hideIfEmpty
-      - inherited
+        - name
+        - key
+        - type
+        - kind
+        - filterable
+        - searchable
+        - description
+        - hideIfEmpty
+        - inherited
       type: object
     FieldType:
       description: |
@@ -212,15 +212,15 @@ components:
 
         - `link` is a link object with a displayed text and URL, e.g. `{"displayText": "text", "url": "http://example.com"}`. Only absolute URLs with HTTP/HTTPS protocol are allowed.
       enum:
-      - text
-      - multitext
-      - select
-      - multiselect
-      - boolean
-      - date
-      - datetime
-      - number
-      - link
+        - text
+        - multitext
+        - select
+        - multiselect
+        - boolean
+        - date
+        - datetime
+        - number
+        - link
       type: string
     FieldsResponse:
       description: |
@@ -229,35 +229,35 @@ components:
       properties:
         fields:
           items:
-            $ref: '#/components/schemas/FieldSpec'
+            $ref: "#/components/schemas/FieldSpec"
           type: array
       required:
-      - fields
+        - fields
       type: object
     GeneralError:
       properties:
         message:
           type: string
         type:
-          $ref: '#/components/schemas/GeneralErrorType'
+          $ref: "#/components/schemas/GeneralErrorType"
       required:
-      - type
-      - message
+        - type
+        - message
       type: object
     GeneralErrorResponse:
       description: General error response that usually has a very generic message
       properties:
         errors:
           items:
-            $ref: '#/components/schemas/GeneralError'
+            $ref: "#/components/schemas/GeneralError"
           type: array
       required:
-      - errors
+        - errors
       type: object
     GeneralErrorType:
       description: The type of the general error response
       enum:
-      - GeneralError
+        - GeneralError
       type: string
     PageInfo:
       description: Contains the pagination metadata for a response
@@ -277,38 +277,38 @@ components:
           description: Item count if filters were not applied
           type: integer
       required:
-      - itemCount
-      - itemsPerPage
-      - unfilteredItemCount
-      - current
+        - itemCount
+        - itemsPerPage
+        - unfilteredItemCount
+        - current
       type: object
     PagedCustomFieldResponse:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/FieldSpec'
+            $ref: "#/components/schemas/FieldSpec"
           type: array
         page:
-          $ref: '#/components/schemas/PageInfo'
+          $ref: "#/components/schemas/PageInfo"
       required:
-      - page
-      - data
+        - page
+        - data
       type: object
     ResourceKind:
       description: A list of supported resource kinds
       enum:
-      - datasource
-      - table
-      - column
-      - usecase
-      - bireport
-      - glossaryitem
-      - application
-      - pipeline
-      - api
-      - model
-      - stream
-      - filestorage
+        - datasource
+        - table
+        - column
+        - usecase
+        - bireport
+        - glossaryitem
+        - application
+        - pipeline
+        - api
+        - model
+        - stream
+        - filestorage
       type: string
     UpdateFieldSetRequest:
       properties:
@@ -318,7 +318,7 @@ components:
             type: string
           type: array
       required:
-      - fields
+        - fields
       type: object
   securitySchemes:
     doubleCookieAuth:
@@ -334,6 +334,9 @@ components:
       bearerFormat: Personal Access Token or Service Account Token
       scheme: bearer
       type: http
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: /auth/.well-known/openid-configuration
 info:
   contact:
     email: developer@contiamo.com
@@ -352,30 +355,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldsResponse'
+                $ref: "#/components/schemas/FieldsResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Get Current Fields Spec
       tags:
-      - fields
+        - fields
       x-handler-group: FieldsV2
     parameters:
-    - description: UUID of the project
-      in: path
-      name: projectId
-      required: true
-      schema:
-        format: uuid
-        type: string
-    - description: Identifier of the entity class
-      in: path
-      name: resourceKind
-      required: true
-      schema:
-        $ref: '#/components/schemas/ResourceKind'
+      - description: UUID of the project
+        in: path
+        name: projectId
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - description: Identifier of the entity class
+        in: path
+        name: resourceKind
+        required: true
+        schema:
+          $ref: "#/components/schemas/ResourceKind"
     put:
       description: |
         This updates the fields spec used to validate catalog entries, use this to assign or unassign
@@ -385,83 +388,83 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateFieldSetRequest'
+              $ref: "#/components/schemas/UpdateFieldSetRequest"
         description: The fields spec to set
         required: true
       responses:
         "204":
           description: Successfully updated the schema
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "422":
-          $ref: '#/components/responses/ValidationError'
+          $ref: "#/components/responses/ValidationError"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Update the current field spec assignments or order
       tags:
-      - fields
+        - fields
       x-handler-group: FieldsV2
   /api/v2/{projectId}/fields:
     get:
       operationId: ListCustomFields
       parameters:
-      - description: Search fields by name and description
-        in: query
-        name: search
-        schema:
-          type: string
-      - description: Filter the response to only those unassigned for the named kind
-        in: query
-        name: unassigned
-        schema:
-          $ref: '#/components/schemas/ResourceKind'
-      - description: The current set of paged results to display, based on a 1-based array index
-        in: query
-        name: page
-        schema:
-          type: integer
-      - description: Maximum items to return in the response per page
-        in: query
-        name: pageSize
-        schema:
-          default: 20
-          maximum: 100
-          minimum: 5
-          type: integer
+        - description: Search fields by name and description
+          in: query
+          name: search
+          schema:
+            type: string
+        - description: Filter the response to only those unassigned for the named kind
+          in: query
+          name: unassigned
+          schema:
+            $ref: "#/components/schemas/ResourceKind"
+        - description: The current set of paged results to display, based on a 1-based array index
+          in: query
+          name: page
+          schema:
+            type: integer
+        - description: Maximum items to return in the response per page
+          in: query
+          name: pageSize
+          schema:
+            default: 20
+            maximum: 100
+            minimum: 5
+            type: integer
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedCustomFieldResponse'
+                $ref: "#/components/schemas/PagedCustomFieldResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: List the available custom Fields
       tags:
-      - fields
+        - fields
       x-handler-group: FieldsV2
     parameters:
-    - description: UUID of the project
-      in: path
-      name: projectId
-      required: true
-      schema:
-        format: uuid
-        type: string
+      - description: UUID of the project
+        in: path
+        name: projectId
+        required: true
+        schema:
+          format: uuid
+          type: string
     post:
       operationId: CreateCustomField
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCustomFieldRequest'
+              $ref: "#/components/schemas/CreateCustomFieldRequest"
         description: The fields spec to set
         required: true
       responses:
@@ -469,35 +472,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldSpec'
+                $ref: "#/components/schemas/FieldSpec"
           description: Successfully create the Field
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "422":
-          $ref: '#/components/responses/ValidationError'
+          $ref: "#/components/responses/ValidationError"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Create new custom Field
       tags:
-      - fields
+        - fields
       x-handler-group: FieldsV2
 security:
-- tokenAuth: []
+  - tokenAuth: []
+  - oidc: []
 servers:
-- description: Locally running
-  url: http://localhost:{port}
-  variables:
-    port:
-      default: "9191"
-- description: Production environment
-  url: https://cloud.example.com/{tenantId}
-  variables:
-    tenantId:
-      default: demo
+  - description: Locally running
+    url: http://localhost:{port}
+    variables:
+      port:
+        default: "9191"
+  - description: Production environment
+    url: https://cloud.example.com/{tenantId}
+    variables:
+      tenantId:
+        default: demo
 tags:
-- description: Endpoints for managing the catalog structure
-  name: fields
+  - description: Endpoints for managing the catalog structure
+    name: fields

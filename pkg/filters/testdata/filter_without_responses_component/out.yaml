@@ -37,7 +37,7 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
@@ -98,7 +98,7 @@ components:
               `properties.category` -> category is found in the properties subobject, i.e. `obj.properties.category`
           type: string
         kind:
-          $ref: '#/components/schemas/FieldKind'
+          $ref: "#/components/schemas/FieldKind"
         maxValue:
           nullable: true
           type: number
@@ -115,7 +115,7 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
@@ -190,10 +190,10 @@ components:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/FieldSpec'
+            $ref: "#/components/schemas/FieldSpec"
           type: array
         page:
-          $ref: '#/components/schemas/PageInfo'
+          $ref: "#/components/schemas/PageInfo"
       required:
         - page
         - data
@@ -228,6 +228,9 @@ components:
       bearerFormat: Personal Access Token or Service Account Token
       scheme: bearer
       type: http
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: /auth/.well-known/openid-configuration
 info:
   contact:
     email: developer@contiamo.com
@@ -249,7 +252,7 @@ paths:
           in: query
           name: unassigned
           schema:
-            $ref: '#/components/schemas/ResourceKind'
+            $ref: "#/components/schemas/ResourceKind"
         - description: The current set of paged results to display, based on a 1-based array index
           in: query
           name: page
@@ -268,7 +271,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedCustomFieldResponse'
+                $ref: "#/components/schemas/PagedCustomFieldResponse"
           description: Here are the fields
       summary: List the available custom Fields
       tags:
@@ -288,7 +291,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCustomFieldRequest'
+              $ref: "#/components/schemas/CreateCustomFieldRequest"
         description: The fields spec to set
         required: true
       responses:
@@ -296,7 +299,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldSpec'
+                $ref: "#/components/schemas/FieldSpec"
           description: Successfully create the Field
       summary: Create new custom Field
       tags:
@@ -304,6 +307,7 @@ paths:
       x-handler-group: FieldsV2
 security:
   - tokenAuth: []
+  - oidc: []
 servers:
   - description: Locally running
     url: http://localhost:{port}
