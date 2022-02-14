@@ -3,7 +3,7 @@ module github.com/contiamo/openapi-generator-go
 go 1.16
 
 require (
-	github.com/getkin/kin-openapi v0.14.0
+	github.com/getkin/kin-openapi v0.89.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.8.1
 	github.com/rs/zerolog v1.20.0

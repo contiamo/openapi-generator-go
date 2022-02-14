@@ -11,31 +11,31 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: User forbidden
     NotFound:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: Object not found
     ServerError:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: Internal server error
     Unauthorized:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralErrorResponse'
+            $ref: "#/components/schemas/GeneralErrorResponse"
       description: User unauthorized
     ValidationError:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/FieldErrorResponse'
+            $ref: "#/components/schemas/FieldErrorResponse"
       description: Some of the give parameters are not correct
   schemas:
     CreateCustomFieldRequest:
@@ -75,7 +75,7 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
@@ -94,7 +94,7 @@ components:
         message:
           type: string
         type:
-          $ref: '#/components/schemas/FieldErrorType'
+          $ref: "#/components/schemas/FieldErrorType"
       required:
         - type
         - key
@@ -105,7 +105,7 @@ components:
       properties:
         errors:
           items:
-            $ref: '#/components/schemas/FieldError'
+            $ref: "#/components/schemas/FieldError"
           type: array
       required:
         - errors
@@ -164,7 +164,7 @@ components:
               `properties.category` -> category is found in the properties subobject, i.e. `obj.properties.category`
           type: string
         kind:
-          $ref: '#/components/schemas/FieldKind'
+          $ref: "#/components/schemas/FieldKind"
         maxValue:
           nullable: true
           type: number
@@ -181,7 +181,7 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
@@ -214,7 +214,7 @@ components:
             Should this field show up as a filter in the catalog
           type: boolean
         kind:
-          $ref: '#/components/schemas/FieldKind'
+          $ref: "#/components/schemas/FieldKind"
         maxValue:
           nullable: true
           type: number
@@ -231,7 +231,7 @@ components:
             Should this field be used in the catalog fuzzy search
           type: boolean
         type:
-          $ref: '#/components/schemas/FieldType'
+          $ref: "#/components/schemas/FieldType"
         validValues:
           items:
             type: string
@@ -283,7 +283,7 @@ components:
       properties:
         fields:
           items:
-            $ref: '#/components/schemas/FieldSpec'
+            $ref: "#/components/schemas/FieldSpec"
           type: array
       required:
         - fields
@@ -293,7 +293,7 @@ components:
         message:
           type: string
         type:
-          $ref: '#/components/schemas/GeneralErrorType'
+          $ref: "#/components/schemas/GeneralErrorType"
       required:
         - type
         - message
@@ -303,7 +303,7 @@ components:
       properties:
         errors:
           items:
-            $ref: '#/components/schemas/GeneralError'
+            $ref: "#/components/schemas/GeneralError"
           type: array
       required:
         - errors
@@ -340,10 +340,10 @@ components:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/FieldSpec'
+            $ref: "#/components/schemas/FieldSpec"
           type: array
         page:
-          $ref: '#/components/schemas/PageInfo'
+          $ref: "#/components/schemas/PageInfo"
       required:
         - page
         - data
@@ -438,7 +438,7 @@ components:
       properties:
         fields:
           items:
-            $ref: '#/components/schemas/FieldSpecUpdateRequest'
+            $ref: "#/components/schemas/FieldSpecUpdateRequest"
           type: array
       required:
         - fields
@@ -453,6 +453,9 @@ components:
       in: header
       name: X-Double-Cookie
       type: apiKey
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: /auth/.well-known/openid-configuration
     tokenAuth:
       bearerFormat: Personal Access Token or Service Account Token
       scheme: bearer
@@ -468,12 +471,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldsResponse'
+                $ref: "#/components/schemas/FieldsResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Get Current Fields Spec
       tags:
         - fields
@@ -491,7 +494,7 @@ paths:
         name: entityClassId
         required: true
         schema:
-          $ref: '#/components/schemas/ResourceKind'
+          $ref: "#/components/schemas/ResourceKind"
     put:
       description: |
         This updates the fields spec used to validate catalog entries
@@ -500,22 +503,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateFieldsRequest'
+              $ref: "#/components/schemas/UpdateFieldsRequest"
         description: The fields spec to set
         required: true
       responses:
         "204":
           description: Successfully updated the schema
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "422":
-          $ref: '#/components/responses/ValidationError'
+          $ref: "#/components/responses/ValidationError"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Update the current field spec
       tags:
         - fields
@@ -530,12 +533,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldsResponse'
+                $ref: "#/components/schemas/FieldsResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Get combined/merged fields-set
       tags:
         - fields
@@ -553,7 +556,7 @@ paths:
         name: category
         required: false
         schema:
-          $ref: '#/components/schemas/SearchCategory'
+          $ref: "#/components/schemas/SearchCategory"
       - description: A specific list of Resource kinds. Must be set if `category` is empty or omitted.
         explode: false
         in: query
@@ -561,7 +564,7 @@ paths:
         required: false
         schema:
           items:
-            $ref: '#/components/schemas/ResourceKind'
+            $ref: "#/components/schemas/ResourceKind"
           type: array
         style: form
   /api/v2/{projectId}/field-sets/{resourceKind}:
@@ -574,12 +577,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldsResponse'
+                $ref: "#/components/schemas/FieldsResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Get Current Fields Spec
       tags:
         - fields
@@ -597,7 +600,7 @@ paths:
         name: resourceKind
         required: true
         schema:
-          $ref: '#/components/schemas/ResourceKind'
+          $ref: "#/components/schemas/ResourceKind"
     put:
       description: |
         This updates the fields spec used to validate catalog entries, use this to assign or unassign
@@ -607,22 +610,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateFieldSetRequest'
+              $ref: "#/components/schemas/UpdateFieldSetRequest"
         description: The fields spec to set
         required: true
       responses:
         "204":
           description: Successfully updated the schema
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "422":
-          $ref: '#/components/responses/ValidationError'
+          $ref: "#/components/responses/ValidationError"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Update the current field spec assignments or order
       tags:
         - fields
@@ -640,7 +643,7 @@ paths:
           in: query
           name: unassigned
           schema:
-            $ref: '#/components/schemas/ResourceKind'
+            $ref: "#/components/schemas/ResourceKind"
         - description: The current set of paged results to display, based on a 1-based array index
           in: query
           name: page
@@ -661,12 +664,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedCustomFieldResponse'
+                $ref: "#/components/schemas/PagedCustomFieldResponse"
           description: Here are the fields
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: List the available custom Fields
       tags:
         - fields
@@ -685,7 +688,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCustomFieldRequest'
+              $ref: "#/components/schemas/CreateCustomFieldRequest"
         description: The fields spec to set
         required: true
       responses:
@@ -693,18 +696,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldSpec'
+                $ref: "#/components/schemas/FieldSpec"
           description: Successfully create the Field
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "422":
-          $ref: '#/components/responses/ValidationError'
+          $ref: "#/components/responses/ValidationError"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Create new custom Field
       tags:
         - fields
@@ -716,13 +719,13 @@ paths:
         "204":
           description: Field successfully deleted
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Delete a field
       tags:
         - fields
@@ -747,22 +750,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateCustomFieldRequest'
+              $ref: "#/components/schemas/UpdateCustomFieldRequest"
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldSpec'
+                $ref: "#/components/schemas/FieldSpec"
           description: Field successfully updated
         "401":
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         "500":
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       summary: Update a field
       tags:
         - fields
@@ -770,6 +773,7 @@ paths:
 
 security:
   - tokenAuth: []
+  - oidc: []
 servers:
   - description: Locally running
     url: http://localhost:{port}
