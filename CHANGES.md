@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.15.0...v0.16.0) (2022-02-14)
+
+
+### Features
+
+* upgrade kin-openapi to 0.89.0 to support oidc security schemas ([#74](https://www.github.com/contiamo/openapi-generator-go/issues/74)) ([9d119c2](https://www.github.com/contiamo/openapi-generator-go/commit/9d119c2ebb1d8deefa2932d37f0bab314e77f5ef))
+
 ## [0.15.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.14.2...v0.15.0) (2022-02-11)
 
 
