@@ -112,6 +112,7 @@ type path struct {
 	PUT    *endpoint `yaml:"put"`
 	PATCH  *endpoint `yaml:"patch"`
 	DELETE *endpoint `yaml:"delete"`
+	HEAD   *endpoint `yaml:"head"`
 }
 
 type info struct {
@@ -163,6 +164,13 @@ func createTemplateCtx(spec spec, opts Options) (out templateCtx, err error) {
 
 		if definition.DELETE != nil {
 			err = setEndpoint(&out, opts, http.MethodDelete, path, *definition.DELETE)
+			if err != nil {
+				return out, err
+			}
+		}
+
+		if definition.HEAD != nil {
+			err = setEndpoint(&out, opts, http.MethodHead, path, *definition.HEAD)
 			if err != nil {
 				return out, err
 			}
