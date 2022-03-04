@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
