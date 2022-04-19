@@ -1,0 +1,11 @@
+openapi: 3.0.0
+
+paths:
+  "/a/path":
+    head:
+      x-handler-group: HeadHandler
+      operationId: HeadOp
+      responses:
+        "200":
+          description: A response
+
