@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.16.0...v0.17.0) (2022-04-19)
+
+
+### Features
+
+* add HTTP HEAD operation ([#76](https://www.github.com/contiamo/openapi-generator-go/issues/76)) ([4d4b429](https://www.github.com/contiamo/openapi-generator-go/commit/4d4b429a8ca1682c024c91252b0a06231610da57))
+
 ## [0.16.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.15.0...v0.16.0) (2022-02-14)
 
 
