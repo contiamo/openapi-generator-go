@@ -2,7 +2,6 @@ package models
 
 import (
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -151,6 +150,6 @@ func sortedKeys(obj map[string]*openapi3.SchemaRef) (res []string) {
 	for k := range obj {
 		res = append(res, k)
 	}
-	sort.Strings(res)
+	//sort.Strings(res)
 	return res
 }
