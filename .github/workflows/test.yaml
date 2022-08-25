@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
@@ -31,13 +31,11 @@ jobs:
       ######
       - name: Format
         run: make fmt
+
       - name: Lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.43.0
-          skip-go-installation: true
+          version: v1.44.2
 
       - name: Test
         run: make test
-      - name: Build
-        run: make install
