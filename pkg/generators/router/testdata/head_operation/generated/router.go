@@ -16,12 +16,6 @@ type HeadHandlerHandler interface {
 }
 
 // NewRouter creates a new router for the spec and the given handlers.
-//
-//
-//
-//
-//
-//
 func NewRouter(
 	headHandlerHandler HeadHandlerHandler,
 ) http.Handler {

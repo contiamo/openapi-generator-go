@@ -371,10 +371,9 @@ type GroupHandler interface {
 // NewRouter creates a new router for the spec and the given handlers.
 // Title
 //
-// Description
+// # Description
 //
 // Version
-//
 func NewRouter(
 	anotherHandler AnotherHandler,
 	groupHandler GroupHandler,
