@@ -7,9 +7,12 @@ import (
 
 // TypeDisplayName returns the value with special characters replaced with
 // there semantic meaning and then converted to pascal case. For example,
-//     *string
+//
+//	*string
+//
 // becomes
-//     NullableString
+//
+//	NullableString
 func TypeDisplayName(value string) string {
 	out := value
 	if strings.HasPrefix(value, "*") {

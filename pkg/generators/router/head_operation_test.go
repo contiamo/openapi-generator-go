@@ -3,7 +3,6 @@ package router
 import (
 	"bufio"
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,7 +19,7 @@ func TestHeadOperation(t *testing.T) {
 
 		err = os.MkdirAll(genDir, 0755)
 		require.NoError(t, err)
-		bs, err := ioutil.ReadFile(filepath.Join(basePath, "api.yaml"))
+		bs, err := os.ReadFile(filepath.Join(basePath, "api.yaml"))
 		require.NoError(t, err)
 		reader := bytes.NewReader(bs)
 
@@ -40,9 +39,9 @@ func TestHeadOperation(t *testing.T) {
 }
 
 func equalFiles(t *testing.T, actual, expected string) {
-	bs1, err := ioutil.ReadFile(expected)
+	bs1, err := os.ReadFile(expected)
 	require.NoError(t, err)
-	bs2, err := ioutil.ReadFile(actual)
+	bs2, err := os.ReadFile(actual)
 	require.NoError(t, err)
 	require.Equal(t, string(bs1), string(bs2))
 }

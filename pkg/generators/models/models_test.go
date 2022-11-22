@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -166,7 +166,7 @@ func TestModels(t *testing.T) {
 
 			err = os.MkdirAll(dir, 0755)
 			require.NoError(t, err)
-			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
+			bs, err := os.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
 
@@ -175,7 +175,7 @@ func TestModels(t *testing.T) {
 				PackageName: "generatortest",
 				Destination: dir,
 				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}),
-				Logger: log.Output(ioutil.Discard), // swap for debugging
+				Logger: log.Output(io.Discard), // swap for debugging
 			})
 			require.NoError(t, err)
 
@@ -218,7 +218,7 @@ func TestModelsSingleCase(t *testing.T) {
 
 			err = os.MkdirAll(dir, 0755)
 			require.NoError(t, err)
-			bs, err := ioutil.ReadFile(filepath.Join(tc.directory, "api.yaml"))
+			bs, err := os.ReadFile(filepath.Join(tc.directory, "api.yaml"))
 			require.NoError(t, err)
 			reader := bytes.NewReader(bs)
 
@@ -226,7 +226,7 @@ func TestModelsSingleCase(t *testing.T) {
 				PackageName: "generatortest",
 				Destination: dir,
 				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
-				Logger: log.Output(ioutil.Discard), // swap for debugging
+				Logger: log.Output(io.Discard), // swap for debugging
 			})
 			require.NoError(t, err)
 
@@ -248,9 +248,9 @@ func TestModelsSingleCase(t *testing.T) {
 }
 
 func equalFiles(t *testing.T, expected, actual string) {
-	bs1, err := ioutil.ReadFile(expected)
+	bs1, err := os.ReadFile(expected)
 	require.NoError(t, err)
-	bs2, err := ioutil.ReadFile(actual)
+	bs2, err := os.ReadFile(actual)
 	require.NoError(t, err)
 	require.Equal(t, string(bs1), string(bs2))
 }

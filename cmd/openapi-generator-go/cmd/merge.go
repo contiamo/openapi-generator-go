@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -67,7 +66,7 @@ var mergeCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to encode spec")
 		}
 
-		err = ioutil.WriteFile(destinationFile, bs, 0644)
+		err = os.WriteFile(destinationFile, bs, 0644)
 		if err != nil {
 			log.Fatal().Str("output", destinationFile).Err(err).Msg("failed to create output file")
 		}
