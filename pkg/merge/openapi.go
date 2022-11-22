@@ -3,7 +3,6 @@ package merge
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,12 +54,13 @@ type components struct {
 // 			log.Fatalf("failed to open the OpenAPI base spec file at `%s`: %s", path, err.Error())
 // 		}
 
-// 		spec, err := merge.OpenAPI(baseSpec, "./openapi/parts")
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
+// spec, err := merge.OpenAPI(baseSpec, "./openapi/parts")
+//
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 func OpenAPI(baseSpec io.Reader, path string) (*OpenAPISpec, error) {
-	data, err := ioutil.ReadAll(baseSpec)
+	data, err := io.ReadAll(baseSpec)
 	if err != nil {
 		return nil, fmt.Errorf("can not read spec file: %w", err)
 	}
@@ -101,7 +101,7 @@ func walkerMergeSpec(dst *OpenAPISpec) filepath.WalkFunc {
 			return fmt.Errorf("can not open spec file: %w", err)
 		}
 
-		data, err := ioutil.ReadAll(f)
+		data, err := io.ReadAll(f)
 		if err != nil {
 			return fmt.Errorf("can not read spec file: %w", err)
 		}

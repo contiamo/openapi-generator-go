@@ -1,7 +1,6 @@
 package filters
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,7 +47,7 @@ func TestFilterByPath(t *testing.T) {
 			require.NoError(t, err)
 
 			testFolder := strings.ReplaceAll(tc.name, " ", "_")
-			exp, err := ioutil.ReadFile(filepath.Join("testdata", testFolder, "out.yaml"))
+			exp, err := os.ReadFile(filepath.Join("testdata", testFolder, "out.yaml"))
 			require.NoError(t, err)
 
 			require.YAMLEq(t, string(exp), string(out), string(out))

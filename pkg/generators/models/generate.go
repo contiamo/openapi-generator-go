@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -49,7 +49,7 @@ func NewGenerator(specFile io.Reader, opts Options) (Generator, error) {
 	}
 
 	log.Debug().Msg("Reading the spec file...")
-	data, err := ioutil.ReadAll(specFile)
+	data, err := io.ReadAll(specFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "can not read spec file")
 	}
@@ -288,7 +288,7 @@ func (g generator) writeModelToFile(ctx context.Context, model *Model, dst strin
 
 	log.Debug().Msg("Writing the model to file...")
 	target := filepath.Join(dst, filename)
-	err = ioutil.WriteFile(target, content, 0644)
+	err = os.WriteFile(target, content, 0644)
 	if err != nil {
 		return errors.Wrap(err, "cannot write model file")
 	}

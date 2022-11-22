@@ -24,7 +24,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -49,7 +49,7 @@ var filterCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Err(err).Msg("can't read output flag")
 		}
-		bs, err := ioutil.ReadFile(file)
+		bs, err := os.ReadFile(file)
 		if err != nil {
 			log.Fatal().Str("spec-file", file).Err(err).Msg("failed to read the spec file")
 		}
@@ -65,7 +65,7 @@ var filterCmd = &cobra.Command{
 			log.Fatal().Err(err).Msg("failed to filter the api spec")
 		}
 
-		err = ioutil.WriteFile(destinationFile, filteredSpec, 0644)
+		err = os.WriteFile(destinationFile, filteredSpec, 0644)
 		if err != nil {
 			log.Fatal().Str("output", destinationFile).Err(err).Msg("failed to create output file")
 		}

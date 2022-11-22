@@ -325,8 +325,8 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 // removeSemanticallyEmptyRefs removes SchemaRefs from an allOf list  that will not produce any
 // meaningful changes to the generated type. Specifically this will remove things like
 //
-//   allOf:
-//      - description: "this will only set the description value"
+//	allOf:
+//	   - description: "this will only set the description value"
 func removeSemanticallyEmptyRefs(allOf []*openapi3.SchemaRef) []*openapi3.SchemaRef {
 	if allOf == nil {
 		return allOf

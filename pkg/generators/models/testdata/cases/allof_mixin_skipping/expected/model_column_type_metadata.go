@@ -1,8 +1,9 @@
 // This file is auto-generated, DO NOT EDIT.
 //
 // Source:
-//     Title: Test
-//     Version: 0.1.0
+//
+//	Title: Test
+//	Version: 0.1.0
 package generatortest
 
 import (
