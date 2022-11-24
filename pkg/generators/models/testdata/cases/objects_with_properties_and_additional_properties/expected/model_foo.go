@@ -35,7 +35,7 @@ func (obj *Foo) UnmarshalJSON(data []byte) error {
 
 	var additionalProperties = make(map[string]interface{})
 	for k, v := range generic {
-		if k == "Bar" {
+		if k == "bar" {
 			if err := json.Unmarshal(v, &(obj.FooProperties.Bar)); err != nil {
 				return err
 			}
@@ -67,7 +67,7 @@ func (obj Foo) MarshalJSON() ([]byte, error) {
 		}
 	}
 	if propData, err := json.Marshal(obj.FooProperties.Bar); err == nil {
-		props["Bar"] = propData
+		props["bar"] = propData
 	} else {
 		return nil, err
 	}

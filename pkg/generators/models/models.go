@@ -90,6 +90,8 @@ type ConvertSpec struct {
 type PropSpec struct {
 	// Name is a property name in structs, variable name in enums, etc
 	Name string
+	// PropertyName is the original name of the property
+	PropertyName string
 	// Description used in the comment of the property
 	Description string
 	// GoType used for this property (e.g. `string`, `int`, etc)
@@ -506,12 +508,13 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		prop = resolveAllOf(prop, nil)
 
 		spec := PropSpec{
-			Name:        tpl.ToPascalCase(name),
-			Description: prop.Value.Description,
-			GoType:      goTypeFromSpec(prop),
-			IsRequired:  checkIfRequired(name, ref.Value.Required),
-			IsEnum:      len(prop.Value.Enum) > 0,
-			IsNullable:  prop.Value.Nullable,
+			Name:         tpl.ToPascalCase(name),
+			PropertyName: name,
+			Description:  prop.Value.Description,
+			GoType:       goTypeFromSpec(prop),
+			IsRequired:   checkIfRequired(name, ref.Value.Required),
+			IsEnum:       len(prop.Value.Enum) > 0,
+			IsNullable:   prop.Value.Nullable,
 		}
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {

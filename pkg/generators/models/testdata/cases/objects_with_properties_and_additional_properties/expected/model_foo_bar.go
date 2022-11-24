@@ -39,7 +39,7 @@ func (obj *FooBar) UnmarshalJSON(data []byte) error {
 		Test string `json:"test,omitempty"`
 	})
 	for k, v := range generic {
-		if k == "Baz" {
+		if k == "baz" {
 			if err := json.Unmarshal(v, &(obj.FooBarProperties.Baz)); err != nil {
 				return err
 			}
@@ -73,7 +73,7 @@ func (obj FooBar) MarshalJSON() ([]byte, error) {
 		}
 	}
 	if propData, err := json.Marshal(obj.FooBarProperties.Baz); err == nil {
-		props["Baz"] = propData
+		props["baz"] = propData
 	} else {
 		return nil, err
 	}
