@@ -7,6 +7,10 @@
 package {{ .PackageName }}
 
 import (
+	{{- if .AdditionalPropertiesGoType}}
+	"encoding/json"
+	{{- end}}
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 {{- range .Imports}}
 	"{{.}}"
@@ -27,6 +31,7 @@ var {{ $modelName | firstLower }}{{.Name}}Pattern = regexp.MustCompile(`{{ .Patt
 {{- end}}
 
 {{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
+{{- if not .AdditionalPropertiesGoType }}
 {{- if not .Properties }}
 type {{.Name}} {{ .GoType }}
 {{- else }}
@@ -37,10 +42,84 @@ type {{.Name}} struct {
 {{- end}}
 }
 {{- end}}
+{{- else }}
+type {{.Name}} struct {
+	{{.Name}}Properties
+	AdditionalProperties map[string]{{.AdditionalPropertiesGoType}}
+}
 
+type {{.Name}}Properties struct {
+	{{- range .Properties}}
+	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
+	{{.Name}} {{.GoType}} {{.JSONTags}}
+	{{- end}}
+}
 
+// Unmarshal all named properties into {{.Name}}Properties and
+// the rest into the AdditionalProperties map
+func (obj *{{.Name}}) UnmarshalJSON(data []byte) error {
+	var generic map[string]json.RawMessage
+	if err := json.Unmarshal(data, &generic); err != nil {
+		return err
+	}
+
+	obj.{{.Name}}Properties = {{.Name}}Properties{}
+
+	var additionalProperties = make(map[string]{{.AdditionalPropertiesGoType}})
+	for k, v := range generic {
+		{{- range .Properties}}
+		if k == "{{.Name}}" {
+			if err := json.Unmarshal(v, &(obj.{{$.Name}}Properties.{{.Name}})); err != nil {
+				return err
+			}
+			continue
+		}
+		{{- end}}
+		var prop {{.AdditionalPropertiesGoType}}
+		if err := json.Unmarshal(v, &prop); err != nil {
+			return err
+		}
+		additionalProperties[k] = prop
+	}
+
+	obj.AdditionalProperties = additionalProperties
+	return nil
+}
+
+// Marshal {{.Name}} by combining the AdditionalProperties with the
+// named properties in a single JSON object. Named properties take
+// precedence.
+func (obj {{.Name}}) MarshalJSON() ([]byte, error) {
+	props := make(map[string]json.RawMessage)
+
+	// start with additional properties so regular properties overwrite them
+	for k, v := range obj.AdditionalProperties {
+		if propData, err := json.Marshal(v); err == nil {
+			props[k] = propData
+		} else {
+			return nil, err
+		}
+	}
+
+	{{- range .Properties}}
+	if propData, err := json.Marshal(obj.{{$.Name}}Properties.{{.Name}}); err == nil {
+		props["{{.Name}}"] = propData
+	} else {
+		return nil, err
+	}
+	{{- end}}
+
+	data, err := json.Marshal(props)
+	return data, err
+}
+{{- end }}
+
+{{- $modelPropertiesName := $modelName }}
+{{- if .AdditionalPropertiesGoType }}
+  {{- $modelPropertiesName := print $modelName "Properties" }}
+{{- end }}
 // Validate implements basic validation for this model
-func (m {{$modelName}}) Validate() error {
+func (m {{$modelPropertiesName}}) Validate() error {
 	return validation.Errors{
 		{{- range .Properties}}
 			{{- if .NeedsValidation }}
@@ -72,12 +151,21 @@ func (m {{$modelName}}) Validate() error {
 }
 {{ range .Properties}}
 // Get{{.Name}} returns the {{.Name}} property
-func (m {{$modelName}}) Get{{.Name}}() {{.GoType}} {
+func (m {{$modelPropertiesName}}) Get{{.Name}}() {{.GoType}} {
 	return m.{{.Name}}
 }
 
 // Set{{.Name}} sets the {{.Name}} property
-func (m *{{$modelName}}) Set{{.Name}}(val {{.GoType}}) {
+func (m *{{$modelPropertiesName}}) Set{{.Name}}(val {{.GoType}}) {
 	m.{{.Name}} = val
 }
 {{ end}}
+{{- if .AdditionalPropertiesGoType }}
+func (m *{{$modelName}}) GetAdditionalProperties() map[string]{{.AdditionalPropertiesGoType}} {
+	return m.AdditionalProperties
+}
+
+func (m *{{$modelName}}) SetAdditionalProperties(val map[string]{{.AdditionalPropertiesGoType}}) {
+	m.AdditionalProperties = val
+}
+{{- end }}

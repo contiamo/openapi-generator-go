@@ -75,6 +75,9 @@ type Model struct {
 	SpecVersion string
 	// PackageName is the name of the package used in the Go code
 	PackageName string
+	// AdditionalPropertiesGoType is the optional type of additional properties
+	// that exist _in addition_ to `Properties`
+	AdditionalPropertiesGoType string
 }
 
 // ConvertSpec holds all info to build one As{Type}() function
@@ -154,6 +157,8 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 			if ref.Value.AdditionalProperties != nil {
 				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
 			}
+		} else if ref.Value.AdditionalProperties != nil || (ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed) {
+			model.AdditionalPropertiesGoType = goTypeFromSpec(ref.Value.AdditionalProperties)
 		}
 	case len(ref.Value.OneOf) > 0:
 		model.Kind = OneOf
