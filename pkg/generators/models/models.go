@@ -75,6 +75,9 @@ type Model struct {
 	SpecVersion string
 	// PackageName is the name of the package used in the Go code
 	PackageName string
+	// AdditionalPropertiesGoType is the optional type of additional properties
+	// that exist _in addition_ to `Properties`
+	AdditionalPropertiesGoType string
 }
 
 // ConvertSpec holds all info to build one As{Type}() function
@@ -87,6 +90,8 @@ type ConvertSpec struct {
 type PropSpec struct {
 	// Name is a property name in structs, variable name in enums, etc
 	Name string
+	// PropertyName is the original name of the property
+	PropertyName string
 	// Description used in the comment of the property
 	Description string
 	// GoType used for this property (e.g. `string`, `int`, etc)
@@ -156,6 +161,8 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 			if ref.Value.AdditionalProperties != nil {
 				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
 			}
+		} else if ref.Value.AdditionalProperties != nil || (ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed) {
+			model.AdditionalPropertiesGoType = goTypeFromSpec(ref.Value.AdditionalProperties)
 		}
 	case len(ref.Value.OneOf) > 0:
 		model.Kind = OneOf
@@ -503,13 +510,14 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		prop = resolveAllOf(prop, nil)
 
 		spec := PropSpec{
-			Name:        tpl.ToPascalCase(name),
-			Description: prop.Value.Description,
-			GoType:      goTypeFromSpec(prop),
-			IsRequired:  checkIfRequired(name, ref.Value.Required),
-			IsEnum:      len(prop.Value.Enum) > 0,
-			IsNullable:  prop.Value.Nullable,
-			IsOneOf:     prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
+			Name:         tpl.ToPascalCase(name),
+			PropertyName: name,
+			Description:  prop.Value.Description,
+			GoType:       goTypeFromSpec(prop),
+			IsRequired:   checkIfRequired(name, ref.Value.Required),
+			IsEnum:       len(prop.Value.Enum) > 0,
+			IsNullable:   prop.Value.Nullable,
+			IsOneOf:      prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
 		}
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {

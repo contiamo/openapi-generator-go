@@ -150,7 +150,11 @@ var cases = []struct {
 		name:      "example of nested allOf to create a merged enum with validation",
 		directory: "testdata/cases/allOf_enum_merging_and_validation",
 	},
-	// 29
+	{
+		name:      "example of objects with properties and additional properties",
+		directory: "testdata/cases/objects_with_properties_and_additional_properties",
+	},
+	// 30
 }
 
 func TestModels(t *testing.T) {
