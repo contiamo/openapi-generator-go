@@ -65,6 +65,10 @@ func (m {{$modelName}}) Validate() error {
 					{{- if .IsIPv6 }}is.IPv6,{{ end }}
 					{{- if .IsIP }}is.IP,{{ end }}
 					{{- if .Pattern }}validation.Match({{ $modelName | firstLower }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
+					{{- if and .IsOneOf (not .IsRequiredInValidation) }}
+					{{.GoType}}NilableRule{},
+					validation.Skip,
+					{{- end }}
 				),
 			{{- end }}
 		{{- end }}
