@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,5 +16,7 @@ func TestContainerValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	err = container.Validate()
-	require.NoError(t, err)
+	require.Equal(t, err, validation.Errors{
+		"error": EmptyErrorError,
+	})
 }

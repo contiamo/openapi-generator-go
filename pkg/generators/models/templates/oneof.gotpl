@@ -47,6 +47,9 @@ type {{$modelName}} struct {
 	{{- end }}
 }
 
+{{- if .Discriminator.Field }}
+var Empty{{$modelName}}Error = fmt.Errorf("empty data is not an {{$modelName}}")
+{{- end }}
 
 // MarshalJSON implements the json.Marshaller interface
 func (m {{$modelName}}) MarshalJSON() ([]byte, error) {
@@ -102,12 +105,22 @@ func (m *{{$modelName}}) From{{$convert.TargetGoType | typeDisplayName}}(data {{
 
 // As converts {{$modelName}} to a user defined structure.
 func (m {{$modelName}}) As(target interface{}) error {
+	{{- if .Discriminator.Field }}
+	if m.data == nil {
+		return Empty{{$modelName}}Error
+	}
+	{{- end }}
 	return mapstructure.Decode(m.data, target)
 }
 
 {{- range $convert := .ConvertSpecs }}
 // As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
 func (m {{$modelName}}) As{{$convert.TargetGoType | typeDisplayName }}() (result {{$convert.TargetGoType}}, err error) {
+	{{- if $.Discriminator.Field }}
+	if m.data == nil {
+		return result, Empty{{$modelName}}Error
+	}
+	{{- end }}
 	return result, mapstructure.Decode(m.data, &result)
 }
 {{- end}}
@@ -121,6 +134,11 @@ func (m {{$modelName}}) Discriminator() {{$modelName}}Discriminator {
 
 // Validate implements basic validation for this model
 func (m {{$modelName}}) Validate() error {
+	{{- if .Discriminator.Field }}
+	if m.data == nil {
+		return Empty{{$modelName}}Error
+	}
+	{{- end }}
 	discriminator := m.data.{{$modelName}}Discriminator()
 	switch discriminator {
 	{{- range $value, $type := .Discriminator.Map }}
