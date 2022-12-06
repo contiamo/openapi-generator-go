@@ -51,21 +51,9 @@ type {{$modelName}} struct {
 var Empty{{$modelName}}Error = fmt.Errorf("empty data is not an {{$modelName}}")
 var Not{{$modelName}}Error = fmt.Errorf("could not convert to type {{$modelName}}")
 
-type {{$modelName}}ValidationNotNil struct{}
+type {{$modelName}}NilableRule struct{}
 
-func (nn {{$modelName}}ValidationNotNil) Validate(v interface{}) error {
-	if m, ok := v.({{$modelName}}); !ok {
-		return Not{{$modelName}}Error
-	} else if m.data == nil {
-		return Empty{{$modelName}}Error
-	} else {
-		return m.Validate()
-	}
-}
-
-type {{$modelName}}Validation struct{}
-
-func (nn {{$modelName}}Validation) Validate(v interface{}) error {
+func (nn {{$modelName}}NilableRule) Validate(v interface{}) error {
 	if m, ok := v.({{$modelName}}); !ok {
 		return Not{{$modelName}}Error
 	} else if m.data == nil {

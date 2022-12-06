@@ -37,21 +37,9 @@ type Geometry struct {
 var EmptyGeometryError = fmt.Errorf("empty data is not an Geometry")
 var NotGeometryError = fmt.Errorf("could not convert to type Geometry")
 
-type GeometryValidationNotNil struct{}
+type GeometryNilableRule struct{}
 
-func (nn GeometryValidationNotNil) Validate(v interface{}) error {
-	if m, ok := v.(Geometry); !ok {
-		return NotGeometryError
-	} else if m.data == nil {
-		return EmptyGeometryError
-	} else {
-		return m.Validate()
-	}
-}
-
-type GeometryValidation struct{}
-
-func (nn GeometryValidation) Validate(v interface{}) error {
+func (nn GeometryNilableRule) Validate(v interface{}) error {
 	if m, ok := v.(Geometry); !ok {
 		return NotGeometryError
 	} else if m.data == nil {
