@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.18.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.17.0...v0.18.0) (2022-12-06)
+
+
+### Features
+
+* combined properties, additional properties in named objects ([#85](https://www.github.com/contiamo/openapi-generator-go/issues/85)) ([27c3f61](https://www.github.com/contiamo/openapi-generator-go/commit/27c3f61a449e0d720f72959e45fc8687fb8f4fb4))
+
+
+### Bug Fixes
+
+* move main to the project root ([#81](https://www.github.com/contiamo/openapi-generator-go/issues/81)) ([0d60d72](https://www.github.com/contiamo/openapi-generator-go/commit/0d60d72ef9e3105413fba06669773b9858bd9025))
+* panic on oneof validation ([#86](https://www.github.com/contiamo/openapi-generator-go/issues/86)) ([317299d](https://www.github.com/contiamo/openapi-generator-go/commit/317299d3b2d7adb387c052224070fbe17be0ad84))
+* Update the test comments ([#84](https://www.github.com/contiamo/openapi-generator-go/issues/84)) ([3ef0880](https://www.github.com/contiamo/openapi-generator-go/commit/3ef08804f9b356eaec81b2168d160ea50c3e1d7b))
+
 ## [0.17.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.16.0...v0.17.0) (2022-04-19)
 
 
