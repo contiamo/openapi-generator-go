@@ -38,6 +38,21 @@ type Error struct {
 	data errorer
 }
 
+var EmptyErrorError = fmt.Errorf("empty data is not an Error")
+var NotErrorError = fmt.Errorf("could not convert to type Error")
+
+type ErrorNilableRule struct{}
+
+func (nn ErrorNilableRule) Validate(v interface{}) error {
+	if m, ok := v.(Error); !ok {
+		return NotErrorError
+	} else if m.data == nil {
+		return nil
+	} else {
+		return m.Validate()
+	}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m Error) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
@@ -114,21 +129,33 @@ func (m *Error) FromExternalError(data ExternalError) {
 
 // As converts Error to a user defined structure.
 func (m Error) As(target interface{}) error {
+	if m.data == nil {
+		return EmptyErrorError
+	}
 	return mapstructure.Decode(m.data, target)
 }
 
 // AsGenericError converts Error to a GenericError
 func (m Error) AsGenericError() (result GenericError, err error) {
+	if m.data == nil {
+		return result, EmptyErrorError
+	}
 	return result, mapstructure.Decode(m.data, &result)
 }
 
 // AsFieldError converts Error to a FieldError
 func (m Error) AsFieldError() (result FieldError, err error) {
+	if m.data == nil {
+		return result, EmptyErrorError
+	}
 	return result, mapstructure.Decode(m.data, &result)
 }
 
 // AsExternalError converts Error to a ExternalError
 func (m Error) AsExternalError() (result ExternalError, err error) {
+	if m.data == nil {
+		return result, EmptyErrorError
+	}
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -139,6 +166,9 @@ func (m Error) Discriminator() ErrorDiscriminator {
 
 // Validate implements basic validation for this model
 func (m Error) Validate() error {
+	if m.data == nil {
+		return EmptyErrorError
+	}
 	discriminator := m.data.ErrorDiscriminator()
 	switch discriminator {
 	case ErrorDiscriminatorAuth:

@@ -34,6 +34,21 @@ type Geometry struct {
 	data geometryer
 }
 
+var EmptyGeometryError = fmt.Errorf("empty data is not an Geometry")
+var NotGeometryError = fmt.Errorf("could not convert to type Geometry")
+
+type GeometryNilableRule struct{}
+
+func (nn GeometryNilableRule) Validate(v interface{}) error {
+	if m, ok := v.(Geometry); !ok {
+		return NotGeometryError
+	} else if m.data == nil {
+		return nil
+	} else {
+		return m.Validate()
+	}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m Geometry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
@@ -91,16 +106,25 @@ func (m *Geometry) FromShape(data Shape) {
 
 // As converts Geometry to a user defined structure.
 func (m Geometry) As(target interface{}) error {
+	if m.data == nil {
+		return EmptyGeometryError
+	}
 	return mapstructure.Decode(m.data, target)
 }
 
 // AsLine converts Geometry to a Line
 func (m Geometry) AsLine() (result Line, err error) {
+	if m.data == nil {
+		return result, EmptyGeometryError
+	}
 	return result, mapstructure.Decode(m.data, &result)
 }
 
 // AsShape converts Geometry to a Shape
 func (m Geometry) AsShape() (result Shape, err error) {
+	if m.data == nil {
+		return result, EmptyGeometryError
+	}
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -111,6 +135,9 @@ func (m Geometry) Discriminator() GeometryDiscriminator {
 
 // Validate implements basic validation for this model
 func (m Geometry) Validate() error {
+	if m.data == nil {
+		return EmptyGeometryError
+	}
 	discriminator := m.data.GeometryDiscriminator()
 	switch discriminator {
 	case GeometryDiscriminatorLine:
