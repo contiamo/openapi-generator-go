@@ -21,6 +21,8 @@ func (m Container) Validate() error {
 	return validation.Errors{
 		"error": validation.Validate(
 			m.Error,
+			ErrorValidation{},
+			validation.Skip,
 		),
 	}.Filter()
 }

@@ -49,6 +49,31 @@ type {{$modelName}} struct {
 
 {{- if .Discriminator.Field }}
 var Empty{{$modelName}}Error = fmt.Errorf("empty data is not an {{$modelName}}")
+var Not{{$modelName}}Error = fmt.Errorf("could not convert to type {{$modelName}}")
+
+type {{$modelName}}ValidationNotNil struct{}
+
+func (nn {{$modelName}}ValidationNotNil) Validate(v interface{}) error {
+	if m, ok := v.({{$modelName}}); !ok {
+		return Not{{$modelName}}Error
+	} else if m.data == nil {
+		return Empty{{$modelName}}Error
+	} else {
+		return m.Validate()
+	}
+}
+
+type {{$modelName}}Validation struct{}
+
+func (nn {{$modelName}}Validation) Validate(v interface{}) error {
+	if m, ok := v.({{$modelName}}); !ok {
+		return Not{{$modelName}}Error
+	} else if m.data == nil {
+		return nil
+	} else {
+		return m.Validate()
+	}
+}
 {{- end }}
 
 // MarshalJSON implements the json.Marshaller interface

@@ -96,3 +96,11 @@ components:
       properties:
         error:
           $ref: "#/components/schemas/Error"
+
+    NonEmptyContainer:
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
+      required:
+        - error

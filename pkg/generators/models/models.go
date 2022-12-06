@@ -99,6 +99,8 @@ type PropSpec struct {
 	IsRequired bool
 	// IsEnum is true when the property is a enum item
 	IsEnum bool
+	// IsOneOf is true when the property is a `oneof` schema
+	IsOneOf bool
 
 	// Validation stuff
 	Pattern                    string
@@ -507,6 +509,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 			IsRequired:  checkIfRequired(name, ref.Value.Required),
 			IsEnum:      len(prop.Value.Enum) > 0,
 			IsNullable:  prop.Value.Nullable,
+			IsOneOf:     prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
 		}
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {

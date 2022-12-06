@@ -10,29 +10,29 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// Container is an object.
-type Container struct {
+// NonEmptyContainer is an object.
+type NonEmptyContainer struct {
 	// Error:
-	Error Error `json:"error,omitempty"`
+	Error Error `json:"error"`
 }
 
 // Validate implements basic validation for this model
-func (m Container) Validate() error {
+func (m NonEmptyContainer) Validate() error {
 	return validation.Errors{
 		"error": validation.Validate(
-			m.Error,
-			ErrorValidation{},
+			m.Error, validation.NotNil,
+			ErrorValidationNotNil{},
 			validation.Skip,
 		),
 	}.Filter()
 }
 
 // GetError returns the Error property
-func (m Container) GetError() Error {
+func (m NonEmptyContainer) GetError() Error {
 	return m.Error
 }
 
 // SetError sets the Error property
-func (m *Container) SetError(val Error) {
+func (m *NonEmptyContainer) SetError(val Error) {
 	m.Error = val
 }

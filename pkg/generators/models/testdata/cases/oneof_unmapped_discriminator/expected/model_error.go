@@ -37,6 +37,31 @@ type Error struct {
 }
 
 var EmptyErrorError = fmt.Errorf("empty data is not an Error")
+var NotErrorError = fmt.Errorf("could not convert to type Error")
+
+type ErrorValidationNotNil struct{}
+
+func (nn ErrorValidationNotNil) Validate(v interface{}) error {
+	if m, ok := v.(Error); !ok {
+		return NotErrorError
+	} else if m.data == nil {
+		return EmptyErrorError
+	} else {
+		return m.Validate()
+	}
+}
+
+type ErrorValidation struct{}
+
+func (nn ErrorValidation) Validate(v interface{}) error {
+	if m, ok := v.(Error); !ok {
+		return NotErrorError
+	} else if m.data == nil {
+		return nil
+	} else {
+		return m.Validate()
+	}
+}
 
 // MarshalJSON implements the json.Marshaller interface
 func (m Error) MarshalJSON() ([]byte, error) {
