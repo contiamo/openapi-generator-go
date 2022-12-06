@@ -90,3 +90,9 @@ components:
           field: '#/components/schemas/FieldError'
           external: '#/components/schemas/ExternalError'
           auth: '#/components/schemas/GenericError'
+
+    Container:
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
