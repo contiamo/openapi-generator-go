@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -121,11 +122,16 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 					break
 				}
 			}
-			jsonTags := "`json:\"" + name
+
+			omit := ""
 			if omitEmpty {
-				jsonTags += ",omitempty"
+				omit += ",omitempty"
 			}
-			jsonTags += "\"`"
+
+			jsonTags := fmt.Sprintf(" json:\"%s%s\"", name, omit)
+			jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", name, omit)
+			jsonTags += "`"
+
 			structBuilder.WriteString(tpl.ToPascalCase(name))
 			structBuilder.WriteString(" ")
 			structBuilder.WriteString(goTypeFromSpec(ref))

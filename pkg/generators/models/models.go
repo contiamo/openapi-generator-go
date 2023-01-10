@@ -205,6 +205,12 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 		if !spec.IsRequired {
 			spec.JSONTags += ",omitempty"
 		}
+		spec.JSONTags += "\""
+
+		spec.JSONTags += " mapstructure:\"" + param.Value.Name
+		if !spec.IsRequired {
+			spec.JSONTags += ",omitempty"
+		}
 		spec.JSONTags += "\"`"
 
 		model.Properties = append(model.Properties, spec)
@@ -525,6 +531,12 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		}
 
 		spec.JSONTags = "`json:\"" + name
+		if !spec.IsRequired {
+			spec.JSONTags += ",omitempty"
+		}
+		spec.JSONTags += "\""
+
+		spec.JSONTags += " mapstructure:\"" + name
 		if !spec.IsRequired {
 			spec.JSONTags += ",omitempty"
 		}
