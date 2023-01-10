@@ -13,7 +13,7 @@ import (
 // Foo is an object.
 type Foo struct {
 	// Foo:
-	Foo map[string]string `json:"foo,omitempty"`
+	Foo map[string]string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 }
 
 // Validate implements basic validation for this model

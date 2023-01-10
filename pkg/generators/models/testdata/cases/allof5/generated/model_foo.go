@@ -14,9 +14,9 @@ import (
 type Foo struct {
 	// Bar:
 	Bar *struct {
-		ExtraField string `json:"extraField,omitempty"`
-		SubField   string `json:"subField,omitempty"`
-	} `json:"bar,omitempty"`
+		ExtraField string `json:"extraField,omitempty" mapstructure:"extraField,omitempty"`
+		SubField   string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
+	} `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -26,16 +26,16 @@ func (m Foo) Validate() error {
 
 // GetBar returns the Bar property
 func (m Foo) GetBar() *struct {
-	ExtraField string `json:"extraField,omitempty"`
-	SubField   string `json:"subField,omitempty"`
+	ExtraField string `json:"extraField,omitempty" mapstructure:"extraField,omitempty"`
+	SubField   string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
 } {
 	return m.Bar
 }
 
 // SetBar sets the Bar property
 func (m *Foo) SetBar(val *struct {
-	ExtraField string `json:"extraField,omitempty"`
-	SubField   string `json:"subField,omitempty"`
+	ExtraField string `json:"extraField,omitempty" mapstructure:"extraField,omitempty"`
+	SubField   string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
 }) {
 	m.Bar = val
 }

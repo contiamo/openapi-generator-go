@@ -13,9 +13,9 @@ import (
 // ListItem is an object.
 type ListItem struct {
 	// Next: the next item
-	Next *ListItem `json:"next,omitempty"`
+	Next *ListItem `json:"next,omitempty" mapstructure:"next,omitempty"`
 	// Value:
-	Value string `json:"value,omitempty"`
+	Value string `json:"value,omitempty" mapstructure:"value,omitempty"`
 }
 
 // Validate implements basic validation for this model

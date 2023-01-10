@@ -13,13 +13,13 @@ import (
 // GenericError is an object. Represents and unknown error. The system may be unstable, it is unknown if retrying the request will succeed.
 type GenericError struct {
 	// Code: machine friendly error code.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code,omitempty" mapstructure:"code,omitempty"`
 	// Kind:
-	Kind string `json:"kind"`
+	Kind string `json:"kind" mapstructure:"kind"`
 	// Message: the user friendly error message.
-	Message string `json:"message"`
+	Message string `json:"message" mapstructure:"message"`
 	// TraceId: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
-	TraceId string `json:"traceId,omitempty"`
+	TraceId string `json:"traceId,omitempty" mapstructure:"traceId,omitempty"`
 }
 
 // Validate implements basic validation for this model

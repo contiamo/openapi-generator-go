@@ -13,7 +13,7 @@ import (
 // NonEmptyContainer is an object.
 type NonEmptyContainer struct {
 	// Error:
-	Error Error `json:"error"`
+	Error Error `json:"error" mapstructure:"error"`
 }
 
 // Validate implements basic validation for this model

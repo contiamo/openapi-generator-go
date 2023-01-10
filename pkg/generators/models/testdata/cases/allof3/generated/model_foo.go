@@ -13,9 +13,9 @@ import (
 // Foo is an object. this is a foo object
 type Foo struct {
 	// Mixin:
-	Mixin string `json:"mixin,omitempty"`
+	Mixin string `json:"mixin,omitempty" mapstructure:"mixin,omitempty"`
 	// SubField:
-	SubField string `json:"subField,omitempty"`
+	SubField string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
 }
 
 // Validate implements basic validation for this model

@@ -13,11 +13,11 @@ import (
 // Address is an object.
 type Address struct {
 	// Name:
-	Name *string `json:"name"`
+	Name *string `json:"name" mapstructure:"name"`
 	// Number:
-	Number int32 `json:"number"`
+	Number int32 `json:"number" mapstructure:"number"`
 	// Street:
-	Street string `json:"street"`
+	Street string `json:"street" mapstructure:"street"`
 }
 
 // Validate implements basic validation for this model

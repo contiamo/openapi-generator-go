@@ -13,9 +13,9 @@ import (
 // Line is an object.
 type Line struct {
 	// Coordinates:
-	Coordinates [][]float32 `json:"coordinates,omitempty"`
+	Coordinates [][]float32 `json:"coordinates,omitempty" mapstructure:"coordinates,omitempty"`
 	// Type:
-	Type string `json:"type,omitempty"`
+	Type string `json:"type,omitempty" mapstructure:"type,omitempty"`
 }
 
 // Validate implements basic validation for this model

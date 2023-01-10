@@ -13,15 +13,15 @@ import (
 // ColumnTypeMetadata is an object. Type metadata
 type ColumnTypeMetadata struct {
 	// Columns: List of columns if this type is structural
-	Columns []ColumnMetadata `json:"columns,omitempty"`
+	Columns []ColumnMetadata `json:"columns,omitempty" mapstructure:"columns,omitempty"`
 	// ItemType: Type metadata
-	ItemType *ColumnTypeMetadata `json:"itemType,omitempty"`
+	ItemType *ColumnTypeMetadata `json:"itemType,omitempty" mapstructure:"itemType,omitempty"`
 	// Nullable: Column nullability
-	Nullable Nullability `json:"nullable"`
+	Nullable Nullability `json:"nullable" mapstructure:"nullable"`
 	// OriginalName: Original column type as given by data source
-	OriginalName string `json:"originalName"`
+	OriginalName string `json:"originalName" mapstructure:"originalName"`
 	// Type: Normalized column type. If type cannot be determined or is not compatible, then 'other'.
-	Type ColumnType `json:"type"`
+	Type ColumnType `json:"type" mapstructure:"type"`
 }
 
 // Validate implements basic validation for this model

@@ -21,17 +21,17 @@ var connectionNamePattern = regexp.MustCompile(`^([a-zA-z_]+[a-z0-9_]*){2}$`)
 // Connection is an object.
 type Connection struct {
 	// CreatedAt:
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `json:"createdAt" mapstructure:"createdAt"`
 	// Id:
-	Id string `json:"id"`
+	Id string `json:"id" mapstructure:"id"`
 	// Name:
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
 	// Properties:
-	Properties ConnectionProperties `json:"properties"`
+	Properties ConnectionProperties `json:"properties" mapstructure:"properties"`
 	// Technology: The connection technology is either the technology value of the related data source or the integration type
-	Technology ConnectionTechnology `json:"technology"`
+	Technology ConnectionTechnology `json:"technology" mapstructure:"technology"`
 	// UpdatedAt:
-	UpdatedAt time.Time `json:"updatedAt"`
+	UpdatedAt time.Time `json:"updatedAt" mapstructure:"updatedAt"`
 }
 
 // Validate implements basic validation for this model

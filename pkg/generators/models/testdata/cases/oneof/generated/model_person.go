@@ -13,9 +13,9 @@ import (
 // Person is an object.
 type Person struct {
 	// Age:
-	Age int32 `json:"age,omitempty"`
+	Age int32 `json:"age,omitempty" mapstructure:"age,omitempty"`
 	// Name:
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
 }
 
 // Validate implements basic validation for this model

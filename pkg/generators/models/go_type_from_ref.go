@@ -128,7 +128,7 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 				omit += ",omitempty"
 			}
 
-			jsonTags := fmt.Sprintf(" json:\"%s%s\"", name, omit)
+			jsonTags := fmt.Sprintf(" `json:\"%s%s\"", name, omit)
 			jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", name, omit)
 			jsonTags += "`"
 

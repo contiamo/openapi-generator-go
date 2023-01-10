@@ -13,7 +13,7 @@ import (
 // Item is an object.
 type Item struct {
 	// First:
-	First string `json:"first"`
+	First string `json:"first" mapstructure:"first"`
 }
 
 // Validate implements basic validation for this model

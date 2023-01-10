@@ -13,7 +13,7 @@ import (
 // Sub is an object.
 type Sub struct {
 	// SubField:
-	SubField string `json:"subField,omitempty"`
+	SubField string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
 }
 
 // Validate implements basic validation for this model

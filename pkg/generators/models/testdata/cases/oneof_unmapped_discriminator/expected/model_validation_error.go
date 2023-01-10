@@ -13,9 +13,9 @@ import (
 // ValidationError is an object. a validation error for a form field
 type ValidationError struct {
 	// Message: the user friendly validation error message
-	Message string `json:"message,omitempty"`
+	Message string `json:"message,omitempty" mapstructure:"message,omitempty"`
 	// Name: the field name
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
 }
 
 // Validate implements basic validation for this model

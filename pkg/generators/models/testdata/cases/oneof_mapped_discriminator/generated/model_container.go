@@ -13,7 +13,7 @@ import (
 // Container is an object.
 type Container struct {
 	// Error:
-	Error Error `json:"error,omitempty"`
+	Error Error `json:"error,omitempty" mapstructure:"error,omitempty"`
 }
 
 // Validate implements basic validation for this model
