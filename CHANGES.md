@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.18.0...v0.19.0) (2023-01-17)
+
+
+### Features
+
+* add mapstructure tags ([#88](https://www.github.com/contiamo/openapi-generator-go/issues/88)) ([481788c](https://www.github.com/contiamo/openapi-generator-go/commit/481788c3e6412dd710b66858bd3612bdeea1dfe9))
+
 ## [0.18.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.17.0...v0.18.0) (2022-12-06)
 
 
