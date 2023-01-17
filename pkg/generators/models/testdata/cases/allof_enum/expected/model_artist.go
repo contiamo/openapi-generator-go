@@ -13,9 +13,9 @@ import (
 // Artist is an object.
 type Artist struct {
 	// LeftHand:
-	LeftHand *AnyThing `json:"leftHand,omitempty"`
+	LeftHand *AnyThing `json:"leftHand,omitempty" mapstructure:"leftHand,omitempty"`
 	// RightHand:
-	RightHand *Color `json:"rightHand,omitempty"`
+	RightHand *Color `json:"rightHand,omitempty" mapstructure:"rightHand,omitempty"`
 }
 
 // Validate implements basic validation for this model

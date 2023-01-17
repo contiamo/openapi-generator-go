@@ -27,45 +27,45 @@ var personPomodoroPattern = regexp.MustCompile(`^\d{1,2}m$`)
 // Person is an object.
 type Person struct {
 	// Address:
-	Address Address `json:"address,omitempty"`
+	Address Address `json:"address,omitempty" mapstructure:"address,omitempty"`
 	// Age:
-	Age float32 `json:"age,omitempty"`
+	Age float32 `json:"age,omitempty" mapstructure:"age,omitempty"`
 	// Base64:
-	Base64 string `json:"base64,omitempty"`
+	Base64 string `json:"base64,omitempty" mapstructure:"base64,omitempty"`
 	// Cron:
-	Cron string `json:"cron"`
+	Cron string `json:"cron" mapstructure:"cron"`
 	// Date:
-	Date string `json:"date,omitempty"`
+	Date string `json:"date,omitempty" mapstructure:"date,omitempty"`
 	// Datetime:
-	Datetime time.Time `json:"datetime,omitempty"`
+	Datetime time.Time `json:"datetime,omitempty" mapstructure:"datetime,omitempty"`
 	// Email:
-	Email string `json:"email,omitempty"`
+	Email string `json:"email,omitempty" mapstructure:"email,omitempty"`
 	// FavoriteColors:
-	FavoriteColors []Color `json:"favoriteColors"`
+	FavoriteColors []Color `json:"favoriteColors" mapstructure:"favoriteColors"`
 	// Gender:
-	Gender Gender `json:"gender"`
+	Gender Gender `json:"gender" mapstructure:"gender"`
 	// Hostname:
-	Hostname string `json:"hostname,omitempty"`
+	Hostname string `json:"hostname,omitempty" mapstructure:"hostname,omitempty"`
 	// Ip:
-	Ip string `json:"ip,omitempty"`
+	Ip string `json:"ip,omitempty" mapstructure:"ip,omitempty"`
 	// Ipv4:
-	Ipv4 string `json:"ipv4,omitempty"`
+	Ipv4 string `json:"ipv4,omitempty" mapstructure:"ipv4,omitempty"`
 	// Ipv6:
-	Ipv6 string `json:"ipv6,omitempty"`
+	Ipv6 string `json:"ipv6,omitempty" mapstructure:"ipv6,omitempty"`
 	// Name:
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
 	// Pomodoro:
-	Pomodoro string `json:"pomodoro,omitempty"`
+	Pomodoro string `json:"pomodoro,omitempty" mapstructure:"pomodoro,omitempty"`
 	// RequestURI:
-	RequestURI string `json:"requestURI,omitempty"`
+	RequestURI string `json:"requestURI,omitempty" mapstructure:"requestURI,omitempty"`
 	// SecondGender:
-	SecondGender *Gender `json:"secondGender,omitempty"`
+	SecondGender *Gender `json:"secondGender,omitempty" mapstructure:"secondGender,omitempty"`
 	// Uri:
-	Uri string `json:"uri,omitempty"`
+	Uri string `json:"uri,omitempty" mapstructure:"uri,omitempty"`
 	// Url:
-	Url string `json:"url,omitempty"`
+	Url string `json:"url,omitempty" mapstructure:"url,omitempty"`
 	// Uuid:
-	Uuid string `json:"uuid,omitempty"`
+	Uuid string `json:"uuid,omitempty" mapstructure:"uuid,omitempty"`
 }
 
 // Validate implements basic validation for this model

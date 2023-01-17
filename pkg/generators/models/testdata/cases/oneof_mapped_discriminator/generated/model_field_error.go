@@ -13,11 +13,11 @@ import (
 // FieldError is an object. Represents a validation error. The request must be corrected before retrying.
 type FieldError struct {
 	// Errors:
-	Errors []ValidationError `json:"errors"`
+	Errors []ValidationError `json:"errors" mapstructure:"errors"`
 	// Kind:
-	Kind string `json:"kind"`
+	Kind string `json:"kind" mapstructure:"kind"`
 	// TraceId: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
-	TraceId string `json:"traceId"`
+	TraceId string `json:"traceId" mapstructure:"traceId"`
 }
 
 // Validate implements basic validation for this model

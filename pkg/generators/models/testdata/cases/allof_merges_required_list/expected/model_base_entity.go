@@ -14,9 +14,9 @@ import (
 // BaseEntity is an object. Contains shared properties for all the entities
 type BaseEntity struct {
 	// Id:
-	Id string `json:"id"`
+	Id string `json:"id" mapstructure:"id"`
 	// Name:
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
 }
 
 // Validate implements basic validation for this model

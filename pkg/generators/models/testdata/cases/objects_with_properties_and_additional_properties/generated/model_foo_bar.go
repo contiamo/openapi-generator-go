@@ -16,13 +16,13 @@ import (
 type FooBar struct {
 	FooBarProperties
 	AdditionalProperties map[string][]struct {
-		Test string `json:"test,omitempty"`
+		Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
 	}
 }
 
 type FooBarProperties struct {
 	// Baz:
-	Baz string `json:"baz,omitempty"`
+	Baz string `json:"baz,omitempty" mapstructure:"baz,omitempty"`
 }
 
 // Unmarshal all named properties into FooBarProperties and
@@ -36,7 +36,7 @@ func (obj *FooBar) UnmarshalJSON(data []byte) error {
 	obj.FooBarProperties = FooBarProperties{}
 
 	var additionalProperties = make(map[string][]struct {
-		Test string `json:"test,omitempty"`
+		Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
 	})
 	for k, v := range generic {
 		if k == "baz" {
@@ -46,7 +46,7 @@ func (obj *FooBar) UnmarshalJSON(data []byte) error {
 			continue
 		}
 		var prop []struct {
-			Test string `json:"test,omitempty"`
+			Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
 		}
 		if err := json.Unmarshal(v, &prop); err != nil {
 			return err
@@ -98,13 +98,13 @@ func (m *FooBar) SetBaz(val string) {
 }
 
 func (m *FooBar) GetAdditionalProperties() map[string][]struct {
-	Test string `json:"test,omitempty"`
+	Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
 } {
 	return m.AdditionalProperties
 }
 
 func (m *FooBar) SetAdditionalProperties(val map[string][]struct {
-	Test string `json:"test,omitempty"`
+	Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
 }) {
 	m.AdditionalProperties = val
 }

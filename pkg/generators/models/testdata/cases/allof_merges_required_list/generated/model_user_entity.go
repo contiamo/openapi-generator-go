@@ -14,11 +14,11 @@ import (
 // UserEntity is an object. This is a short description of a user entity used for permission listing or assignments in other services.
 type UserEntity struct {
 	// Email:
-	Email string `json:"email"`
+	Email string `json:"email" mapstructure:"email"`
 	// Id:
-	Id string `json:"id"`
+	Id string `json:"id" mapstructure:"id"`
 	// Name:
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
 }
 
 // Validate implements basic validation for this model

@@ -13,11 +13,11 @@ import (
 // Top is an object.
 type Top struct {
 	// Arr:
-	Arr []Sub1 `json:"arr,omitempty"`
+	Arr []Sub1 `json:"arr,omitempty" mapstructure:"arr,omitempty"`
 	// Boo: Type alias for a value type
-	Boo Sub3 `json:"boo,omitempty"`
+	Boo Sub3 `json:"boo,omitempty" mapstructure:"boo,omitempty"`
 	// Obj:
-	Obj Sub1 `json:"obj,omitempty"`
+	Obj Sub1 `json:"obj,omitempty" mapstructure:"obj,omitempty"`
 }
 
 // Validate implements basic validation for this model

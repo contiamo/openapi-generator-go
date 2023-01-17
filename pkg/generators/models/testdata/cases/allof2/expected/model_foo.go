@@ -13,9 +13,9 @@ import (
 // Foo is an object.
 type Foo struct {
 	// Bar:
-	Bar string `json:"bar,omitempty"`
+	Bar string `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 	// Foo:
-	Foo string `json:"foo,omitempty"`
+	Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 }
 
 // Validate implements basic validation for this model

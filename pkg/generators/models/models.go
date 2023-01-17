@@ -201,12 +201,16 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 		}
 		model.Imports = append(model.Imports, extraImports...)
 
-		spec.JSONTags = "`json:\"" + param.Value.Name
+		omit := ""
 		if !spec.IsRequired {
-			spec.JSONTags += ",omitempty"
+			omit += ",omitempty"
 		}
-		spec.JSONTags += "\"`"
 
+		jsonTags := fmt.Sprintf(" `json:\"%s%s\"", param.Value.Name, omit)
+		jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", param.Value.Name, omit)
+		jsonTags += "`"
+
+		spec.JSONTags = jsonTags
 		model.Properties = append(model.Properties, spec)
 	}
 
@@ -524,11 +528,16 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 			imports = append(imports, "time")
 		}
 
-		spec.JSONTags = "`json:\"" + name
+		omit := ""
 		if !spec.IsRequired {
-			spec.JSONTags += ",omitempty"
+			omit += ",omitempty"
 		}
-		spec.JSONTags += "\"`"
+
+		jsonTags := fmt.Sprintf(" `json:\"%s%s\"", name, omit)
+		jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", name, omit)
+		jsonTags += "`"
+
+		spec.JSONTags = jsonTags
 
 		extraImports, err := fillValidationRelatedProperties(prop, &spec)
 		if err != nil {

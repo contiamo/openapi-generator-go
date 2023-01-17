@@ -155,6 +155,10 @@ var cases = []struct {
 		directory: "testdata/cases/objects_with_properties_and_additional_properties",
 	},
 	// 30
+	{
+		name:      "example of model with snake case fields",
+		directory: "testdata/cases/snake_casing_handling",
+	},
 }
 
 func TestModels(t *testing.T) {
@@ -208,8 +212,8 @@ func TestModels(t *testing.T) {
 func TestModelsSingleCase(t *testing.T) {
 	t.Skip("only used during local development")
 
-	tc := cases[2]
-	count := 100
+	tc := cases[32]
+	count := 1
 	for i := 0; i < count; i++ {
 		t.Run(fmt.Sprintf("trial_%d_%s", i, tc.name), func(t *testing.T) {
 			ctx, cancel := context.

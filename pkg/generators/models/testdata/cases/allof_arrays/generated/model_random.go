@@ -13,7 +13,7 @@ import (
 // Random is an object.
 type Random struct {
 	// List:
-	List []Item `json:"list"`
+	List []Item `json:"list" mapstructure:"list"`
 }
 
 // Validate implements basic validation for this model

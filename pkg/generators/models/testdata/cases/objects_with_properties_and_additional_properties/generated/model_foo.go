@@ -20,7 +20,7 @@ type Foo struct {
 
 type FooProperties struct {
 	// Bar:
-	Bar int32 `json:"bar,omitempty"`
+	Bar int32 `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 }
 
 // Unmarshal all named properties into FooProperties and

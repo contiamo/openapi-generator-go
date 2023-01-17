@@ -14,15 +14,15 @@ import (
 // GetFooQueryParameters is an object.
 type GetFooQueryParameters struct {
 	// Param1:
-	Param1 string `json:"param1,omitempty"`
+	Param1 string `json:"param1,omitempty" mapstructure:"param1,omitempty"`
 	// Id:
-	Id string `json:"id"`
+	Id string `json:"id" mapstructure:"id"`
 	// Param2:
-	Param2 int32 `json:"param2,omitempty"`
+	Param2 int32 `json:"param2,omitempty" mapstructure:"param2,omitempty"`
 	// Param3:
-	Param3 []string `json:"param3,omitempty"`
+	Param3 []string `json:"param3,omitempty" mapstructure:"param3,omitempty"`
 	// Page: The current set of paged results to display, based on a 1-based array index
-	Page int32 `json:"page,omitempty"`
+	Page int32 `json:"page,omitempty" mapstructure:"page,omitempty"`
 }
 
 // Validate implements basic validation for this model

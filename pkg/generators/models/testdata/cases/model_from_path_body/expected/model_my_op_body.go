@@ -13,7 +13,7 @@ import (
 // MyOpBody is an object.
 type MyOpBody struct {
 	// Foo:
-	Foo string `json:"foo,omitempty"`
+	Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 }
 
 // Validate implements basic validation for this model

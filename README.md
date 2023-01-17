@@ -90,9 +90,3 @@ We also provide better support for :
 * [allOf](./pkg/generators/models/testdata/cases/allof1/expected/model_foo.go),
 * and [oneOf](./pkg/generators/models/testdata/cases/oneof/expected/model_foo.go)
 that feel more natural in Go. Creating as many strong types as is possible and using `interface{}` otherwise. These cases often failed or generated non-compilable code with the official generator.
-
-
-## Future work
-
-[x] Adding validators for each model using the `ozzo-validation` [Validatable interface](https://godoc.org/github.com/go-ozzo/ozzo-validation#Validatable)
-[ ] Support for `oneOf` discriminators

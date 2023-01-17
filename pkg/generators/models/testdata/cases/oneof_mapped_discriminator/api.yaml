@@ -38,7 +38,7 @@ components:
         errors:
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
         traceId:
           type: string
           description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
@@ -70,13 +70,13 @@ components:
           type: string
           description: name of the service that is returning errors
           minLength: 1
-        traceId:
+        trace_id:
           type: string
           description: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
           minLength: 1
       required:
         - kind
-        - traceId
+        - trace_id
 
     Error:
       oneOf:
@@ -86,10 +86,10 @@ components:
       discriminator:
         propertyName: kind
         mapping:
-          generic: '#/components/schemas/GenericError'
-          field: '#/components/schemas/FieldError'
-          external: '#/components/schemas/ExternalError'
-          auth: '#/components/schemas/GenericError'
+          generic: "#/components/schemas/GenericError"
+          field: "#/components/schemas/FieldError"
+          external: "#/components/schemas/ExternalError"
+          auth: "#/components/schemas/GenericError"
 
     Container:
       type: object

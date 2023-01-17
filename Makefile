@@ -77,3 +77,6 @@ image-multi: dist
 		--platform linux/amd64,linux/arm64 \
 		--tag $(REGISTRY)$(.OWNER)/$(.NAME):$(GIT_VERSION) \
 		.
+
+update-cases:
+	cd pkg/generators/models/testdata/cases && ./update.sh

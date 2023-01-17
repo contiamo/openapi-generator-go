@@ -279,6 +279,8 @@ func (g generator) writeModelToFile(ctx context.Context, model *Model, dst strin
 	}
 	log.Debug().Msg("Model template has been rendered.")
 
+	log.Trace().Str("spec", buf.String()).Msg("Initial rendered code")
+
 	log.Debug().Msg("Formatting the rendered code...")
 	content, err := format.Source(buf.Bytes())
 	if err != nil {

@@ -13,11 +13,11 @@ import (
 // ColumnMetadata is an object. Metadata for single column
 type ColumnMetadata struct {
 	// Comment: Column description
-	Comment string `json:"comment,omitempty"`
+	Comment string `json:"comment,omitempty" mapstructure:"comment,omitempty"`
 	// Name: Column name
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
 	// Type: Type metadata
-	Type ColumnTypeMetadata `json:"type"`
+	Type ColumnTypeMetadata `json:"type" mapstructure:"type"`
 }
 
 // Validate implements basic validation for this model

@@ -13,11 +13,11 @@ import (
 // ExternalError is an object. Represents an error from an external service. The system is stable, but can not complete the request. Try again later.
 type ExternalError struct {
 	// Kind:
-	Kind string `json:"kind"`
+	Kind string `json:"kind" mapstructure:"kind"`
 	// Service: name of the service that is returning errors
-	Service string `json:"service,omitempty"`
+	Service string `json:"service,omitempty" mapstructure:"service,omitempty"`
 	// TraceId: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
-	TraceId string `json:"traceId"`
+	TraceId string `json:"traceId" mapstructure:"traceId"`
 }
 
 // Validate implements basic validation for this model
