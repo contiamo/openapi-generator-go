@@ -516,10 +516,10 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		isRequired := checkIfRequired(name, ref.Value.Required)
 		goType := goTypeFromSpec(prop)
 
-		// If a property is not required but also not nullable,
+		// If an object property is not required but also not nullable,
 		// it must be a pointer to allow it to either be fully specified or
 		// not present at all.
-		if !isRequired && !prop.Value.Nullable {
+		if !isRequired && !prop.Value.Nullable && len(prop.Value.Properties) > 0 {
 			goType = "*" + goType
 		}
 
