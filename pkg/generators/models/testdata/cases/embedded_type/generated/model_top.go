@@ -17,7 +17,7 @@ type Top struct {
 	// Boo: Type alias for a value type
 	Boo Sub3 `json:"boo,omitempty" mapstructure:"boo,omitempty"`
 	// Obj:
-	Obj Sub1 `json:"obj,omitempty" mapstructure:"obj,omitempty"`
+	Obj *Sub1 `json:"obj,omitempty" mapstructure:"obj,omitempty"`
 }
 
 // Validate implements basic validation for this model
@@ -56,11 +56,11 @@ func (m *Top) SetBoo(val Sub3) {
 }
 
 // GetObj returns the Obj property
-func (m Top) GetObj() Sub1 {
+func (m Top) GetObj() *Sub1 {
 	return m.Obj
 }
 
 // SetObj sets the Obj property
-func (m *Top) SetObj(val Sub1) {
+func (m *Top) SetObj(val *Sub1) {
 	m.Obj = val
 }

@@ -13,7 +13,7 @@ import (
 // Foo is an object.
 type Foo struct {
 	// Bar:
-	Bar struct {
+	Bar *struct {
 		Bar string `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 		Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 	} `json:"bar,omitempty" mapstructure:"bar,omitempty"`
@@ -25,7 +25,7 @@ func (m Foo) Validate() error {
 }
 
 // GetBar returns the Bar property
-func (m Foo) GetBar() struct {
+func (m Foo) GetBar() *struct {
 	Bar string `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 	Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 } {
@@ -33,7 +33,7 @@ func (m Foo) GetBar() struct {
 }
 
 // SetBar sets the Bar property
-func (m *Foo) SetBar(val struct {
+func (m *Foo) SetBar(val *struct {
 	Bar string `json:"bar,omitempty" mapstructure:"bar,omitempty"`
 	Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 }) {

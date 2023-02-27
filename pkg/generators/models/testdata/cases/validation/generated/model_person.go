@@ -27,7 +27,7 @@ var personPomodoroPattern = regexp.MustCompile(`^\d{1,2}m$`)
 // Person is an object.
 type Person struct {
 	// Address:
-	Address Address `json:"address,omitempty" mapstructure:"address,omitempty"`
+	Address *Address `json:"address,omitempty" mapstructure:"address,omitempty"`
 	// Age:
 	Age float32 `json:"age,omitempty" mapstructure:"age,omitempty"`
 	// Base64:
@@ -129,12 +129,12 @@ func (m Person) Validate() error {
 }
 
 // GetAddress returns the Address property
-func (m Person) GetAddress() Address {
+func (m Person) GetAddress() *Address {
 	return m.Address
 }
 
 // SetAddress sets the Address property
-func (m *Person) SetAddress(val Address) {
+func (m *Person) SetAddress(val *Address) {
 	m.Address = val
 }
 
