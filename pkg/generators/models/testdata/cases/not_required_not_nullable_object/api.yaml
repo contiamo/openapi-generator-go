@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Foo:
+      type: object
+      properties:
+        bar:
+          "$ref": "#/components/schemas/FooBar"
+    FooBar:
+      type: object
+      properties:
+        baz:
+          type: string
+      required:
+        - baz
