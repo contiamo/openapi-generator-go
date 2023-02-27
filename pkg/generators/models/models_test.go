@@ -125,11 +125,11 @@ var cases = []struct {
 		name:      "allof merges required list",
 		directory: "testdata/cases/allof_merges_required_list",
 	},
+	// 25
 	{
 		name:      "allof merges enum list",
 		directory: "testdata/cases/allof_enum",
 	},
-	// 25
 	{
 		name:      "allof supports intermediate array types",
 		directory: "testdata/cases/allof_arrays",
@@ -146,6 +146,7 @@ var cases = []struct {
 		name:      "example of naming for nested inline arrays",
 		directory: "testdata/cases/nested_inline_arrays",
 	},
+	// 30
 	{
 		name:      "example of nested allOf to create a merged enum with validation",
 		directory: "testdata/cases/allOf_enum_merging_and_validation",
@@ -154,10 +155,13 @@ var cases = []struct {
 		name:      "example of objects with properties and additional properties",
 		directory: "testdata/cases/objects_with_properties_and_additional_properties",
 	},
-	// 30
 	{
 		name:      "example of model with snake case fields",
 		directory: "testdata/cases/snake_casing_handling",
+	},
+	{
+		name:      "example of object referencing other object that is not required and not nullable",
+		directory: "testdata/cases/not_required_not_nullable_object",
 	},
 }
 
@@ -212,7 +216,7 @@ func TestModels(t *testing.T) {
 func TestModelsSingleCase(t *testing.T) {
 	t.Skip("only used during local development")
 
-	tc := cases[32]
+	tc := cases[33]
 	count := 1
 	for i := 0; i < count; i++ {
 		t.Run(fmt.Sprintf("trial_%d_%s", i, tc.name), func(t *testing.T) {
@@ -233,7 +237,7 @@ func TestModelsSingleCase(t *testing.T) {
 			g, err := NewGenerator(reader, Options{
 				PackageName: "generatortest",
 				Destination: dir,
-				// Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
+				//Logger:      log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr}),
 				Logger: log.Output(io.Discard), // swap for debugging
 			})
 			require.NoError(t, err)

@@ -513,12 +513,22 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 		prop := ref.Value.Properties[name]
 		prop = resolveAllOf(prop, nil)
 
+		isRequired := checkIfRequired(name, ref.Value.Required)
+		goType := goTypeFromSpec(prop)
+
+		// If a property is not required but also not nullable,
+		// it must be a pointer to allow it to either be fully specified or
+		// not present at all.
+		if !isRequired && !prop.Value.Nullable {
+			goType = "*" + goType
+		}
+
 		spec := PropSpec{
 			Name:         tpl.ToPascalCase(name),
 			PropertyName: name,
 			Description:  prop.Value.Description,
-			GoType:       goTypeFromSpec(prop),
-			IsRequired:   checkIfRequired(name, ref.Value.Required),
+			GoType:       goType,
+			IsRequired:   isRequired,
 			IsEnum:       len(prop.Value.Enum) > 0,
 			IsNullable:   prop.Value.Nullable,
 			IsOneOf:      prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
