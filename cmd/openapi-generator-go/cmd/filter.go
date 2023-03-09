@@ -30,7 +30,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	"github.com/contiamo/openapi-generator-go/pkg/filters"
+	"github.com/contiamo/openapi-generator-go/v2/pkg/filters"
 )
 
 // filterCmd reads a list of allowed paths and filters the spec so that it

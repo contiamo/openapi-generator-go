@@ -54,8 +54,8 @@ test:
 ${GOBINS}/${.NAME}:  $(shell find . -name '*.go') go.*
 	@echo "+ $@"
 	go install -tags 'osusergo netgo' -v -ldflags "\
-		-X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.GitCommit=$(GIT_COMMIT) \
-		-X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.Version=$(GIT_VERSION)" \
+		-X github.com/contiamo/openapi-generator-go/v2/cmd/openapi-generator-go/cmd.GitCommit=$(GIT_COMMIT) \
+		-X github.com/contiamo/openapi-generator-go/v2/cmd/openapi-generator-go/cmd.Version=$(GIT_VERSION)" \
 		.
 
 install: ${GOBINS}/${.NAME}

@@ -1,4 +1,4 @@
-module github.com/contiamo/openapi-generator-go
+module github.com/contiamo/openapi-generator-go/v2
 
 go 1.16
 
