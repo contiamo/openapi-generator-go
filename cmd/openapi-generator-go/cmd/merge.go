@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/contiamo/openapi-generator-go/pkg/merge"
+	"github.com/contiamo/openapi-generator-go/v2/pkg/merge"
 )
 
 // mergeCmd merges a directory of openapi specs into a base spec.

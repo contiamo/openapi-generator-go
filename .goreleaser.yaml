@@ -20,8 +20,8 @@ builds:
     main: ./main.go
     ldflags:
       - -s -w
-      - -X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.GitCommit={{.Commit}}
-      - -X github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd.Version={{.Version}}
+      - -X github.com/contiamo/openapi-generator-go/v2/cmd/openapi-generator-go/cmd.GitCommit={{.Commit}}
+      - -X github.com/contiamo/openapi-generator-go/v2/cmd/openapi-generator-go/cmd.Version={{.Version}}
 archives:
   - format: binary
 checksum:

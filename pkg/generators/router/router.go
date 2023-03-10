@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
+	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 	"github.com/rs/zerolog/log"
 	yaml "gopkg.in/yaml.v2"
 )

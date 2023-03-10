@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	tpl "github.com/contiamo/openapi-generator-go/pkg/generators/templates"
+	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"

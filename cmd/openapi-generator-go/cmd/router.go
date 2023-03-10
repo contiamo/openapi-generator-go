@@ -26,8 +26,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/contiamo/openapi-generator-go/pkg/filters"
-	"github.com/contiamo/openapi-generator-go/pkg/generators/router"
+	"github.com/contiamo/openapi-generator-go/v2/pkg/filters"
+	"github.com/contiamo/openapi-generator-go/v2/pkg/generators/router"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )

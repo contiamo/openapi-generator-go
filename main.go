@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/contiamo/openapi-generator-go/cmd/openapi-generator-go/cmd"
+import "github.com/contiamo/openapi-generator-go/v2/cmd/openapi-generator-go/cmd"
 
 func main() {
 	cmd.Execute()
