@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.19.0...v2.0.0) (2023-03-10)
+
+
+### Miscellaneous Chores
+
+* bump go module to v2 ([#92](https://www.github.com/contiamo/openapi-generator-go/issues/92)) ([7bbf28f](https://www.github.com/contiamo/openapi-generator-go/commit/7bbf28fc24d28c3674ea2255631464e80329735e))
+
 ## [0.19.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.18.0...v0.19.0) (2023-01-17)
 
 
