@@ -163,6 +163,10 @@ var cases = []struct {
 		name:      "example of object referencing other object that is not required and not nullable",
 		directory: "testdata/cases/not_required_not_nullable_object",
 	},
+	{
+		name:      "example resolving nested allOfs",
+		directory: "testdata/cases/allof_nesting",
+	},
 }
 
 func TestModels(t *testing.T) {
@@ -214,9 +218,9 @@ func TestModels(t *testing.T) {
 }
 
 func TestModelsSingleCase(t *testing.T) {
-	t.Skip("only used during local development")
+	// t.Skip("only used during local development")
 
-	tc := cases[33]
+	tc := cases[25]
 	count := 1
 	for i := 0; i < count; i++ {
 		t.Run(fmt.Sprintf("trial_%d_%s", i, tc.name), func(t *testing.T) {
