@@ -218,7 +218,7 @@ func TestModels(t *testing.T) {
 }
 
 func TestModelsSingleCase(t *testing.T) {
-	// t.Skip("only used during local development")
+	t.Skip("only used during local development")
 
 	tc := cases[25]
 	count := 1
