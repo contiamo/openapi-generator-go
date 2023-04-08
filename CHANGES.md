@@ -1,5 +1,12 @@
 # Changelog
 
+### [2.0.1](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.0...v2.0.1) (2023-04-08)
+
+
+### Bug Fixes
+
+* ensure nestd allOfs are correctly resolved ([#95](https://www.github.com/contiamo/openapi-generator-go/issues/95)) ([d6605c6](https://www.github.com/contiamo/openapi-generator-go/commit/d6605c6a59c72979cd1c850e444610fcb4f5c8f2))
+
 ## [2.0.0](https://www.github.com/contiamo/openapi-generator-go/compare/v0.19.0...v2.0.0) (2023-03-10)
 
 
