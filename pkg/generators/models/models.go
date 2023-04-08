@@ -426,7 +426,6 @@ func isNonEmptySchemaRef(ref *openapi3.SchemaRef) bool {
 // avoid the infinite loop.
 func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
 	out = left
-
 	if out == nil {
 		out = &openapi3.SchemaRef{}
 	}
@@ -441,6 +440,7 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		right.Value = &openapi3.Schema{}
 	}
 
+	right = resolveAllOf(right, passed)
 	if right.Ref != "" {
 		out.Ref = right.Ref
 	}
@@ -473,11 +473,13 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		out.Value.AdditionalPropertiesAllowed = right.Value.AdditionalPropertiesAllowed
 	}
 
-	out.Value.OneOf = append(out.Value.OneOf, right.Value.OneOf...)
-	out.Value.AllOf = append(out.Value.AllOf, right.Value.AllOf...)
-	out.Value.AnyOf = append(out.Value.AnyOf, right.Value.AnyOf...)
-	out.Value.Enum = append(out.Value.Enum, right.Value.Enum...)
-	out.Value.Required = append(out.Value.Required, right.Value.Required...)
+	// it is possible during oneOf or allOf statements to have multiple references to the
+	// same schema. We need to deduplicate them to avoid infinite loops.
+	out.Value.OneOf = dedup(append(out.Value.OneOf, right.Value.OneOf...))
+	out.Value.AllOf = dedup(append(out.Value.AllOf, right.Value.AllOf...))
+	out.Value.AnyOf = dedup(append(out.Value.AnyOf, right.Value.AnyOf...))
+	out.Value.Enum = dedup(append(out.Value.Enum, right.Value.Enum...))
+	out.Value.Required = dedup(append(out.Value.Required, right.Value.Required...))
 
 	if right.Value.AdditionalProperties != nil {
 		out.Value.AdditionalProperties = deepMerge(
@@ -503,6 +505,22 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 	return out
 }
 
+func dedup[T any](input []T) []T {
+	seen := make(map[string]bool)
+
+	n := 0
+	for _, x := range input {
+		key := fmt.Sprintf("%v", x)
+		if !seen[key] {
+			seen[key] = true
+			input[n] = x
+			n++
+		}
+	}
+	input = input[:n]
+	return input
+}
+
 // structPropsFromRef creates property descriptors for a Go struct from a schema
 func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []string, err error) {
 	if ref == nil || ref.Value == nil {
@@ -511,7 +529,28 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports []st
 
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
-		prop = resolveAllOf(prop, nil)
+
+		// special case for singleton allOf
+		// generally these are used to add
+		// a new description or override the
+		// nullable flag
+		if len(prop.Value.AllOf) == 1 {
+			pointer := prop.Value.AllOf[0]
+			prop.Ref = pointer.Ref
+
+			// a sub-special case when the referenced type
+			// is an array. Because we don't create top-level
+			// models for arrays, we actually need to follow
+			// this reference.
+			resolved := resolveAllOf(prop, nil)
+			if resolved.Value.Type == "array" {
+				prop = resolved
+			}
+		}
+
+		if prop.Ref == "" {
+			prop = resolveAllOf(prop, nil)
+		}
 
 		isRequired := checkIfRequired(name, ref.Value.Required)
 		goType := goTypeFromSpec(prop)

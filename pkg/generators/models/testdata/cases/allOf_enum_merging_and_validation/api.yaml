@@ -47,13 +47,13 @@ components:
     DataSourceTechnology:
       type: string
       description: |
-          Technology of a data source. For external data sources this also specifies the type of connection (driver) being used to connect to the data source. Generic data sources may use any technology value (but no connection will be established). Generic data sources may also use the value "other" for technology in case no technology should be shown in the catalog or the technology is not known to the catalog.
+        Technology of a data source. For external data sources this also specifies the type of connection (driver) being used to connect to the data source. Generic data sources may use any technology value (but no connection will be established). Generic data sources may also use the value "other" for technology in case no technology should be shown in the catalog or the technology is not known to the catalog.
       enum:
-          - mssql
-          - mysql
-          - oracle
-          - postgresql
-          - other
+        - mssql
+        - mysql
+        - oracle
+        - postgresql
+        - other
 
     IntegrationType:
       type: string

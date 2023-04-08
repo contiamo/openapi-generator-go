@@ -47,7 +47,7 @@ func (m Connection) Validate() error {
 			m.Properties, validation.NotNil,
 		),
 		"technology": validation.Validate(
-			m.Technology, validation.NotNil,
+			m.Technology, validation.Required,
 		),
 	}.Filter()
 }
