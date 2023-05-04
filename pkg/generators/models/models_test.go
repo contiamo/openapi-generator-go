@@ -167,6 +167,15 @@ var cases = []struct {
 		name:      "example resolving nested allOfs",
 		directory: "testdata/cases/allof_nesting",
 	},
+	// 35
+	{
+		name:      "example of an enum with integer values",
+		directory: "testdata/cases/enum_with_integer_values",
+	},
+	{
+		name:      "example of an enum with number values",
+		directory: "testdata/cases/enum_with_number_values",
+	},
 }
 
 func TestModels(t *testing.T) {

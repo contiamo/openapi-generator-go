@@ -150,8 +150,8 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	switch {
 	case len(ref.Value.Enum) > 0:
 		model.Kind = Enum
-		model.Properties = enumPropsFromRef(ref, model)
 		model.GoType = goTypeFromSpec(ref)
+		model.Properties = enumPropsFromRef(ref, model)
 
 	case ref.Value.Type == "object" || len(ref.Value.Properties) > 0:
 		model.Kind = Struct
@@ -769,9 +769,16 @@ func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec) 
 			valueVarName = fmt.Sprintf("Item%d", idx)
 		}
 
+		var enumValue string
+		switch ref.Value.Type {
+		case "integer", "number":
+			enumValue = fmt.Sprintf("%v", val)
+		default:
+			enumValue = fmt.Sprintf(`"%v"`, val)
+		}
 		specs = append(specs, PropSpec{
 			Name:   valueVarName,
-			Value:  fmt.Sprintf(`"%v"`, val),
+			Value:  enumValue,
 			GoType: model.Name,
 		})
 	}

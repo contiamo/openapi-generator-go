@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    FavoriteNumber:
+      type: number
+      enum:
+        - 3.141
+        - 2.718
+        - 6.0228
+        - 1.381
