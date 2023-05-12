@@ -1,5 +1,12 @@
 # Changelog
 
+### [2.0.2](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.1...v2.0.2) (2023-05-12)
+
+
+### Bug Fixes
+
+* support numberic enum types ([#98](https://www.github.com/contiamo/openapi-generator-go/issues/98)) ([db0b095](https://www.github.com/contiamo/openapi-generator-go/commit/db0b09555467ad5dd9267f15b9bc00ff474b170b))
+
 ### [2.0.1](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.0...v2.0.1) (2023-04-08)
 
 
