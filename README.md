@@ -86,6 +86,7 @@ Our generator differs from the official OpenAPI generator tools by also providin
 
 We also provide better support for :
 * [enums](./pkg/generators/models/testdata/cases/enums/expected/model_filter_type.go), enum support also includes some utility methods that make validating the enums much easier,
+  * Now including support for string, integer, and number (i.e. decimal) enums.
 * [arrays](./pkg/generators/models/testdata/cases/typed_arrays/expected/model_foo.go),
 * [allOf](./pkg/generators/models/testdata/cases/allof1/expected/model_foo.go),
 * and [oneOf](./pkg/generators/models/testdata/cases/oneof/expected/model_foo.go)
