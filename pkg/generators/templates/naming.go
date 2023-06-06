@@ -1,7 +1,8 @@
 package templates
 
 import (
-	"fmt"
+	"go/ast"
+	"go/parser"
 	"strings"
 )
 
@@ -14,24 +15,46 @@ import (
 //
 //	NullableString
 func TypeDisplayName(value string) string {
-	out := value
-	if strings.HasPrefix(value, "*") {
-		out = strings.Replace(out, "*", "nullable_", 1)
+	expr, error := parser.ParseExpr(value)
+
+	if error != nil {
+		panic(error)
 	}
 
-	if strings.Contains(value, "interface{}") {
-		out = strings.ReplaceAll(out, "interface{}", "interface")
-	}
+	var parts []string
 
-	if strings.Contains(value, "[]") {
-		out = strings.ReplaceAll(out, "[]", "")
+	var f func(n ast.Node) bool
 
-		sliceCount := strings.Count(value, "[]")
-		for sliceCount > 0 {
-			out = fmt.Sprintf("%s_slice", out)
-			sliceCount--
+	f = func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.InterfaceType:
+			parts = append(parts, "interface")
+		case *ast.FieldList:
+			// Not sure if I need to do something here
+		case *ast.StarExpr:
+			parts = append(parts, "nullable")
+		case *ast.Ident:
+			parts = append(parts, x.Name)
+		case *ast.ArrayType:
+			ast.Inspect(x.Elt, f)
+			parts = append(parts, "slice")
+			return false
+		case *ast.StructType:
+			parts = append(parts, "struct")
+		case *ast.Field:
+			for _, name := range x.Names {
+				parts = append(parts, name.Name)
+			}
+			return false
+		case nil:
+			// Nothing to be done
+		default:
+			panic(x)
 		}
+		return true
 	}
 
-	return ToPascalCase(out)
+	ast.Inspect(expr, f)
+
+	return ToPascalCase(strings.Join(parts, "_"))
 }

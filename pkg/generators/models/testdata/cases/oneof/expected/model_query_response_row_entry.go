@@ -26,17 +26,17 @@ func (m *QueryResponseRowEntry) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// From*string sets the QueryResponseRowEntry data.
+// FromNullableString sets the QueryResponseRowEntry from a *string
 func (m *QueryResponseRowEntry) FromNullableString(data *string) {
 	m.data = data
 }
 
-// FromBool sets the QueryResponseRowEntry data.
+// FromBool sets the QueryResponseRowEntry from a bool
 func (m *QueryResponseRowEntry) FromBool(data bool) {
 	m.data = data
 }
 
-// FromFloat32 sets the QueryResponseRowEntry data.
+// FromFloat32 sets the QueryResponseRowEntry from a float32
 func (m *QueryResponseRowEntry) FromFloat32(data float32) {
 	m.data = data
 }
@@ -46,7 +46,7 @@ func (m QueryResponseRowEntry) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)
 }
 
-// As*string converts QueryResponseRowEntry to a *string
+// AsNullableString converts QueryResponseRowEntry to a *string
 func (m QueryResponseRowEntry) AsNullableString() (result *string, err error) {
 	return result, mapstructure.Decode(m.data, &result)
 }
