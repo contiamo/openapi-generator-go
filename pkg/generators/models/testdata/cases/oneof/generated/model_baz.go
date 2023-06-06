@@ -26,17 +26,17 @@ func (m *Baz) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// FromFoo sets the Baz data.
+// FromFoo sets the Baz from a Foo
 func (m *Baz) FromFoo(data Foo) {
 	m.data = data
 }
 
-// FromBar sets the Baz data.
+// FromBar sets the Baz from a Bar
 func (m *Baz) FromBar(data Bar) {
 	m.data = data
 }
 
-// FromPerson sets the Baz data.
+// FromPerson sets the Baz from a Person
 func (m *Baz) FromPerson(data Person) {
 	m.data = data
 }
