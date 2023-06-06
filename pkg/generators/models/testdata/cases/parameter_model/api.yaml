@@ -32,6 +32,10 @@ paths:
             type: array
             items:
               type: string
+        - name: param4
+          in: query
+          schema:
+            "$ref": "#/components/schemas/referenced-status"
         - $ref: "#/components/parameters/PageNumber"
       responses:
         "200":
@@ -48,4 +52,13 @@ components:
         type: integer
         minimum: 1
         default: 1
-  schemas: {}
+
+  schemas:
+    referenced-status:
+      type: string
+      description: A referenced status
+      enum:
+      - open
+      - closed
+      - dismissed
+      - fixed
