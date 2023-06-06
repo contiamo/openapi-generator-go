@@ -33,6 +33,14 @@ func ToPascalCase(value string) string {
 		// Always upper the first character
 		if i == 0 {
 			toUpper = true
+			switch rune {
+			case '+':
+				b.WriteString("Plus")
+				continue
+			case '-':
+				b.WriteString("Minus")
+				continue
+			}
 		}
 		// Always upper the character after non-letter/non-digit skipping the character
 		if !unicode.IsLetter(rune) && !unicode.IsDigit(rune) {

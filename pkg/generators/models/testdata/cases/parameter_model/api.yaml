@@ -36,6 +36,14 @@ paths:
           in: query
           schema:
             "$ref": "#/components/schemas/referenced-status"
+        - name: "-1"
+          in: query
+          schema:
+            type: int
+        - name: "+1"
+          in: query
+          schema:
+            type: int
         - $ref: "#/components/parameters/PageNumber"
       responses:
         "200":
