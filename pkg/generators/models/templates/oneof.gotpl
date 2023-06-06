@@ -109,7 +109,7 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 }
 
 {{- range $convert := .ConvertSpecs }}
-// From{{firstUpper $convert.TargetGoType}} sets the {{$modelName}} data.
+{{ (printf "From%s sets the %s from a %s"  ($convert.TargetGoType | typeDisplayName) $modelName $convert.TargetGoType) | commentBlock }}
 func (m *{{$modelName}}) From{{$convert.TargetGoType | typeDisplayName}}(data {{$convert.TargetGoType}}) {
 	m.data = data
 }
@@ -127,7 +127,7 @@ func (m {{$modelName}}) As(target interface{}) error {
 }
 
 {{- range $convert := .ConvertSpecs }}
-// As{{firstUpper $convert.TargetGoType}} converts {{$modelName}} to a {{$convert.TargetGoType}}
+{{ (printf "As%s converts %s to a %s"  ($convert.TargetGoType | typeDisplayName) $modelName $convert.TargetGoType) | commentBlock }}
 func (m {{$modelName}}) As{{$convert.TargetGoType | typeDisplayName }}() (result {{$convert.TargetGoType}}, err error) {
 	{{- if $.Discriminator.Field }}
 	if m.data == nil {

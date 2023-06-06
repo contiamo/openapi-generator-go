@@ -94,12 +94,12 @@ func (m *Geometry) UnmarshalJSON(bs []byte) error {
 	return nil
 }
 
-// FromLine sets the Geometry data.
+// FromLine sets the Geometry from a Line
 func (m *Geometry) FromLine(data Line) {
 	m.data = data
 }
 
-// FromShape sets the Geometry data.
+// FromShape sets the Geometry from a Shape
 func (m *Geometry) FromShape(data Shape) {
 	m.data = data
 }

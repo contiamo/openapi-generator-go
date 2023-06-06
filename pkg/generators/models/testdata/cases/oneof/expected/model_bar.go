@@ -26,12 +26,12 @@ func (m *Bar) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// FromString sets the Bar data.
+// FromString sets the Bar from a string
 func (m *Bar) FromString(data string) {
 	m.data = data
 }
 
-// FromInt32 sets the Bar data.
+// FromInt32 sets the Bar from a int32
 func (m *Bar) FromInt32(data int32) {
 	m.data = data
 }

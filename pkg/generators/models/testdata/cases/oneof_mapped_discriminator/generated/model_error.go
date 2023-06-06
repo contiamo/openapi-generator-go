@@ -112,17 +112,17 @@ func (m *Error) UnmarshalJSON(bs []byte) error {
 	return nil
 }
 
-// FromGenericError sets the Error data.
+// FromGenericError sets the Error from a GenericError
 func (m *Error) FromGenericError(data GenericError) {
 	m.data = data
 }
 
-// FromFieldError sets the Error data.
+// FromFieldError sets the Error from a FieldError
 func (m *Error) FromFieldError(data FieldError) {
 	m.data = data
 }
 
-// FromExternalError sets the Error data.
+// FromExternalError sets the Error from a ExternalError
 func (m *Error) FromExternalError(data ExternalError) {
 	m.data = data
 }
