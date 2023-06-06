@@ -81,7 +81,7 @@ func goTypeFromSpec(schemaRef *openapi3.SchemaRef) string {
 		}
 
 	case "ref":
-		propertyType = filepath.Base(schemaRef.Ref)
+		propertyType = typeNameFromRef(schemaRef.Ref)
 	case "":
 		propertyType = "interface{}"
 	}
@@ -151,7 +151,9 @@ func goTypeForObject(schemaRef *openapi3.SchemaRef) (propType string) {
 	return propType
 }
 
-var typeNameFromRef = filepath.Base
+var typeNameFromRef = func(ref string) string {
+	return tpl.ToPascalCase(filepath.Base(ref))
+}
 
 func sortedKeys(obj map[string]*openapi3.SchemaRef) (res []string) {
 	for k := range obj {

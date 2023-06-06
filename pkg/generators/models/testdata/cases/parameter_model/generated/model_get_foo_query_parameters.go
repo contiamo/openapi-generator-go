@@ -21,6 +21,8 @@ type GetFooQueryParameters struct {
 	Param2 int32 `json:"param2,omitempty" mapstructure:"param2,omitempty"`
 	// Param3:
 	Param3 []string `json:"param3,omitempty" mapstructure:"param3,omitempty"`
+	// Param4:
+	Param4 ReferencedStatus `json:"param4,omitempty" mapstructure:"param4,omitempty"`
 	// Page: The current set of paged results to display, based on a 1-based array index
 	Page int32 `json:"page,omitempty" mapstructure:"page,omitempty"`
 }
@@ -39,6 +41,9 @@ func (m GetFooQueryParameters) Validate() error {
 		),
 		"param3": validation.Validate(
 			m.Param3,
+		),
+		"param4": validation.Validate(
+			m.Param4,
 		),
 		"page": validation.Validate(
 			m.Page, validation.Min(int32(1)),
@@ -84,6 +89,16 @@ func (m GetFooQueryParameters) GetParam3() []string {
 // SetParam3 sets the Param3 property
 func (m *GetFooQueryParameters) SetParam3(val []string) {
 	m.Param3 = val
+}
+
+// GetParam4 returns the Param4 property
+func (m GetFooQueryParameters) GetParam4() ReferencedStatus {
+	return m.Param4
+}
+
+// SetParam4 sets the Param4 property
+func (m *GetFooQueryParameters) SetParam4(val ReferencedStatus) {
+	m.Param4 = val
 }
 
 // GetPage returns the Page property
