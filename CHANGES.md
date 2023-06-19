@@ -1,5 +1,14 @@
 # Changelog
 
+### [2.0.3](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.2...v2.0.3) (2023-06-19)
+
+
+### Bug Fixes
+
+* + and - as a first character in names usually has a special meaning ([42fc660](https://www.github.com/contiamo/openapi-generator-go/commit/42fc66080ba0e2a1ca3b4eedfdbb990bc4c8e778))
+* generated multiline comments need proper formatting ([7e37ab8](https://www.github.com/contiamo/openapi-generator-go/commit/7e37ab85658181415026538cbd45374e6a6aade7))
+* Not all schema references are properly formatted GoTypes ([bb07fee](https://www.github.com/contiamo/openapi-generator-go/commit/bb07feed0f5e20cfe45243b992609d65ef35bab9))
+
 ### [2.0.2](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.1...v2.0.2) (2023-05-12)
 
 
