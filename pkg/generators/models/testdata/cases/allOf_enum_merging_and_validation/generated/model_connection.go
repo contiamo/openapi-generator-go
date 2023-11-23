@@ -8,11 +8,9 @@ package generatortest
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"time"
-
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-
 	"regexp"
+	"time"
 )
 
 // connectionNamePattern is the validation pattern for Connection.Name
@@ -37,6 +35,9 @@ type Connection struct {
 // Validate implements basic validation for this model
 func (m Connection) Validate() error {
 	return validation.Errors{
+		"createdAt": validation.Validate(
+			m.CreatedAt, validation.Required, validation.Date(time.RFC3339),
+		),
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
@@ -48,6 +49,9 @@ func (m Connection) Validate() error {
 		),
 		"technology": validation.Validate(
 			m.Technology, validation.Required,
+		),
+		"updatedAt": validation.Validate(
+			m.UpdatedAt, validation.Required, validation.Date(time.RFC3339),
 		),
 	}.Filter()
 }

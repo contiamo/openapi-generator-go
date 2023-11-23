@@ -8,3 +8,8 @@ package generatortest
 
 // Sub3 is a value type. Type alias for a value type
 type Sub3 bool
+
+// Validate implements basic validation for this model
+func (v Sub3) Validate() error {
+	return nil
+}

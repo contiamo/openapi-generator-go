@@ -22,7 +22,11 @@ type User struct {
 
 // Validate implements basic validation for this model
 func (m User) Validate() error {
-	return validation.Errors{}.Filter()
+	return validation.Errors{
+		"dateOfBirth": validation.Validate(
+			m.DateOfBirth, validation.Date("2006-01-02"),
+		),
+	}.Filter()
 }
 
 // GetDateOfBirth returns the DateOfBirth property

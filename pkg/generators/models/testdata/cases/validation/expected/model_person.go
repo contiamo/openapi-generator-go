@@ -9,17 +9,9 @@ package generatortest
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-
 	"regexp"
-
 	"time"
 )
-
-// PersonCronPatternError is the error message returned for pattern validation errors on Person.Cron
-var PersonCronPatternError = validation.NewError("validation_Cron_pattern_invalid", "must be a valid cron value")
-
-// personCronPattern is the validation pattern for Person.Cron
-var personCronPattern = regexp.MustCompile(`(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})`)
 
 // personPomodoroPattern is the validation pattern for Person.Pomodoro
 var personPomodoroPattern = regexp.MustCompile(`^\d{1,2}m$`)
@@ -33,7 +25,7 @@ type Person struct {
 	// Base64:
 	Base64 string `json:"base64,omitempty" mapstructure:"base64,omitempty"`
 	// Cron:
-	Cron string `json:"cron" mapstructure:"cron"`
+	Cron Cron `json:"cron" mapstructure:"cron"`
 	// Date:
 	Date string `json:"date,omitempty" mapstructure:"date,omitempty"`
 	// Datetime:
@@ -81,7 +73,13 @@ func (m Person) Validate() error {
 			m.Base64, is.Base64,
 		),
 		"cron": validation.Validate(
-			m.Cron, validation.Match(personCronPattern).ErrorObject(PersonCronPatternError),
+			m.Cron, validation.NotNil,
+		),
+		"date": validation.Validate(
+			m.Date, validation.Date("2006-01-02"),
+		),
+		"datetime": validation.Validate(
+			m.Datetime, validation.Date(time.RFC3339),
 		),
 		"email": validation.Validate(
 			m.Email, is.EmailFormat,
@@ -159,12 +157,12 @@ func (m *Person) SetBase64(val string) {
 }
 
 // GetCron returns the Cron property
-func (m Person) GetCron() string {
+func (m Person) GetCron() Cron {
 	return m.Cron
 }
 
 // SetCron sets the Cron property
-func (m *Person) SetCron(val string) {
+func (m *Person) SetCron(val Cron) {
 	m.Cron = val
 }
 

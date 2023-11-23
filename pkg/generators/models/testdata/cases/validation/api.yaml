@@ -14,9 +14,7 @@ components:
         - cron
       properties:
         cron:
-          type: string
-          pattern: (@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})
-          x-pattern-error: "must be a valid cron value"
+          $ref: "#/components/schemas/Cron"
         pomodoro:
           type: string
           pattern: "^\\d{1,2}m$"
@@ -43,7 +41,7 @@ components:
           minLength: 1
         email:
           type: string
-          format: email
+          format: "email"
         date:
           type: string
           format: "date"
@@ -53,9 +51,6 @@ components:
         base64:
           type: string
           format: "byte"
-        email:
-          type: string
-          format: "email"
         uuid:
           type: string
           format: "uuid"
@@ -80,6 +75,10 @@ components:
         ip:
           type: string
           format: "ip"
+    Cron:
+      type: string
+      pattern: (@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})
+      x-pattern-error: "must be a valid cron value"
     Gender:
       type: string
       enum:

@@ -12,9 +12,10 @@ import (
 	{{- end}}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-{{- range .Imports}}
-	"{{.}}"
-{{ end}}
+
+{{- range $package, $alias := .Imports}}
+	{{$alias}} "{{$package}}"
+{{- end}}
 )
 
 {{- $modelName := .Name }}

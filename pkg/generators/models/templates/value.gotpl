@@ -6,5 +6,50 @@
 //	Version: {{.SpecVersion}}
 package {{ .PackageName }}
 
+{{- if .Imports}}
+import (
+	{{- range $package, $alias := .Imports}}
+	{{$alias}} "{{$package}}"
+	{{- end}}
+)
+{{- end}}
+
+{{- if .PatternErrorMsg}}
+	// {{.Name}}PatternError is the error message returned for pattern validation errors on {{.Name}}
+	var {{.Name}}PatternError = validation.NewError("validation_{{.Name }}_pattern_invalid", "{{.PatternErrorMsg}}")
+{{- end }}
+{{- if .Pattern }}
+// {{.Name| firstLower}}Pattern is the validation regexp for {{.Name}}
+var {{.Name| firstLower}}Pattern = regexp.MustCompile(`{{ .Pattern }}`)
+{{ end }}
+
 {{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
+
+
+// Validate implements basic validation for this model
+func (v {{.Name}}) Validate() error {
+{{- if .NeedsValidation }}
+	return validation.Validate(
+	{{.GoType}}(v),
+		{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
+		{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
+		{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
+		{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
+		{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+		{{- if .IsBase64 }}is.Base64,{{ end }}
+		{{- if .IsEmail }}is.EmailFormat,{{ end }}
+		{{- if .IsUUID }}is.UUID,{{ end }}
+		{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
+		{{- if .IsURI }}is.RequestURI,{{ end }}
+		{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
+		{{- if .IsHostname }}is.Host,{{ end }}
+		{{- if .IsIPv4 }}is.IPv4,{{ end }}
+		{{- if .IsIPv6 }}is.IPv6,{{ end }}
+		{{- if .IsIP }}is.IP,{{ end }}
+		{{- if .Pattern }}validation.Match({{.Name| firstLower}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{.Name}}PatternError){{end}},{{ end }}
+	)
+{{- else }}
+	return nil
+{{- end }}
+}
