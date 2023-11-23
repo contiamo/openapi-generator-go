@@ -340,7 +340,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 // AnotherHandler handles the operations of the 'Another' handler group.
