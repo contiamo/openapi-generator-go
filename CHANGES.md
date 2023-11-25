@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.1.0](https://github.com/contiamo/openapi-generator-go/compare/v2.0.4...v2.1.0) (2023-11-25)
+
+### Features
+
+* upgrade to chi v5 [#112](https://github.com/contiamo/openapi-generator-go/pull/112) ([5821062](https://github.com/contiamo/openapi-generator-go/commit/5821062579767c17b569693e254b8bbf6b4b1e2e))
+* add validation to Values and ensure nested validation is applied correctly, resolves [#111](https://github.com/contiamo/openapi-generator-go/issues/111) ([ae80075](https://github.com/contiamo/openapi-generator-go/commit/5821062579767c17b569693e254b8bbf6b4b1e2e))
+
+### Miscellaneous Chores
+
+* release 2.1.0 ([644bb3b](https://github.com/contiamo/openapi-generator-go/commit/644bb3b8fd2128f22ccec8c1fb510606ed3a1064))
+
 ### [2.0.4](https://www.github.com/contiamo/openapi-generator-go/compare/v2.0.3...v2.0.4) (2023-09-04)
 
 
