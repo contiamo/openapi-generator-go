@@ -58,7 +58,7 @@ jobs:
             type=sha
 
       - name: Login to Docker Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ steps.get_repo_owner.outputs.repo_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
