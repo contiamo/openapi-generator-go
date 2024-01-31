@@ -22,10 +22,10 @@ type Artist struct {
 func (m Artist) Validate() error {
 	return validation.Errors{
 		"leftHand": validation.Validate(
-			m.LeftHand,
+			m.LeftHand, validation.NilOrNotEmpty,
 		),
 		"rightHand": validation.Validate(
-			m.RightHand,
+			m.RightHand, validation.NilOrNotEmpty,
 		),
 	}.Filter()
 }

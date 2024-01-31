@@ -24,7 +24,7 @@ type Address struct {
 func (m Address) Validate() error {
 	return validation.Errors{
 		"name": validation.Validate(
-			m.Name, validation.Length(2, 0),
+			m.Name, validation.NilOrNotEmpty, validation.Length(2, 0),
 		),
 		"street": validation.Validate(
 			m.Street, validation.Required, validation.Length(2, 0),

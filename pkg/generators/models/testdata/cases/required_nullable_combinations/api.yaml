@@ -1,0 +1,48 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+    Enum:
+      type: string
+      enum:
+        - One
+        - Two
+    Foo:
+      type: object
+      properties:
+        string:
+          type: string
+        string_nullable:
+          type: string
+          nullable: true
+        string_required:
+          type: string
+        string_required_nullable:
+          type: string
+          nullable: true
+        enum:
+          $ref: "#/components/schemas/Enum"
+        enum_nullable:
+          allOf:
+            - $ref: "#/components/schemas/Enum"
+          nullable: true
+        enum_required:
+          $ref: "#/components/schemas/Enum"
+        enum_required_nullable:
+          allOf:
+            - $ref: "#/components/schemas/Enum"
+          nullable: true
+        array_required_nullable:
+          type: array
+          minItems: 1
+          maxItems: 2
+          items:
+            type: string
+      required:
+        - string_required
+        - string_required_nullable
+        - enum_required
+        - enum_required_nullable

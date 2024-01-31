@@ -11,10 +11,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
+
+	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 )
 
 // DefaultPackageName used in the models source code
@@ -284,7 +285,7 @@ func (g generator) writeModelToFile(ctx context.Context, model *Model, dst strin
 	log.Debug().Msg("Formatting the rendered code...")
 	content, err := format.Source(buf.Bytes())
 	if err != nil {
-		return errors.Wrap(err, "cannot format model code")
+		return errors.Wrap(err, "cannot format model code: "+buf.String())
 	}
 	log.Debug().Msg("Code has been formatted.")
 

@@ -21,6 +21,7 @@ import (
 {{- $modelName := .Name }}
 
 {{- range .Properties}}
+{{- if .IsRef }}{{ continue }}{{ end }}
 {{- if .PatternErrorMsg}}
 // {{ $modelName}}{{.Name}}PatternError is the error message returned for pattern validation errors on {{ $modelName}}.{{.Name}}
 var {{ $modelName}}{{.Name}}PatternError = validation.NewError("validation_{{.Name }}_pattern_invalid", "{{.PatternErrorMsg}}")
@@ -125,29 +126,32 @@ func (m {{$modelPropertiesName}}) Validate() error {
 		{{- range .Properties}}
 			{{- if .NeedsValidation }}
 				"{{ firstLower .Name }}": validation.Validate(
+					{{- /* isRequired: {{.IsRequired}}, isPtr: {{.IsPtr}}, isString: {{.IsString}}, isMap: {{.IsMap}}, isEnum: {{.IsEnum}}, hasFormat: {{.HasFormat}}, hasMin: {{.HasMin}}, hasMinLength: {{.HasMinLength}} */}}
 					m.{{ .Name }},
-					{{- if and .IsRequiredInValidation}}
-						{{- if or .IsEnum .Min .MinLength .HasFormat}}validation.Required,{{ else }}validation.NotNil,{{- end }}
+					{{- if .IsOZZORequired }}validation.Required,{{ end }}
+					{{- if .IsOZZONilOrNotEmpty }}validation.NilOrNotEmpty,{{ end }}
+					{{- if .IsOZZONotNil }}validation.NotNil,{{ end }}
+					{{- if not .IsRef }}
+						{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
+						{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
+						{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
+						{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
+						{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+						{{- if .IsBase64 }}is.Base64,{{ end }}
+						{{- if .IsEmail }}is.EmailFormat,{{ end }}
+						{{- if .IsUUID }}is.UUID,{{ end }}
+						{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
+						{{- if .IsURI }}is.RequestURI,{{ end }}
+						{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
+						{{- if .IsHostname }}is.Host,{{ end }}
+						{{- if .IsIPv4 }}is.IPv4,{{ end }}
+						{{- if .IsIPv6 }}is.IPv6,{{ end }}
+						{{- if .IsIP }}is.IP,{{ end }}
+						{{- if .Pattern }}validation.Match({{ firstLower $modelName }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
 					{{- end }}
-					{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
-					{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
-					{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
-					{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
-					{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
-					{{- if .IsBase64 }}is.Base64,{{ end }}
-					{{- if .IsEmail }}is.EmailFormat,{{ end }}
-					{{- if .IsUUID }}is.UUID,{{ end }}
-					{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
-					{{- if .IsURI }}is.RequestURI,{{ end }}
-					{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
-					{{- if .IsHostname }}is.Host,{{ end }}
-					{{- if .IsIPv4 }}is.IPv4,{{ end }}
-					{{- if .IsIPv6 }}is.IPv6,{{ end }}
-					{{- if .IsIP }}is.IP,{{ end }}
-					{{- if .Pattern }}validation.Match({{ $modelName | firstLower }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
-					{{- if and .IsOneOf (not .IsRequiredInValidation) }}
-					{{.GoType}}NilableRule{},
-					validation.Skip,
+					{{- if and .IsOneOf (not .IsOZZORequired) }}
+						{{.GoType}}NilableRule{},
+						validation.Skip,
 					{{- end }}
 				),
 			{{- end }}

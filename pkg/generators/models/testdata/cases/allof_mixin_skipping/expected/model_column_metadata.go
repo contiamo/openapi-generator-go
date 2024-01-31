@@ -24,7 +24,7 @@ type ColumnMetadata struct {
 func (m ColumnMetadata) Validate() error {
 	return validation.Errors{
 		"type": validation.Validate(
-			m.Type, validation.NotNil,
+			m.Type,
 		),
 	}.Filter()
 }
