@@ -109,8 +109,10 @@ func (m *{{$modelName}}) UnmarshalJSON(bs []byte) error {
 }
 
 {{- range $convert := .ConvertSpecs }}
-{{ (printf "From%s sets the %s from a %s"  ($convert.TargetGoType | typeDisplayName) $modelName $convert.TargetGoType) | commentBlock }}
-func (m *{{$modelName}}) From{{$convert.TargetGoType | typeDisplayName}}(data {{$convert.TargetGoType}}) {
+{{ $star := $convert.IsPtr | ternary "*" "" }}
+{{ $nullable := $convert.IsPtr | ternary "Nullable" "" }}
+{{ (printf "From%s%s sets the %s from a %s%s"  $nullable ($convert.TargetGoType | typeDisplayName) $modelName  $star $convert.TargetGoType) | commentBlock }}
+func (m *{{$modelName}}) From{{$nullable}}{{$convert.TargetGoType | typeDisplayName}}(data {{$star}}{{$convert.TargetGoType}}) {
 	m.data = data
 }
 
@@ -127,8 +129,10 @@ func (m {{$modelName}}) As(target interface{}) error {
 }
 
 {{- range $convert := .ConvertSpecs }}
-{{ (printf "As%s converts %s to a %s"  ($convert.TargetGoType | typeDisplayName) $modelName $convert.TargetGoType) | commentBlock }}
-func (m {{$modelName}}) As{{$convert.TargetGoType | typeDisplayName }}() (result {{$convert.TargetGoType}}, err error) {
+{{ $star := $convert.IsPtr | ternary "*" "" }}
+{{ $nullable := $convert.IsPtr | ternary "Nullable" "" }}
+{{ (printf "As%s%s converts %s to a %s%s" $nullable ($convert.TargetGoType | typeDisplayName) $modelName $star $convert.TargetGoType) | commentBlock }}
+func (m {{$modelName}}) As{{$nullable}}{{$convert.TargetGoType | typeDisplayName }}() (result {{$star}}{{$convert.TargetGoType}}, err error) {
 	{{- if $.Discriminator.Field }}
 	if m.data == nil {
 		return result, Empty{{$modelName}}Error

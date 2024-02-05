@@ -73,7 +73,7 @@ func (m Person) Validate() error {
 			m.Base64, is.Base64,
 		),
 		"cron": validation.Validate(
-			m.Cron,
+			m.Cron, validation.Required,
 		),
 		"date": validation.Validate(
 			m.Date, validation.Date("2006-01-02"),

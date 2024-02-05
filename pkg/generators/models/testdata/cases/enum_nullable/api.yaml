@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+components:
+  schemas:
+
+    StringEnum:
+      type: string
+      enum:
+        - foo
+        - bar
+
+    StringEnumNullable:
+      type: string
+      nullable: true
+      enum:
+        - foo
+        - bar
+
+    StringEnumWithNullAndNullable:
+      type: string
+      nullable: true # it should make ref nullable
+      enum:
+        - foo
+        - bar
+        - null
+
+    StringEnumWithNull:
+      type: string
+      enum:
+        - foo
+        - bar
+        - null
+
+    StringEnumWithZero:
+      type: string
+      enum:
+        - foo
+        - bar
+        - ""
+
+    StringEnumWithNullAndZero:
+      type: string
+      enum:
+        - foo
+        - bar
+        - null
+        - ""
+
+    IntegerEnumWithNull:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - null
+
+    IntegerEnumWithZero:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 0
+
+    IntegerEnumWithNullAndZero:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - null
+        - 0
+
+
+    Wrapper:
+      type: object
+      required:
+        - requiredStringEnum
+        - requiredNullableStringEnumWithNull
+        - requiredStringEnumNullable
+        - requiredStringEnumWithNullAndNullable
+        - requiredStringEnumWithNull
+        - requiredStringEnumWithZero
+        - requiredNullableStringEnumWithZero
+        - requiredStringEnumWithNullAndZero
+        - requiredNullableStringEnumWithNullAndZero
+
+      properties:
+
+        stringEnum:
+          description: a regular string enum
+          allOf:
+            - $ref: "#/components/schemas/StringEnum"
+
+        requiredStringEnum:
+          description: a required regular string enum
+          allOf:
+            - $ref: "#/components/schemas/StringEnum"
+
+        stringEnumNullable:
+          description: a string enum that is nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumNullable"
+
+        requiredStringEnumNullable:
+          description: a required string enum that is nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumNullable"
+
+        nullableStringEnumWithNull:
+          description: Add nullable in the prop for non nullable enum
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNull"
+          nullable: true
+
+        requiredNullableStringEnumWithNull:
+          description: Add nullable in the prop for non nullable enum
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNull"
+          nullable: true
+
+        stringEnumWithNullAndNullable:
+          description: Ref a nullable enum. It should make the prop nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndNullable"
+
+        requiredStringEnumWithNullAndNullable:
+          description: Ref a nullable enum. It should make the prop nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndNullable"
+
+        stringEnumWithNull:
+          description: Ref a non nullable enum. It should not make the prop nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNull"
+
+        requiredStringEnumWithNull:
+          description: Ref a non nullable enum. It should not make the prop nullable
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNull"
+
+        stringEnumWithNullAndZero:
+          description: Ref a non nullable enum with zero value.
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndZero"
+
+        nullableStringEnumWithNullAndZero:
+          description: Add nullable in the prop for non nullable enum with zero value and null
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndZero"
+          nullable: true
+
+        requiredStringEnumWithNullAndZero:
+          description: Ref a non nullable enum with zero value.
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndZero"
+
+        requiredNullableStringEnumWithNullAndZero:
+          description: Add nullable in the prop for non nullable enum with zero value and null
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithNullAndZero"
+          nullable: true
+
+        stringEnumWithZero:
+          description: Ref a non nullable enum with zero value.
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithZero"
+
+        requiredStringEnumWithZero:
+          description: Ref a non nullable enum with zero value.
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithZero"
+
+        nullableStringEnumWithZero:
+          description: Add nullable in the prop for non nullable enum with zero value
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithZero"
+          nullable: true
+
+        requiredNullableStringEnumWithZero:
+          description: Add nullable in the prop for non nullable enum with zero value
+          allOf:
+            - $ref: "#/components/schemas/StringEnumWithZero"
+          nullable: true

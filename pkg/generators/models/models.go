@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
+	"golang.org/x/exp/maps"
 
 	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 )
@@ -88,6 +91,8 @@ type Model struct {
 type ConvertSpec struct {
 	// TargetGoType is the target type of the conversion
 	TargetGoType string
+	// IsPtr is true when the target type is a pointer
+	IsPtr bool
 }
 
 type ValidationSpec struct {
@@ -100,6 +105,10 @@ type ValidationSpec struct {
 	Min, Max                   float64
 	HasMinLength, HasMaxLength bool
 	MinLength, MaxLength       uint64
+	HasMinItems, HasMaxItems   bool
+	MinItems, MaxItems         uint64
+	HasMinProps, HasMaxProps   bool
+	MinProps, MaxProps         uint64
 	HasFormat                  bool
 	IsDate                     bool
 	IsDateTime                 bool
@@ -113,11 +122,11 @@ type ValidationSpec struct {
 	IsIP                       bool
 	IsIPv4                     bool
 	IsIPv6                     bool
+	IsEnumWithNil              bool
+	IsEnumWithZero             bool
 
-	// Resolved OZZO validation rules
-	IsOZZORequired      bool
-	IsOZZONilOrNotEmpty bool
-	IsOZZONotNil        bool
+	// Derived validations that should be added to the property
+	DerivedValidations []string
 }
 
 // PropSpec is a Go property descriptor
@@ -149,6 +158,8 @@ type PropSpec struct {
 	IsArray bool
 	// IsMap is true when the property is a map
 	IsMap bool
+	// IsStruct is true when the property is a struct
+	IsStruct bool
 	// IsString is true when the property is a string
 	IsString bool
 	// IsNumber is true when the property is a number
@@ -249,6 +260,7 @@ func (m *Model) configureOneOf(ref *openapi3.SchemaRef) {
 	for _, oneOf := range ref.Value.OneOf {
 		m.ConvertSpecs = append(m.ConvertSpecs, ConvertSpec{
 			TargetGoType: goTypeFromSpec(oneOf),
+			IsPtr:        oneOf.Value.Nullable && oneOf.Value.Type != "" && oneOf.Value.Type != "object" && oneOf.Value.Type != "array",
 		})
 	}
 
@@ -532,19 +544,13 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 }
 
 func dedup[T any](input []T) []T {
-	seen := make(map[string]bool)
+	seen := make(map[string]T)
 
-	n := 0
 	for _, x := range input {
 		key := fmt.Sprintf("%v", x)
-		if !seen[key] {
-			seen[key] = true
-			input[n] = x
-			n++
-		}
+		seen[key] = x
 	}
-	input = input[:n]
-	return input
+	return maps.Values(seen)
 }
 
 // structPropsFromRef creates property descriptors for a Go struct from a schema
@@ -590,20 +596,30 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports map[
 		}
 
 		spec := PropSpec{
-			Name:           tpl.ToPascalCase(name),
-			PropertyName:   name,
-			Description:    prop.Value.Description,
-			GoType:         goType,
-			IsRequired:     isRequired,
-			IsEnum:         len(prop.Value.Enum) > 0,
-			IsArray:        prop.Value.Type == "array",
-			IsMap:          (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) == 0,
-			IsString:       prop.Value.Type == "string",
-			IsNumber:       prop.Value.Type == "number",
-			IsInteger:      prop.Value.Type == "integer",
-			IsRef:          prop.Ref != "",
-			ValidationSpec: ValidationSpec{},
-			IsOneOf:        prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
+			Name:         tpl.ToPascalCase(name),
+			PropertyName: name,
+			Description:  prop.Value.Description,
+			GoType:       goType,
+			IsRequired:   isRequired,
+			IsEnum:       len(prop.Value.Enum) > 0,
+			IsArray:      prop.Value.Type == "array",
+			IsMap:        (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) == 0,
+			IsStruct:     (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) > 0,
+			IsString:     prop.Value.Type == "string",
+			IsNumber:     prop.Value.Type == "number",
+			IsInteger:    prop.Value.Type == "integer",
+			IsRef:        prop.Ref != "",
+			ValidationSpec: ValidationSpec{
+				IsEnumWithNil: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
+					// Reflect considers the enum value nil to be invalid because it doesn't have a type for it
+					return !reflect.ValueOf(i).IsValid()
+				}),
+				IsEnumWithZero: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
+					val := reflect.ValueOf(i)
+					return val.IsValid() && val.IsZero()
+				}),
+			},
+			IsOneOf: prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
 		}
 		// Set/Update dependent properties
 		spec.IsPtr = prop.Value.Nullable && !(spec.IsMap || spec.IsArray)
@@ -629,30 +645,52 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports map[
 			return nil, nil, fmt.Errorf("invalid %s property %q: %w", ExtensionPatternError, name, err)
 		}
 
-		resolveOZZORequiredValidations(&spec)
+		resolveDerivedValidation(&spec, imports)
 		specs = append(specs, spec)
 	}
 
 	return specs, imports, err
 }
 
-// resolveOZZORequiredValidations resolves the OZZO validation rules that are derived from the required, nullable and other
+// resolveDerivedValidation resolves the extra validation rules that are derived from the required, nullable and other
 // properties that affect the validation rules. Example: OZZO min length validation for strings consider the empty string
 // valid, so we need to add the OZZO Required validation to catch that.
-func resolveOZZORequiredValidations(spec *PropSpec) {
-	spec.IsOZZORequired = spec.IsRequired && !spec.IsPtr &&
-		(((spec.IsArray || spec.IsMap || spec.IsString) && (spec.HasMinLength || spec.HasMaxLength)) ||
-			((spec.IsInteger || spec.IsNumber) && (spec.Min > 0.0 || (spec.HasMax && spec.Max < 0.0))) ||
-			(spec.IsString && spec.HasFormat) ||
-			spec.IsEnum)
+func resolveDerivedValidation(spec *PropSpec, imports map[string]string) {
+	for validation, specs := range DerivedRulesByValidationType {
+		for _, rule := range specs {
+			if rule.IsStruct == spec.IsStruct &&
+				rule.IsEnum == spec.IsEnum &&
+				rule.IsString == spec.IsString &&
+				rule.IsMap == spec.IsMap &&
+				rule.IsArray == spec.IsArray &&
+				rule.IsNumber == spec.IsNumber &&
+				rule.IsInteger == spec.IsInteger &&
+				rule.IsPtr == spec.IsPtr &&
+				(rule.IsEnumWithNull == nil || *rule.IsEnumWithNull == spec.IsEnumWithNil) &&
+				(rule.IsEnumWithZero == nil || *rule.IsEnumWithZero == spec.IsEnumWithZero) &&
+				(rule.IsRequired == nil || *rule.IsRequired == spec.IsRequired) &&
+				(rule.HasFormat == nil || *rule.HasFormat == spec.HasFormat) &&
+				(rule.HasPattern == nil || *rule.HasPattern == spec.HasPattern) &&
+				(rule.HasMin == nil || *rule.HasMin == spec.HasMin) &&
+				(rule.HasMax == nil || *rule.HasMax == spec.HasMax) &&
+				(rule.HasMinLength == nil || *rule.HasMinLength == spec.HasMinLength) &&
+				(rule.HasMaxLength == nil || *rule.HasMaxLength == spec.HasMaxLength) &&
+				(rule.HasMinItems == nil || *rule.HasMinItems == spec.HasMinItems) &&
+				(rule.HasMaxItems == nil || *rule.HasMaxItems == spec.HasMaxItems) &&
+				(rule.HasMinProps == nil || *rule.HasMinProps == spec.HasMinProps) &&
+				(rule.HasMaxProps == nil || *rule.HasMaxProps == spec.HasMaxProps) {
 
-	spec.IsOZZONilOrNotEmpty = !spec.IsOZZORequired &&
-		((spec.IsRequired && spec.IsPtr && spec.IsEnum) ||
-			(spec.IsPtr && (spec.IsInteger || spec.IsNumber) && (spec.Min > 0.0 || (spec.HasMax && spec.Max < 0.0))) ||
-			((spec.IsArray || spec.IsMap || (spec.IsString && spec.IsPtr)) && (spec.HasMinLength || spec.HasMaxLength)) ||
-			(spec.IsPtr && spec.IsEnum))
-
-	spec.IsOZZONotNil = !spec.IsOZZORequired && !spec.IsOZZONilOrNotEmpty && spec.IsRequired && (spec.IsPtr || (spec.IsArray || spec.IsMap))
+				/*  // Enable for easier debugging of the rules
+				rowJSON, _ := json.Marshal(rule)
+				fmt.Printf("Adding derived validation %s to %s, matching rule: %s\n", validation, spec.Name, string(rowJSON))
+				*/
+				imports["github.com/go-ozzo/ozzo-validation/v4"] = "validation"
+				spec.DerivedValidations = append(spec.DerivedValidations, "validation."+validation)
+				// We only add one validation type per property, so we break here
+				break
+			}
+		}
+	}
 }
 
 func fillValidationSpec(ref *openapi3.SchemaRef, spec *ValidationSpec, goType string, imports map[string]string) (err error) {
@@ -687,14 +725,26 @@ func fillValidationSpec(ref *openapi3.SchemaRef, spec *ValidationSpec, goType st
 
 	if ref.Value.MinItems > 0 {
 		spec.NeedsValidation = true
-		spec.HasMinLength = true
-		spec.MinLength = ref.Value.MinItems
+		spec.HasMinItems = true
+		spec.MinItems = ref.Value.MinItems
 	}
 
 	if ref.Value.MaxItems != nil {
 		spec.NeedsValidation = true
-		spec.HasMaxLength = true
-		spec.MaxLength = *ref.Value.MaxItems
+		spec.HasMaxItems = true
+		spec.MaxItems = *ref.Value.MaxItems
+	}
+
+	if ref.Value.MinProps > 0 {
+		spec.NeedsValidation = true
+		spec.HasMinProps = true
+		spec.MinProps = ref.Value.MinProps
+	}
+
+	if ref.Value.MaxProps != nil {
+		spec.NeedsValidation = true
+		spec.HasMaxProps = true
+		spec.MaxProps = *ref.Value.MaxProps
 	}
 
 	if ref.Value.ExclusiveMin {
@@ -822,6 +872,10 @@ func fillValidationSpec(ref *openapi3.SchemaRef, spec *ValidationSpec, goType st
 // enumPropsFromRef generates a list of enum property/item descriptors.
 func enumPropsFromRef(ref *openapi3.SchemaRef, model *Model) (specs []PropSpec) {
 	for idx, val := range ref.Value.Enum {
+		// Ignore nil values as it is handled by the referencing struct
+		if val == nil {
+			continue
+		}
 		valueVarName := tpl.ToPascalCase(fmt.Sprintf("%v", val))
 		if valueVarName == "" {
 			valueVarName = fmt.Sprintf("Item%d", idx)

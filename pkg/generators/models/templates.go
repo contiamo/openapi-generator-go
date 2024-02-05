@@ -25,5 +25,6 @@ var (
 		"toSnakeCase":     tpl.ToSnakeCase,
 		"removeSpecial":   tpl.RemoveSpecial,
 		"typeDisplayName": tpl.TypeDisplayName,
+		"ternary":         tpl.Ternary,
 	}
 )
