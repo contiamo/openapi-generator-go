@@ -26,6 +26,9 @@ components:
           type: number
           minimum: 18
           maximum: 120
+        children:
+          type: integer
+          minimum: 0
         gender:
           $ref: "#/components/schemas/Gender"
         secondGender:

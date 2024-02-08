@@ -672,7 +672,9 @@ func resolveDerivedValidation(spec *PropSpec, imports map[string]string) {
 				(rule.HasFormat == nil || *rule.HasFormat == spec.HasFormat) &&
 				(rule.HasPattern == nil || *rule.HasPattern == spec.HasPattern) &&
 				(rule.HasMin == nil || *rule.HasMin == spec.HasMin) &&
+				(rule.IsMinGreaterThanZero == nil || *rule.IsMinGreaterThanZero == (spec.Min > 0)) &&
 				(rule.HasMax == nil || *rule.HasMax == spec.HasMax) &&
+				(rule.IsMaxLessThanZero == nil || *rule.IsMaxLessThanZero == (spec.Max < 0)) &&
 				(rule.HasMinLength == nil || *rule.HasMinLength == spec.HasMinLength) &&
 				(rule.HasMaxLength == nil || *rule.HasMaxLength == spec.HasMaxLength) &&
 				(rule.HasMinItems == nil || *rule.HasMinItems == spec.HasMinItems) &&

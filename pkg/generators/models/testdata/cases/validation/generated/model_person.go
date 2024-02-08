@@ -24,6 +24,8 @@ type Person struct {
 	Age float32 `json:"age,omitempty" mapstructure:"age,omitempty"`
 	// Base64:
 	Base64 string `json:"base64,omitempty" mapstructure:"base64,omitempty"`
+	// Children:
+	Children int32 `json:"children,omitempty" mapstructure:"children,omitempty"`
 	// Cron:
 	Cron Cron `json:"cron" mapstructure:"cron"`
 	// Date:
@@ -71,6 +73,9 @@ func (m Person) Validate() error {
 		),
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
+		),
+		"children": validation.Validate(
+			m.Children, validation.Min(int32(0)),
 		),
 		"cron": validation.Validate(
 			m.Cron, validation.Required,
@@ -154,6 +159,16 @@ func (m Person) GetBase64() string {
 // SetBase64 sets the Base64 property
 func (m *Person) SetBase64(val string) {
 	m.Base64 = val
+}
+
+// GetChildren returns the Children property
+func (m Person) GetChildren() int32 {
+	return m.Children
+}
+
+// SetChildren sets the Children property
+func (m *Person) SetChildren(val int32) {
+	m.Children = val
 }
 
 // GetCron returns the Cron property
