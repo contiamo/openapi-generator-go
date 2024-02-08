@@ -8,13 +8,13 @@ import (
 	"math"
 	"reflect"
 	"regexp"
-	"slices"
 	"sort"
 	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 
 	tpl "github.com/contiamo/openapi-generator-go/v2/pkg/generators/templates"
 )
