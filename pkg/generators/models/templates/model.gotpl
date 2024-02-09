@@ -7,9 +7,15 @@
 package {{ .PackageName }}
 
 import (
-	{{- if .AdditionalPropertiesGoType}}
+{{- if or .Properties .HasDefault (and .AdditionalProperties .AdditionalProperties.HasDefault (not .AdditionalProperties.IsRef)) }}
 	"encoding/json"
-	{{- end}}
+{{- end }}
+{{- if or (and .Properties .AdditionalProperties) .HasDefault }}
+	"fmt"
+{{- end}}
+{{- if and .Properties .AdditionalProperties }}
+	"strings"
+{{- end}}
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 
@@ -23,157 +29,141 @@ import (
 {{- range .Properties}}
 {{- if .IsRef }}{{ continue }}{{ end }}
 {{- if .PatternErrorMsg}}
-// {{ $modelName}}{{.Name}}PatternError is the error message returned for pattern validation errors on {{ $modelName}}.{{.Name}}
+// {{ $modelName}}{{.Name}}PatternError is the error message returned for pattern validation errors on {{$modelName}}.{{.Name}}
 var {{ $modelName}}{{.Name}}PatternError = validation.NewError("validation_{{.Name }}_pattern_invalid", "{{.PatternErrorMsg}}")
 {{- end }}
 {{- if .Pattern }}
-// {{ $modelName | firstLower}}{{.Name}}Pattern is the validation pattern for {{ $modelName}}.{{.Name}}
+// {{ $modelName | firstLower}}{{.Name}}Pattern is the validation pattern for {{$modelName}}.{{.Name}}
 var {{ $modelName | firstLower }}{{.Name}}Pattern = regexp.MustCompile(`{{ .Pattern }}`)
+{{- end }}
+{{- end }}
+{{- if and .Properties .AdditionalProperties }}
+{{- if .AdditionalProperties.PatternErrorMsg}}
+// {{ $modelName}}AdditionalPropertiesPatternError is the error message returned for pattern validation errors on {{$modelName}}.AdditionalProperties
+var {{ $modelName}}AdditionalPropertiesPatternError = validation.NewError("validation_additional_properties_pattern_invalid", "{{.AdditionalProperties.PatternErrorMsg}}")
+{{- end }}
+{{- if .AdditionalProperties.Pattern }}
+// {{ $modelName | firstLower}}AdditionalPropertiesPattern is the validation pattern for {{$modelName}}.AdditionalProperties
+var {{ $modelName | firstLower }}AdditionalPropertiesPattern = regexp.MustCompile(`{{ .AdditionalProperties.Pattern }}`)
 {{ end }}
-{{- end}}
+{{- end }}
+{{- if and (not .Properties) .AdditionalProperties }}
+    {{- if .AdditionalProperties.PatternErrorMsg}}
+		// {{ $modelName}}PatternError is the error message returned for pattern validation errors on {{$modelName}}
+		var {{ $modelName}}PatternError = validation.NewError("validation_additional_properties_pattern_invalid", "{{.AdditionalProperties.PatternErrorMsg}}")
+    {{- end }}
+    {{- if .AdditionalProperties.Pattern }}
+		// {{$modelName | firstLower}}Pattern is the validation pattern for {{$modelName}}
+		var {{$modelName | firstLower}}Pattern = regexp.MustCompile(`{{ .AdditionalProperties.Pattern }}`)
+    {{ end }}
+{{- end }}
 
-{{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
-{{- if not .AdditionalPropertiesGoType }}
-{{- if not .Properties }}
-type {{.Name}} {{ .GoType }}
+
+{{- if and .Properties .AdditionalProperties }}
+    {{ template "model_type_additional" . }}
 {{- else }}
-type {{.Name}} struct {
-{{- range .Properties}}
-	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
-	{{.Name}} {{if .IsPtr}}*{{end}}{{.GoType}} {{.JSONTags}}
-{{- end}}
-}
-{{- end}}
-{{- else }}
-type {{.Name}} struct {
-	{{.Name}}Properties
-	AdditionalProperties map[string]{{.AdditionalPropertiesGoType}}
-}
+    {{ template "model_type_simple" . }}
+{{- end }}
 
-type {{.Name}}Properties struct {
+// New{{.Name}} instantiates a new {{.Name}} with default values overriding them as follows:
+// 1. Default values specified in the {{.Name}} schema
+// 2. Default values specified per {{.Name}} property
+func New{{.Name}}() {{if not .IsMap}}*{{end}}{{.Name}} {
+	m := {{if not .IsMap}}&{{end}}{{.Name}}{
 	{{- range .Properties}}
-	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
-	{{.Name}} {{.GoType}} {{.JSONTags}}
-	{{- end}}
-}
-
-// Unmarshal all named properties into {{.Name}}Properties and
-// the rest into the AdditionalProperties map
-func (obj *{{.Name}}) UnmarshalJSON(data []byte) error {
-	var generic map[string]json.RawMessage
-	if err := json.Unmarshal(data, &generic); err != nil {
-		return err
+    	{{- if and .HasDefault (not .IsStruct) }}
+        {{.Name}}: {{ if .IsRef }}Default{{.GoType}}{{ else }}{{.DefaultValue}}{{ end }},
+    	{{- else if and .IsStruct }}
+        {{.Name}}: {{ if not .IsPtr}}*{{ end }}New{{.GoType}}(),
+    	{{- end}}
+	{{- end }}
 	}
 
-	obj.{{.Name}}Properties = {{.Name}}Properties{}
-
-	var additionalProperties = make(map[string]{{.AdditionalPropertiesGoType}})
-	for k, v := range generic {
-		{{- range .Properties}}
-		if k == "{{.PropertyName}}" {
-			if err := json.Unmarshal(v, &(obj.{{$.Name}}Properties.{{.Name}})); err != nil {
-				return err
-			}
-			continue
-		}
-		{{- end}}
-		var prop {{.AdditionalPropertiesGoType}}
-		if err := json.Unmarshal(v, &prop); err != nil {
-			return err
-		}
-		additionalProperties[k] = prop
-	}
-
-	obj.AdditionalProperties = additionalProperties
-	return nil
-}
-
-// Marshal {{.Name}} by combining the AdditionalProperties with the
-// named properties in a single JSON object. Named properties take
-// precedence.
-func (obj {{.Name}}) MarshalJSON() ([]byte, error) {
-	props := make(map[string]json.RawMessage)
-
-	// start with additional properties so regular properties overwrite them
-	for k, v := range obj.AdditionalProperties {
-		if propData, err := json.Marshal(v); err == nil {
-			props[k] = propData
-		} else {
-			return nil, err
-		}
-	}
-
-	{{- range .Properties}}
-	if propData, err := json.Marshal(obj.{{$.Name}}Properties.{{.Name}}); err == nil {
-		props["{{.PropertyName}}"] = propData
-	} else {
-		return nil, err
+	{{ if .HasDefault }}
+	type alias {{.Name}}
+	err := json.Unmarshal([]byte(`{{.DefaultValue}}`), (*alias)({{if .IsMap}}&{{end}}m))
+	if err != nil {
+		panic(fmt.Errorf("could not unmarshal default values for {{.Name}}: %w", err))
 	}
 	{{- end}}
 
-	data, err := json.Marshal(props)
-	return data, err
+	return m
 }
+
+{{- if and .Properties .AdditionalProperties }}
+    {{ template "model_json_additional" . }}
+{{- else }}
+    {{ template "model_json_simple" . }}
 {{- end }}
 
-{{- $modelPropertiesName := $modelName }}
-{{- if .AdditionalPropertiesGoType }}
-  {{- $modelPropertiesName := print $modelName "Properties" }}
+{{ define "prop_validation" }}
+	{{- $modelName := .ModelName }}
+	{{- $prop := .Prop}}
+    {{- /* isRequired: {{$prop.IsRequired}}, isPtr: {{$prop.IsPtr}}, isString: {{$prop.IsString}}, isMap: {{$prop.IsMap}}, isEnum: {{$prop.IsEnum}}, hasFormat: {{$prop.HasFormat}}, hasMin: {{$prop.HasMin}}, min: {{$prop.Min}}, hasMax: {{$prop.HasMax}}, max: {{$prop.Max}}, hasMinLength: {{$prop.HasMinLength}}, minLength: {{$prop.MinLength}}, hasMaxLength: {{$prop.HasMaxLength}}, maxLength: {{$prop.MaxLength}} */}}
+    {{- range $prop.DerivedValidations }}{{.}},{{ end }}
+    {{- if not $prop.IsRef }}
+        {{- if $prop.HasMin }}validation.Min({{ $prop.GoType }}({{ $prop.Min }})),{{ end }}
+        {{- if $prop.HasMax }}validation.Max({{ $prop.GoType }}({{ $prop.Max }})),{{ end }}
+        {{- if or $prop.HasMinLength $prop.HasMaxLength }}validation.Length({{ $prop.MinLength }},{{ $prop.MaxLength }}),{{ end }}
+        {{- if or $prop.HasMinItems $prop.HasMaxItems }}validation.Length({{ $prop.MinItems }},{{ $prop.MaxItems }}),{{ end }}
+        {{- if or $prop.HasMinProps $prop.HasMaxProps }}validation.Length({{ $prop.MinProps }},{{ $prop.MaxProps }}),{{ end }}
+        {{- if $prop.IsDate }}validation.Date("2006-01-02"),{{ end }}
+        {{- if $prop.IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+        {{- if $prop.IsBase64 }}is.Base64,{{ end }}
+        {{- if $prop.IsEmail }}is.EmailFormat,{{ end }}
+        {{- if $prop.IsUUID }}is.UUID,{{ end }}
+        {{- if $prop.IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
+        {{- if $prop.IsURI }}is.RequestURI,{{ end }}
+        {{- if $prop.IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
+        {{- if $prop.IsHostname }}is.Host,{{ end }}
+        {{- if $prop.IsIPv4 }}is.IPv4,{{ end }}
+        {{- if $prop.IsIPv6 }}is.IPv6,{{ end }}
+        {{- if $prop.IsIP }}is.IP,{{ end }}
+        {{- if $prop.Pattern }}validation.Match({{$modelName | firstLower}}{{$prop.Name}}Pattern){{if $prop.PatternErrorMsg}}.ErrorObject({{$modelName}}{{$prop.Name}}PatternError){{end}},{{ end }}
+    {{- else if $prop.IsOneOf }}
+        {{$prop.GoType}}NilableRule{},
+		validation.Skip,
+    {{- end }}
 {{- end }}
+
 // Validate implements basic validation for this model
-func (m {{$modelPropertiesName}}) Validate() error {
-	return validation.Errors{
+func (m {{$modelName}}) Validate() error {
+	errors := validation.Errors{
 		{{- range .Properties}}
 			{{- if .NeedsValidation }}
 				"{{ firstLower .Name }}": validation.Validate(
-				    {{- /* isRequired: {{.IsRequired}}, isPtr: {{.IsPtr}}, isString: {{.IsString}}, isMap: {{.IsMap}}, isEnum: {{.IsEnum}}, hasFormat: {{.HasFormat}}, hasMin: {{.HasMin}}, min: {{.Min}}, hasMax: {{.HasMax}}, max: {{.Max}}, hasMinLength: {{.HasMinLength}}, minLength: {{.MinLength}}, hasMaxLength: {{.HasMaxLength}}, maxLength: {{.MaxLength}} */}}
-					m.{{ .Name }},
-					{{- range .DerivedValidations }}{{.}},{{ end }}
-					{{- if not .IsRef }}
-						{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
-						{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
-						{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
-						{{- if or .HasMinItems .HasMaxItems }}validation.Length({{ .MinItems }},{{ .MaxItems }}),{{ end }}
-						{{- if or .HasMinProps .HasMaxProps }}validation.Length({{ .MinProps }},{{ .MaxProps }}),{{ end }}
-						{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
-						{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
-						{{- if .IsBase64 }}is.Base64,{{ end }}
-						{{- if .IsEmail }}is.EmailFormat,{{ end }}
-						{{- if .IsUUID }}is.UUID,{{ end }}
-						{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
-						{{- if .IsURI }}is.RequestURI,{{ end }}
-						{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
-						{{- if .IsHostname }}is.Host,{{ end }}
-						{{- if .IsIPv4 }}is.IPv4,{{ end }}
-						{{- if .IsIPv6 }}is.IPv6,{{ end }}
-						{{- if .IsIP }}is.IP,{{ end }}
-						{{- if .Pattern }}validation.Match({{ firstLower $modelName }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
-					{{- else if .IsOneOf }}
-						{{.GoType}}NilableRule{},
-						validation.Skip,
-					{{- end }}
+					m.{{ .Name }}, {{- template "prop_validation" (map "ModelName" $modelName "Prop" .) }}
 				),
 			{{- end }}
 		{{- end }}
-	}.Filter()
+	}
+
+	{{- if or .IsMap .AdditionalProperties }}
+	for k, v := range m{{ if and .AdditionalProperties .Properties }}.AdditionalProperties{{ end }} {
+		if err := validation.Validate(v{{if .AdditionalProperties}}, {{template "prop_validation" (map "ModelName" $modelName "Prop" .AdditionalProperties)}}{{end}}); err != nil {
+			errors[k] =  err
+		}
+	}
+	{{- end }}
+	return errors.Filter()
 }
 {{ range .Properties}}
 // Get{{.Name}} returns the {{.Name}} property
-func (m {{$modelPropertiesName}}) Get{{.Name}}() {{if .IsPtr}}*{{end}}{{.GoType}} {
+func (m {{$modelName}}) Get{{.Name}}() {{if .IsPtr}}*{{end}}{{.GoType}} {
 	return m.{{.Name}}
 }
 
 // Set{{.Name}} sets the {{.Name}} property
-func (m *{{$modelPropertiesName}}) Set{{.Name}}(val {{if .IsPtr}}*{{end}}{{.GoType}}) {
+func (m *{{$modelName}}) Set{{.Name}}(val {{if .IsPtr}}*{{end}}{{.GoType}}) {
 	m.{{.Name}} = val
 }
 {{ end}}
-{{- if .AdditionalPropertiesGoType }}
-func (m *{{$modelName}}) GetAdditionalProperties() map[string]{{.AdditionalPropertiesGoType}} {
+{{- if and .AdditionalProperties .Properties }}
+func (m *{{$modelName}}) GetAdditionalProperties() map[string]{{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}} {
 	return m.AdditionalProperties
 }
 
-func (m *{{$modelName}}) SetAdditionalProperties(val map[string]{{.AdditionalPropertiesGoType}}) {
+func (m *{{$modelName}}) SetAdditionalProperties(val map[string]{{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}}) {
 	m.AdditionalProperties = val
 }
 {{- end }}

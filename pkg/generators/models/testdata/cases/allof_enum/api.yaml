@@ -7,6 +7,9 @@ components:
   schemas:
     Artist:
       type: object
+      required:
+        - leftFoot
+        - rightHand
       properties:
         leftHand:
           nullable: true
@@ -16,6 +19,26 @@ components:
           nullable: true
           allOf:
             - $ref: "#/components/schemas/Color"
+        leftFoot:
+          type: string
+          enum:
+            - red
+            - green
+            - blue
+          default: blue
+        rightFoot:
+          nullable: true
+          allOf:
+            - type: string
+              enum:
+                - apple
+                - banana
+                - pizza
+            - type: string
+              enum:
+                - orange
+                - watermelon
+                - kiwi
 
     AnyThing:
       allOf:

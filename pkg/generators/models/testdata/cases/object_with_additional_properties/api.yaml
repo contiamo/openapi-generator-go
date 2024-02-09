@@ -12,3 +12,18 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    FooBar:
+      type: object
+      additionalProperties: false
+
+    Bar:
+      type: object
+      additionalProperties:
+        type: string
+        format: email
+
+    Baz:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Foo'

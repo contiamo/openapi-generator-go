@@ -139,6 +139,13 @@ func (g generator) Generate(ctx context.Context) (err error) {
 	}
 	log.Debug().Msg("Paths have been processed.")
 
+	log.Debug().Msg("Preprocessing schemas...")
+	err = g.preprocessSchemas(ctx, g.spec.Components.Schemas)
+	if err != nil {
+		return err
+	}
+	log.Debug().Msg("Schemas have been preprocessed.")
+
 	log.Debug().Msg("Processing schemas...")
 	for _, name := range sortedKeys(g.spec.Components.Schemas) {
 		ref := g.spec.Components.Schemas[name]
@@ -296,6 +303,102 @@ func (g generator) writeModelToFile(ctx context.Context, model *Model, dst strin
 		return errors.Wrap(err, "cannot write model file")
 	}
 	log.Debug().Msg("File has been written.")
+
+	return nil
+}
+
+func (g generator) preprocessSchemas(ctx context.Context, schemas openapi3.Schemas) error {
+	for _, name := range sortedKeys(schemas) {
+		ref := schemas[name]
+		err := g.createNamedSchemaForInlineSchemas(ctx, name, ref, false, schemas)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (g generator) createNamedSchemaForInlineSchemas(ctx context.Context, name string, ref *openapi3.SchemaRef, shouldCreate bool, schemas openapi3.Schemas) (err error) {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	if ref == nil {
+		return nil
+	}
+
+	ref = resolveAllOf(ref, nil)
+	if ref.Ref != "" {
+		return nil
+	}
+
+	switch ref.Value.Type {
+	case "string", "integer", "number", "boolean":
+		// Only create a named schema for enums
+		if shouldCreate && len(ref.Value.Enum) > 0 {
+			err = g.createNamedSchemaForInlineSchema(ctx, name, ref, schemas)
+		}
+	case "array":
+		err = g.createNamedSchemaForInlineSchemas(ctx, name, ref.Value.Items, true, schemas)
+	case "", "object":
+		// Create a ref if the object has properties or additionalProperties
+		if shouldCreate && (len(ref.Value.Properties) > 0 || ref.Value.AdditionalProperties != nil) {
+			err = g.createNamedSchemaForInlineSchema(ctx, name, ref, schemas)
+		}
+
+		// Check all properties for inline schemas
+		for propName, propRef := range ref.Value.Properties {
+			// special case for singleton allOf generally these are used to add a new description or override the
+			// nullable flag
+			if len(propRef.Value.AllOf) == 1 {
+				pointer := propRef.Value.AllOf[0]
+				propRef.Ref = pointer.Ref
+
+				// a sub-special case when the referenced type is an array. Because we don't create top-level models
+				// for arrays, we actually need to follow this reference.
+				resolved := resolveAllOf(propRef, nil)
+				if resolved.Value.Type == "array" {
+					propRef = resolved
+				}
+			}
+			err = g.createNamedSchemaForInlineSchemas(ctx, fmt.Sprintf("%s_%s", name, propName), propRef, true, schemas)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Check additionalProperties for inline schemas
+		if ref.Value.AdditionalProperties != nil {
+			err = g.createNamedSchemaForInlineSchemas(ctx, fmt.Sprintf("%s_additional_properties", name), ref.Value.AdditionalProperties, true, schemas)
+		}
+
+		// Check oneOf for inline schemas
+		for i, oneOfRef := range ref.Value.OneOf {
+			err = g.createNamedSchemaForInlineSchemas(ctx, fmt.Sprintf("%s_one_of_idx%d", name, i), oneOfRef, true, schemas)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return err
+}
+
+func (g generator) createNamedSchemaForInlineSchema(ctx context.Context, name string, schemaRef *openapi3.SchemaRef, schemas openapi3.Schemas) (err error) {
+	// Iterate until inlineName is not found in schemas
+	inlineName := name
+	for i := 0; true; i++ {
+		if _, exists := schemas[inlineName]; !exists {
+			break
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		inlineName = fmt.Sprintf("%s_%d", name, i)
+	}
+	g.opts.Logger.Debug().Str("inline_name", inlineName).Msg("Creating inline schema")
+	schemas[inlineName] = openapi3.NewSchemaRef("", schemaRef.Value)
+	schemaRef.Ref = "#/components/schemas/" + inlineName
 
 	return nil
 }

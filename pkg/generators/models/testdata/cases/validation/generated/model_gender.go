@@ -29,6 +29,7 @@ var (
 		GenderFemale,
 		GenderMale,
 	}
+
 	// KnownGenderString is the list of valid Gender as string
 	KnownGenderString = []string{
 		string(GenderDefault),

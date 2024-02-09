@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -21,16 +23,40 @@ type UserEntity struct {
 	Name string `json:"name" mapstructure:"name"`
 }
 
+// NewUserEntity instantiates a new UserEntity with default values overriding them as follows:
+// 1. Default values specified in the UserEntity schema
+// 2. Default values specified per UserEntity property
+func NewUserEntity() *UserEntity {
+	m := &UserEntity{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for UserEntity. It set the default values for the UserEntity type
+func (m *UserEntity) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewUserEntity()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias UserEntity
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m UserEntity) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"email": validation.Validate(
 			m.Email, validation.Required, is.EmailFormat,
 		),
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetEmail returns the Email property

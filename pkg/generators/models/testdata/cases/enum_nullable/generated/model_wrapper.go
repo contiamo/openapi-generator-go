@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -50,9 +52,32 @@ type Wrapper struct {
 	StringEnumWithZero StringEnumWithZero `json:"stringEnumWithZero,omitempty" mapstructure:"stringEnumWithZero,omitempty"`
 }
 
+// NewWrapper instantiates a new Wrapper with default values overriding them as follows:
+// 1. Default values specified in the Wrapper schema
+// 2. Default values specified per Wrapper property
+func NewWrapper() *Wrapper {
+	m := &Wrapper{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Wrapper. It set the default values for the Wrapper type
+func (m *Wrapper) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewWrapper()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Wrapper
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Wrapper) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"nullableStringEnumWithNull": validation.Validate(
 			m.NullableStringEnumWithNull, validation.NilOrNotEmpty,
 		),
@@ -107,7 +132,8 @@ func (m Wrapper) Validate() error {
 		"stringEnumWithZero": validation.Validate(
 			m.StringEnumWithZero,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetNullableStringEnumWithNull returns the NullableStringEnumWithNull property

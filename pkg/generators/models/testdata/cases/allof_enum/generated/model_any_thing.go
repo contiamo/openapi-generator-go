@@ -35,6 +35,7 @@ var (
 		AnyThingPizza,
 		AnyThingRed,
 	}
+
 	// KnownAnyThingString is the list of valid AnyThing as string
 	KnownAnyThingString = []string{
 		string(AnyThingApple),

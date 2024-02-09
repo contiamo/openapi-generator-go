@@ -13,6 +13,11 @@ import (
 {{ (printf "%s is an enum. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
 
+{{- if .HasDefault }}
+// Default{{.Name}} is the default value for {{.Name}}
+var Default{{.Name}} = {{.Name}}({{.DefaultValue}})
+{{- end }}
+
 // Validate implements basic validation for this model
 func (m {{.Name}}) Validate() error {
 	return InKnown{{.Name}}.Validate(m)
@@ -31,7 +36,6 @@ var (
 		{{- end}}
 	}
 
-	{{- $enum :=. }}
 	// Known{{$enum.Name}}{{$enum.GoType | firstUpper}} is the list of valid {{$enum.Name}} as {{$enum.GoType}}
 	Known{{$enum.Name}}{{$enum.GoType | firstUpper}} = []{{$enum.GoType}}{
 		{{- range $v := .Properties }}

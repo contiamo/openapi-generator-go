@@ -115,3 +115,80 @@ components:
           type: string
           nullable: true
           minLength: 2
+
+    ObjectWithAdditionalStrings:
+      type: object
+      properties:
+        field1:
+          type: string
+          minLength: 2
+      additionalProperties:
+        type: string
+        format: "email"
+        minLength: 2
+        default: "value"
+        nullable: true
+
+    ObjectWithAdditionalStringsWithPattern:
+      type: object
+      properties:
+        field1:
+          type: string
+          minLength: 2
+      additionalProperties:
+        type: string
+        pattern: "^[a-z]+$"
+        minLength: 2
+
+    ObjectWithAdditionalNumbers:
+      type: object
+      properties:
+        field1:
+          type: string
+          minLength: 2
+      additionalProperties:
+        type: string
+        minLength: 2
+        default: "value"
+        nullable: true
+
+    ObjectWithAdditionalObjects:
+      type: object
+      properties:
+        field1:
+          type: string
+          minLength: 2
+      additionalProperties:
+        type: object
+        properties:
+          field1:
+            type: string
+            minLength: 2
+          field2:
+            type: integer
+            minimum: 1
+
+
+    MapWithValue:
+      type: object
+      additionalProperties:
+        type: string
+        minLength: 2
+        nullable: true
+        default: "value"
+
+    MapWithInLineObject:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          field1:
+            type: string
+            minLength: 2
+        default:
+          field1: "value"
+
+    MapWithRef:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Person"

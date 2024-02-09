@@ -7,27 +7,75 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 // Artist is an object.
 type Artist struct {
+	// LeftFoot:
+	LeftFoot ArtistLeftFoot `json:"leftFoot" mapstructure:"leftFoot"`
 	// LeftHand:
 	LeftHand AnyThing `json:"leftHand,omitempty" mapstructure:"leftHand,omitempty"`
+	// RightFoot:
+	RightFoot ArtistRightFoot `json:"rightFoot,omitempty" mapstructure:"rightFoot,omitempty"`
 	// RightHand:
-	RightHand Color `json:"rightHand,omitempty" mapstructure:"rightHand,omitempty"`
+	RightHand Color `json:"rightHand" mapstructure:"rightHand"`
+}
+
+// NewArtist instantiates a new Artist with default values overriding them as follows:
+// 1. Default values specified in the Artist schema
+// 2. Default values specified per Artist property
+func NewArtist() *Artist {
+	m := &Artist{
+		LeftFoot: DefaultArtistLeftFoot,
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Artist. It set the default values for the Artist type
+func (m *Artist) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewArtist()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Artist
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Validate implements basic validation for this model
 func (m Artist) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
+		"leftFoot": validation.Validate(
+			m.LeftFoot, validation.Required,
+		),
 		"leftHand": validation.Validate(
 			m.LeftHand,
 		),
-		"rightHand": validation.Validate(
-			m.RightHand,
+		"rightFoot": validation.Validate(
+			m.RightFoot,
 		),
-	}.Filter()
+		"rightHand": validation.Validate(
+			m.RightHand, validation.Required,
+		),
+	}
+	return errors.Filter()
+}
+
+// GetLeftFoot returns the LeftFoot property
+func (m Artist) GetLeftFoot() ArtistLeftFoot {
+	return m.LeftFoot
+}
+
+// SetLeftFoot sets the LeftFoot property
+func (m *Artist) SetLeftFoot(val ArtistLeftFoot) {
+	m.LeftFoot = val
 }
 
 // GetLeftHand returns the LeftHand property
@@ -38,6 +86,16 @@ func (m Artist) GetLeftHand() AnyThing {
 // SetLeftHand sets the LeftHand property
 func (m *Artist) SetLeftHand(val AnyThing) {
 	m.LeftHand = val
+}
+
+// GetRightFoot returns the RightFoot property
+func (m Artist) GetRightFoot() ArtistRightFoot {
+	return m.RightFoot
+}
+
+// SetRightFoot sets the RightFoot property
+func (m *Artist) SetRightFoot(val ArtistRightFoot) {
+	m.RightFoot = val
 }
 
 // GetRightHand returns the RightHand property

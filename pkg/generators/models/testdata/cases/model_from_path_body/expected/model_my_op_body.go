@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -16,9 +18,33 @@ type MyOpBody struct {
 	Foo string `json:"foo,omitempty" mapstructure:"foo,omitempty"`
 }
 
+// NewMyOpBody instantiates a new MyOpBody with default values overriding them as follows:
+// 1. Default values specified in the MyOpBody schema
+// 2. Default values specified per MyOpBody property
+func NewMyOpBody() *MyOpBody {
+	m := &MyOpBody{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for MyOpBody. It set the default values for the MyOpBody type
+func (m *MyOpBody) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewMyOpBody()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias MyOpBody
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m MyOpBody) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	return errors.Filter()
 }
 
 // GetFoo returns the Foo property
