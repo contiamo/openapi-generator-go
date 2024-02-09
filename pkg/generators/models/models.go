@@ -622,7 +622,7 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports map[
 			IsOneOf: prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
 		}
 		// Set/Update dependent properties
-		spec.IsPtr = prop.Value.Nullable && !(spec.IsMap || spec.IsArray)
+		spec.IsPtr = prop.Value.Nullable && !(spec.IsMap || spec.IsArray) && (!spec.IsEnum || spec.IsEnumWithNil)
 		spec.IsString = spec.IsString && !spec.IsEnum
 
 		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {

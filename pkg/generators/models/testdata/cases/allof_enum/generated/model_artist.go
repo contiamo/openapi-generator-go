@@ -13,39 +13,39 @@ import (
 // Artist is an object.
 type Artist struct {
 	// LeftHand:
-	LeftHand *AnyThing `json:"leftHand,omitempty" mapstructure:"leftHand,omitempty"`
+	LeftHand AnyThing `json:"leftHand,omitempty" mapstructure:"leftHand,omitempty"`
 	// RightHand:
-	RightHand *Color `json:"rightHand,omitempty" mapstructure:"rightHand,omitempty"`
+	RightHand Color `json:"rightHand,omitempty" mapstructure:"rightHand,omitempty"`
 }
 
 // Validate implements basic validation for this model
 func (m Artist) Validate() error {
 	return validation.Errors{
 		"leftHand": validation.Validate(
-			m.LeftHand, validation.NilOrNotEmpty,
+			m.LeftHand,
 		),
 		"rightHand": validation.Validate(
-			m.RightHand, validation.NilOrNotEmpty,
+			m.RightHand,
 		),
 	}.Filter()
 }
 
 // GetLeftHand returns the LeftHand property
-func (m Artist) GetLeftHand() *AnyThing {
+func (m Artist) GetLeftHand() AnyThing {
 	return m.LeftHand
 }
 
 // SetLeftHand sets the LeftHand property
-func (m *Artist) SetLeftHand(val *AnyThing) {
+func (m *Artist) SetLeftHand(val AnyThing) {
 	m.LeftHand = val
 }
 
 // GetRightHand returns the RightHand property
-func (m Artist) GetRightHand() *Color {
+func (m Artist) GetRightHand() Color {
 	return m.RightHand
 }
 
 // SetRightHand sets the RightHand property
-func (m *Artist) SetRightHand(val *Color) {
+func (m *Artist) SetRightHand(val Color) {
 	m.RightHand = val
 }

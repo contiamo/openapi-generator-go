@@ -17,17 +17,17 @@ type Wrapper struct {
 	// NullableStringEnumWithNullAndZero: Add nullable in the prop for non nullable enum with zero value and null
 	NullableStringEnumWithNullAndZero *StringEnumWithNullAndZero `json:"nullableStringEnumWithNullAndZero,omitempty" mapstructure:"nullableStringEnumWithNullAndZero,omitempty"`
 	// NullableStringEnumWithZero: Add nullable in the prop for non nullable enum with zero value
-	NullableStringEnumWithZero *StringEnumWithZero `json:"nullableStringEnumWithZero,omitempty" mapstructure:"nullableStringEnumWithZero,omitempty"`
+	NullableStringEnumWithZero StringEnumWithZero `json:"nullableStringEnumWithZero,omitempty" mapstructure:"nullableStringEnumWithZero,omitempty"`
 	// RequiredNullableStringEnumWithNull: Add nullable in the prop for non nullable enum
 	RequiredNullableStringEnumWithNull *StringEnumWithNull `json:"requiredNullableStringEnumWithNull" mapstructure:"requiredNullableStringEnumWithNull"`
 	// RequiredNullableStringEnumWithNullAndZero: Add nullable in the prop for non nullable enum with zero value and null
 	RequiredNullableStringEnumWithNullAndZero *StringEnumWithNullAndZero `json:"requiredNullableStringEnumWithNullAndZero" mapstructure:"requiredNullableStringEnumWithNullAndZero"`
 	// RequiredNullableStringEnumWithZero: Add nullable in the prop for non nullable enum with zero value
-	RequiredNullableStringEnumWithZero *StringEnumWithZero `json:"requiredNullableStringEnumWithZero" mapstructure:"requiredNullableStringEnumWithZero"`
+	RequiredNullableStringEnumWithZero StringEnumWithZero `json:"requiredNullableStringEnumWithZero" mapstructure:"requiredNullableStringEnumWithZero"`
 	// RequiredStringEnum: a required regular string enum
 	RequiredStringEnum StringEnum `json:"requiredStringEnum" mapstructure:"requiredStringEnum"`
 	// RequiredStringEnumNullable: a required string enum that is nullable
-	RequiredStringEnumNullable *StringEnumNullable `json:"requiredStringEnumNullable" mapstructure:"requiredStringEnumNullable"`
+	RequiredStringEnumNullable StringEnumNullable `json:"requiredStringEnumNullable" mapstructure:"requiredStringEnumNullable"`
 	// RequiredStringEnumWithNull: Ref a non nullable enum. It should not make the prop nullable
 	RequiredStringEnumWithNull StringEnumWithNull `json:"requiredStringEnumWithNull" mapstructure:"requiredStringEnumWithNull"`
 	// RequiredStringEnumWithNullAndNullable: Ref a nullable enum. It should make the prop nullable
@@ -39,7 +39,7 @@ type Wrapper struct {
 	// StringEnum: a regular string enum
 	StringEnum StringEnum `json:"stringEnum,omitempty" mapstructure:"stringEnum,omitempty"`
 	// StringEnumNullable: a string enum that is nullable
-	StringEnumNullable *StringEnumNullable `json:"stringEnumNullable,omitempty" mapstructure:"stringEnumNullable,omitempty"`
+	StringEnumNullable StringEnumNullable `json:"stringEnumNullable,omitempty" mapstructure:"stringEnumNullable,omitempty"`
 	// StringEnumWithNull: Ref a non nullable enum. It should not make the prop nullable
 	StringEnumWithNull StringEnumWithNull `json:"stringEnumWithNull,omitempty" mapstructure:"stringEnumWithNull,omitempty"`
 	// StringEnumWithNullAndNullable: Ref a nullable enum. It should make the prop nullable
@@ -60,7 +60,7 @@ func (m Wrapper) Validate() error {
 			m.NullableStringEnumWithNullAndZero,
 		),
 		"nullableStringEnumWithZero": validation.Validate(
-			m.NullableStringEnumWithZero, validation.NotNil,
+			m.NullableStringEnumWithZero,
 		),
 		"requiredNullableStringEnumWithNull": validation.Validate(
 			m.RequiredNullableStringEnumWithNull, validation.NilOrNotEmpty,
@@ -69,7 +69,7 @@ func (m Wrapper) Validate() error {
 			m.RequiredNullableStringEnumWithNullAndZero,
 		),
 		"requiredNullableStringEnumWithZero": validation.Validate(
-			m.RequiredNullableStringEnumWithZero, validation.NotNil,
+			m.RequiredNullableStringEnumWithZero,
 		),
 		"requiredStringEnum": validation.Validate(
 			m.RequiredStringEnum, validation.Required,
@@ -93,7 +93,7 @@ func (m Wrapper) Validate() error {
 			m.StringEnum,
 		),
 		"stringEnumNullable": validation.Validate(
-			m.StringEnumNullable, validation.NilOrNotEmpty,
+			m.StringEnumNullable,
 		),
 		"stringEnumWithNull": validation.Validate(
 			m.StringEnumWithNull,
@@ -131,12 +131,12 @@ func (m *Wrapper) SetNullableStringEnumWithNullAndZero(val *StringEnumWithNullAn
 }
 
 // GetNullableStringEnumWithZero returns the NullableStringEnumWithZero property
-func (m Wrapper) GetNullableStringEnumWithZero() *StringEnumWithZero {
+func (m Wrapper) GetNullableStringEnumWithZero() StringEnumWithZero {
 	return m.NullableStringEnumWithZero
 }
 
 // SetNullableStringEnumWithZero sets the NullableStringEnumWithZero property
-func (m *Wrapper) SetNullableStringEnumWithZero(val *StringEnumWithZero) {
+func (m *Wrapper) SetNullableStringEnumWithZero(val StringEnumWithZero) {
 	m.NullableStringEnumWithZero = val
 }
 
@@ -161,12 +161,12 @@ func (m *Wrapper) SetRequiredNullableStringEnumWithNullAndZero(val *StringEnumWi
 }
 
 // GetRequiredNullableStringEnumWithZero returns the RequiredNullableStringEnumWithZero property
-func (m Wrapper) GetRequiredNullableStringEnumWithZero() *StringEnumWithZero {
+func (m Wrapper) GetRequiredNullableStringEnumWithZero() StringEnumWithZero {
 	return m.RequiredNullableStringEnumWithZero
 }
 
 // SetRequiredNullableStringEnumWithZero sets the RequiredNullableStringEnumWithZero property
-func (m *Wrapper) SetRequiredNullableStringEnumWithZero(val *StringEnumWithZero) {
+func (m *Wrapper) SetRequiredNullableStringEnumWithZero(val StringEnumWithZero) {
 	m.RequiredNullableStringEnumWithZero = val
 }
 
@@ -181,12 +181,12 @@ func (m *Wrapper) SetRequiredStringEnum(val StringEnum) {
 }
 
 // GetRequiredStringEnumNullable returns the RequiredStringEnumNullable property
-func (m Wrapper) GetRequiredStringEnumNullable() *StringEnumNullable {
+func (m Wrapper) GetRequiredStringEnumNullable() StringEnumNullable {
 	return m.RequiredStringEnumNullable
 }
 
 // SetRequiredStringEnumNullable sets the RequiredStringEnumNullable property
-func (m *Wrapper) SetRequiredStringEnumNullable(val *StringEnumNullable) {
+func (m *Wrapper) SetRequiredStringEnumNullable(val StringEnumNullable) {
 	m.RequiredStringEnumNullable = val
 }
 
@@ -241,12 +241,12 @@ func (m *Wrapper) SetStringEnum(val StringEnum) {
 }
 
 // GetStringEnumNullable returns the StringEnumNullable property
-func (m Wrapper) GetStringEnumNullable() *StringEnumNullable {
+func (m Wrapper) GetStringEnumNullable() StringEnumNullable {
 	return m.StringEnumNullable
 }
 
 // SetStringEnumNullable sets the StringEnumNullable property
-func (m *Wrapper) SetStringEnumNullable(val *StringEnumNullable) {
+func (m *Wrapper) SetStringEnumNullable(val StringEnumNullable) {
 	m.StringEnumNullable = val
 }
 
