@@ -180,6 +180,10 @@ var cases = []struct {
 		name:      "example of nullable enum",
 		directory: "testdata/cases/enum_nullable",
 	},
+	{
+		name:      "example of nullable and required combinations",
+		directory: "testdata/cases/required_nullable_combinations",
+	},
 }
 
 func TestModels(t *testing.T) {

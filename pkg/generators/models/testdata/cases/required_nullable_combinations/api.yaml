@@ -10,6 +10,7 @@ components:
       enum:
         - One
         - Two
+        - null
     Foo:
       type: object
       properties:

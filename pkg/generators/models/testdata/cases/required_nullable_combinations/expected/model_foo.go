@@ -48,7 +48,7 @@ func (m Foo) Validate() error {
 			m.EnumRequired, validation.Required,
 		),
 		"enumRequiredNullable": validation.Validate(
-			m.EnumRequiredNullable, validation.Required,
+			m.EnumRequiredNullable, validation.NilOrNotEmpty,
 		),
 	}.Filter()
 }
