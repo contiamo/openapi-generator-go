@@ -22,7 +22,7 @@ type Line struct {
 func (m Line) Validate() error {
 	return validation.Errors{
 		"coordinates": validation.Validate(
-			m.Coordinates,
+			m.Coordinates, validation.NilOrNotEmpty, validation.Length(2, 2),
 		),
 	}.Filter()
 }

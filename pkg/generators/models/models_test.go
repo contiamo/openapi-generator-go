@@ -176,6 +176,14 @@ var cases = []struct {
 		name:      "example of an enum with number values",
 		directory: "testdata/cases/enum_with_number_values",
 	},
+	{
+		name:      "example of nullable enum",
+		directory: "testdata/cases/enum_nullable",
+	},
+	{
+		name:      "example of nullable and required combinations",
+		directory: "testdata/cases/required_nullable_combinations",
+	},
 }
 
 func TestModels(t *testing.T) {
@@ -277,5 +285,5 @@ func equalFiles(t *testing.T, expected, actual string) {
 	require.NoError(t, err)
 	bs2, err := os.ReadFile(actual)
 	require.NoError(t, err)
-	require.Equal(t, string(bs1), string(bs2))
+	require.Equal(t, string(bs1), string(bs2), "files differ: %s", expected)
 }

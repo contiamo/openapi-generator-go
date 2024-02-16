@@ -1,0 +1,4 @@
+validation,map,required,min_props
+NilOrNotEmpty,y,n,y
+NotNil,y,y,n
+Required,y,y,y

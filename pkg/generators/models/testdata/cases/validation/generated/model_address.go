@@ -18,16 +18,21 @@ type Address struct {
 	Number int32 `json:"number" mapstructure:"number"`
 	// Street:
 	Street string `json:"street" mapstructure:"street"`
+	// SubNumber:
+	SubNumber *int32 `json:"subNumber,omitempty" mapstructure:"subNumber,omitempty"`
 }
 
 // Validate implements basic validation for this model
 func (m Address) Validate() error {
 	return validation.Errors{
 		"name": validation.Validate(
-			m.Name, validation.Length(2, 0),
+			m.Name, validation.NilOrNotEmpty, validation.Length(2, 0),
 		),
 		"street": validation.Validate(
 			m.Street, validation.Required, validation.Length(2, 0),
+		),
+		"subNumber": validation.Validate(
+			m.SubNumber, validation.NilOrNotEmpty, validation.Min(int32(1)),
 		),
 	}.Filter()
 }
@@ -60,4 +65,14 @@ func (m Address) GetStreet() string {
 // SetStreet sets the Street property
 func (m *Address) SetStreet(val string) {
 	m.Street = val
+}
+
+// GetSubNumber returns the SubNumber property
+func (m Address) GetSubNumber() *int32 {
+	return m.SubNumber
+}
+
+// SetSubNumber sets the SubNumber property
+func (m *Address) SetSubNumber(val *int32) {
+	m.SubNumber = val
 }

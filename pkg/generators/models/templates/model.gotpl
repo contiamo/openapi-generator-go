@@ -21,6 +21,7 @@ import (
 {{- $modelName := .Name }}
 
 {{- range .Properties}}
+{{- if .IsRef }}{{ continue }}{{ end }}
 {{- if .PatternErrorMsg}}
 // {{ $modelName}}{{.Name}}PatternError is the error message returned for pattern validation errors on {{ $modelName}}.{{.Name}}
 var {{ $modelName}}{{.Name}}PatternError = validation.NewError("validation_{{.Name }}_pattern_invalid", "{{.PatternErrorMsg}}")
@@ -39,7 +40,7 @@ type {{.Name}} {{ .GoType }}
 type {{.Name}} struct {
 {{- range .Properties}}
 	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
-	{{.Name}} {{.GoType}} {{.JSONTags}}
+	{{.Name}} {{if .IsPtr}}*{{end}}{{.GoType}} {{.JSONTags}}
 {{- end}}
 }
 {{- end}}
@@ -125,29 +126,31 @@ func (m {{$modelPropertiesName}}) Validate() error {
 		{{- range .Properties}}
 			{{- if .NeedsValidation }}
 				"{{ firstLower .Name }}": validation.Validate(
+				    {{- /* isRequired: {{.IsRequired}}, isPtr: {{.IsPtr}}, isString: {{.IsString}}, isMap: {{.IsMap}}, isEnum: {{.IsEnum}}, hasFormat: {{.HasFormat}}, hasMin: {{.HasMin}}, min: {{.Min}}, hasMax: {{.HasMax}}, max: {{.Max}}, hasMinLength: {{.HasMinLength}}, minLength: {{.MinLength}}, hasMaxLength: {{.HasMaxLength}}, maxLength: {{.MaxLength}} */}}
 					m.{{ .Name }},
-					{{- if and .IsRequiredInValidation}}
-						{{- if or .IsEnum .Min .MinLength .HasFormat}}validation.Required,{{ else }}validation.NotNil,{{- end }}
-					{{- end }}
-					{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
-					{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
-					{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
-					{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
-					{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
-					{{- if .IsBase64 }}is.Base64,{{ end }}
-					{{- if .IsEmail }}is.EmailFormat,{{ end }}
-					{{- if .IsUUID }}is.UUID,{{ end }}
-					{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
-					{{- if .IsURI }}is.RequestURI,{{ end }}
-					{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
-					{{- if .IsHostname }}is.Host,{{ end }}
-					{{- if .IsIPv4 }}is.IPv4,{{ end }}
-					{{- if .IsIPv6 }}is.IPv6,{{ end }}
-					{{- if .IsIP }}is.IP,{{ end }}
-					{{- if .Pattern }}validation.Match({{ $modelName | firstLower }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
-					{{- if and .IsOneOf (not .IsRequiredInValidation) }}
-					{{.GoType}}NilableRule{},
-					validation.Skip,
+					{{- range .DerivedValidations }}{{.}},{{ end }}
+					{{- if not .IsRef }}
+						{{- if .HasMin }}validation.Min({{ .GoType }}({{ .Min }})),{{ end }}
+						{{- if .HasMax }}validation.Max({{ .GoType }}({{ .Max }})),{{ end }}
+						{{- if or .HasMinLength .HasMaxLength }}validation.Length({{ .MinLength }},{{ .MaxLength }}),{{ end }}
+						{{- if or .HasMinItems .HasMaxItems }}validation.Length({{ .MinItems }},{{ .MaxItems }}),{{ end }}
+						{{- if or .HasMinProps .HasMaxProps }}validation.Length({{ .MinProps }},{{ .MaxProps }}),{{ end }}
+						{{- if .IsDate }}validation.Date("2006-01-02"),{{ end }}
+						{{- if .IsDateTime }}validation.Date(time.RFC3339),{{ end }}
+						{{- if .IsBase64 }}is.Base64,{{ end }}
+						{{- if .IsEmail }}is.EmailFormat,{{ end }}
+						{{- if .IsUUID }}is.UUID,{{ end }}
+						{{- if .IsURL }}is.URL.Error("must be a valid URL with HTTP or HTTPS scheme"),{{ end }}
+						{{- if .IsURI }}is.RequestURI,{{ end }}
+						{{- if .IsRequestURI }}is.RequestURL.Error("must be valid URI with scheme"),{{ end }}
+						{{- if .IsHostname }}is.Host,{{ end }}
+						{{- if .IsIPv4 }}is.IPv4,{{ end }}
+						{{- if .IsIPv6 }}is.IPv6,{{ end }}
+						{{- if .IsIP }}is.IP,{{ end }}
+						{{- if .Pattern }}validation.Match({{ firstLower $modelName }}{{.Name}}Pattern){{if .PatternErrorMsg}}.ErrorObject({{ $modelName}}{{.Name}}PatternError){{end}},{{ end }}
+					{{- else if .IsOneOf }}
+						{{.GoType}}NilableRule{},
+						validation.Skip,
 					{{- end }}
 				),
 			{{- end }}
@@ -156,12 +159,12 @@ func (m {{$modelPropertiesName}}) Validate() error {
 }
 {{ range .Properties}}
 // Get{{.Name}} returns the {{.Name}} property
-func (m {{$modelPropertiesName}}) Get{{.Name}}() {{.GoType}} {
+func (m {{$modelPropertiesName}}) Get{{.Name}}() {{if .IsPtr}}*{{end}}{{.GoType}} {
 	return m.{{.Name}}
 }
 
 // Set{{.Name}} sets the {{.Name}} property
-func (m *{{$modelPropertiesName}}) Set{{.Name}}(val {{.GoType}}) {
+func (m *{{$modelPropertiesName}}) Set{{.Name}}(val {{if .IsPtr}}*{{end}}{{.GoType}}) {
 	m.{{.Name}} = val
 }
 {{ end}}

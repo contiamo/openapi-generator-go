@@ -24,6 +24,8 @@ type Person struct {
 	Age float32 `json:"age,omitempty" mapstructure:"age,omitempty"`
 	// Base64:
 	Base64 string `json:"base64,omitempty" mapstructure:"base64,omitempty"`
+	// Children:
+	Children int32 `json:"children,omitempty" mapstructure:"children,omitempty"`
 	// Cron:
 	Cron Cron `json:"cron" mapstructure:"cron"`
 	// Date:
@@ -51,7 +53,7 @@ type Person struct {
 	// RequestURI:
 	RequestURI string `json:"requestURI,omitempty" mapstructure:"requestURI,omitempty"`
 	// SecondGender:
-	SecondGender *Gender `json:"secondGender,omitempty" mapstructure:"secondGender,omitempty"`
+	SecondGender Gender `json:"secondGender,omitempty" mapstructure:"secondGender,omitempty"`
 	// Uri:
 	Uri string `json:"uri,omitempty" mapstructure:"uri,omitempty"`
 	// Url:
@@ -72,8 +74,11 @@ func (m Person) Validate() error {
 		"base64": validation.Validate(
 			m.Base64, is.Base64,
 		),
+		"children": validation.Validate(
+			m.Children, validation.Min(int32(0)),
+		),
 		"cron": validation.Validate(
-			m.Cron, validation.NotNil,
+			m.Cron, validation.Required,
 		),
 		"date": validation.Validate(
 			m.Date, validation.Date("2006-01-02"),
@@ -154,6 +159,16 @@ func (m Person) GetBase64() string {
 // SetBase64 sets the Base64 property
 func (m *Person) SetBase64(val string) {
 	m.Base64 = val
+}
+
+// GetChildren returns the Children property
+func (m Person) GetChildren() int32 {
+	return m.Children
+}
+
+// SetChildren sets the Children property
+func (m *Person) SetChildren(val int32) {
+	m.Children = val
 }
 
 // GetCron returns the Cron property
@@ -287,12 +302,12 @@ func (m *Person) SetRequestURI(val string) {
 }
 
 // GetSecondGender returns the SecondGender property
-func (m Person) GetSecondGender() *Gender {
+func (m Person) GetSecondGender() Gender {
 	return m.SecondGender
 }
 
 // SetSecondGender sets the SecondGender property
-func (m *Person) SetSecondGender(val *Gender) {
+func (m *Person) SetSecondGender(val Gender) {
 	m.SecondGender = val
 }
 

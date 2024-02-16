@@ -1,0 +1,6 @@
+validation,enum,ptr,required,enum_with_null,enum_with_zero
+NilOrNotEmpty,y,y,,y,n
+NilOrNotEmpty,y,y,n,n,n
+NotNil,y,y,,n,y
+Required,y,n,y,,n
+Required,y,y,y,n,n

@@ -1,0 +1,4 @@
+validation,array,required,min_items
+NilOrNotEmpty,y,n,y
+NotNil,y,y,n
+Required,y,y,y

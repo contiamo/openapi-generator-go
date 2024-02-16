@@ -21,6 +21,8 @@ func (m NonEmptyContainer) Validate() error {
 	return validation.Errors{
 		"error": validation.Validate(
 			m.Error, validation.NotNil,
+			ErrorNilableRule{},
+			validation.Skip,
 		),
 	}.Filter()
 }

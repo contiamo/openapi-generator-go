@@ -1,0 +1,8 @@
+validation,string,ptr,required,min_length,format,pattern
+NilOrNotEmpty,y,y,n,y,,
+NilOrNotEmpty,y,y,y,,,y
+NilOrNotEmpty,y,y,y,,y,
+NilOrNotEmpty,y,y,y,y,,
+Required,y,n,y,,,y
+Required,y,n,y,,y,
+Required,y,n,y,y,,

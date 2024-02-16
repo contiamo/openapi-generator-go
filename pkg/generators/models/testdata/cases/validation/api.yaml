@@ -26,6 +26,9 @@ components:
           type: number
           minimum: 18
           maximum: 120
+        children:
+          type: integer
+          minimum: 0
         gender:
           $ref: "#/components/schemas/Gender"
         secondGender:
@@ -38,7 +41,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Color"
-          minLength: 1
+          minItems: 1
         email:
           type: string
           format: "email"
@@ -104,6 +107,10 @@ components:
           minLength: 2
         number:
           type: integer
+        subNumber:
+          type: integer
+          nullable: true
+          minimum: 1
         name:
           type: string
           nullable: true

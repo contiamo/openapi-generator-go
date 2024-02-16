@@ -1,0 +1,5 @@
+validation,number,ptr,required,min_gt_zero,max_lt_zero
+NilOrNotEmpty,y,y,,n,y
+NilOrNotEmpty,y,y,,y,n
+Required,y,n,y,n,y
+Required,y,n,y,y,n

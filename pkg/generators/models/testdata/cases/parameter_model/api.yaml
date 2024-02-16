@@ -39,11 +39,11 @@ paths:
         - name: "-1"
           in: query
           schema:
-            type: int
+            type: integer
         - name: "+1"
           in: query
           schema:
-            type: int
+            type: integer
         - $ref: "#/components/parameters/PageNumber"
       responses:
         "200":
