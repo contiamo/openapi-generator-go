@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/contiamo/openapi-generator-go/compare/v2.1.0...v2.1.1) (2024-02-16)
+
+
+### Bug Fixes
+
+* ozzo validation ([#134](https://github.com/contiamo/openapi-generator-go/issues/134)) ([d48b64b](https://github.com/contiamo/openapi-generator-go/commit/d48b64b302b17440651847ec90c3d1df81f6ad49))
+
 ## [2.1.0](https://github.com/contiamo/openapi-generator-go/compare/v2.0.4...v2.1.0) (2023-11-25)
 
 ### Features
