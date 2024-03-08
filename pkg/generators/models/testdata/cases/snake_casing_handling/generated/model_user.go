@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -20,13 +22,37 @@ type User struct {
 	UserId string `json:"user_id,omitempty" mapstructure:"user_id,omitempty"`
 }
 
+// NewUser instantiates a new User with default values overriding them as follows:
+// 1. Default values specified in the User schema
+// 2. Default values specified per User property
+func NewUser() *User {
+	m := &User{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for User. It set the default values for the User type
+func (m *User) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewUser()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias User
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m User) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"dateOfBirth": validation.Validate(
 			m.DateOfBirth, validation.Date("2006-01-02"),
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetDateOfBirth returns the DateOfBirth property

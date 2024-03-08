@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"regexp"
@@ -32,9 +34,32 @@ type Connection struct {
 	UpdatedAt time.Time `json:"updatedAt" mapstructure:"updatedAt"`
 }
 
+// NewConnection instantiates a new Connection with default values overriding them as follows:
+// 1. Default values specified in the Connection schema
+// 2. Default values specified per Connection property
+func NewConnection() *Connection {
+	m := &Connection{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Connection. It set the default values for the Connection type
+func (m *Connection) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewConnection()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Connection
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Connection) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"createdAt": validation.Validate(
 			m.CreatedAt, validation.Required, validation.Date(time.RFC3339),
 		),
@@ -53,7 +78,8 @@ func (m Connection) Validate() error {
 		"updatedAt": validation.Validate(
 			m.UpdatedAt, validation.Required, validation.Date(time.RFC3339),
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetCreatedAt returns the CreatedAt property

@@ -31,6 +31,7 @@ var (
 		FavoriteNumber3141,
 		FavoriteNumber60228,
 	}
+
 	// KnownFavoriteNumberFloat32 is the list of valid FavoriteNumber as float32
 	KnownFavoriteNumberFloat32 = []float32{
 		float32(FavoriteNumber1381),

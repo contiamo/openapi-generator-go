@@ -13,7 +13,22 @@ import (
 // Quak is an object.
 type Quak map[string]interface{}
 
+// NewQuak instantiates a new Quak with default values overriding them as follows:
+// 1. Default values specified in the Quak schema
+// 2. Default values specified per Quak property
+func NewQuak() Quak {
+	m := Quak{}
+
+	return m
+}
+
 // Validate implements basic validation for this model
 func (m Quak) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	for k, v := range m {
+		if err := validation.Validate(v, validation.NotNil); err != nil {
+			errors[k] = err
+		}
+	}
+	return errors.Filter()
 }

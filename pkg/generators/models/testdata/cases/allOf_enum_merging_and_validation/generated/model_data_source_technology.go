@@ -33,6 +33,7 @@ var (
 		DataSourceTechnologyOther,
 		DataSourceTechnologyPostgresql,
 	}
+
 	// KnownDataSourceTechnologyString is the list of valid DataSourceTechnology as string
 	KnownDataSourceTechnologyString = []string{
 		string(DataSourceTechnologyMssql),

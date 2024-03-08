@@ -27,6 +27,7 @@ var (
 		StringEnumBar,
 		StringEnumFoo,
 	}
+
 	// KnownStringEnumString is the list of valid StringEnum as string
 	KnownStringEnumString = []string{
 		string(StringEnumBar),

@@ -16,6 +16,11 @@ type Bar struct {
 	data interface{}
 }
 
+// NewBar creates a new Bar instance with no internal value.
+func NewBar() *Bar {
+	return &Bar{}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m Bar) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)

@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -21,13 +23,37 @@ type UpdatableEntity struct {
 	UpdateTs int32 `json:"update_ts" mapstructure:"update_ts"`
 }
 
+// NewUpdatableEntity instantiates a new UpdatableEntity with default values overriding them as follows:
+// 1. Default values specified in the UpdatableEntity schema
+// 2. Default values specified per UpdatableEntity property
+func NewUpdatableEntity() *UpdatableEntity {
+	m := &UpdatableEntity{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for UpdatableEntity. It set the default values for the UpdatableEntity type
+func (m *UpdatableEntity) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewUpdatableEntity()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias UpdatableEntity
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m UpdatableEntity) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetId returns the Id property

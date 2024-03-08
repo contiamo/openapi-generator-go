@@ -13,6 +13,9 @@ import (
 // ColumnType is an enum. Normalized column type. If type cannot be determined or is not compatible, then 'other'.
 type ColumnType string
 
+// DefaultColumnType is the default value for ColumnType
+var DefaultColumnType = ColumnType("other")
+
 // Validate implements basic validation for this model
 func (m ColumnType) Validate() error {
 	return InKnownColumnType.Validate(m)
@@ -49,6 +52,7 @@ var (
 		ColumnTypeVarchar,
 		ColumnTypeVarcharArray,
 	}
+
 	// KnownColumnTypeString is the list of valid ColumnType as string
 	KnownColumnTypeString = []string{
 		string(ColumnTypeBigint),

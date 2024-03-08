@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -16,9 +18,33 @@ type Item struct {
 	First string `json:"first" mapstructure:"first"`
 }
 
+// NewItem instantiates a new Item with default values overriding them as follows:
+// 1. Default values specified in the Item schema
+// 2. Default values specified per Item property
+func NewItem() *Item {
+	m := &Item{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Item. It set the default values for the Item type
+func (m *Item) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewItem()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Item
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Item) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	return errors.Filter()
 }
 
 // GetFirst returns the First property

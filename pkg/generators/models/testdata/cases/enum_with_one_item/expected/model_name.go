@@ -25,6 +25,7 @@ var (
 	KnownName = []Name{
 		NameFoo,
 	}
+
 	// KnownNameString is the list of valid Name as string
 	KnownNameString = []string{
 		string(NameFoo),

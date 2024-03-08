@@ -47,6 +47,11 @@ type {{$modelName}} struct {
 	{{- end }}
 }
 
+// New{{$modelName}} creates a new {{$modelName}} instance with no internal value.
+func New{{$modelName}}() *{{$modelName}} {
+	return &{{$modelName}}{}
+}
+
 {{- if .Discriminator.Field }}
 var Empty{{$modelName}}Error = fmt.Errorf("empty data is not an {{$modelName}}")
 var Not{{$modelName}}Error = fmt.Errorf("could not convert to type {{$modelName}}")
@@ -138,6 +143,11 @@ func (m {{$modelName}}) As{{$nullable}}{{$convert.TargetGoType | typeDisplayName
 		return result, Empty{{$modelName}}Error
 	}
 	{{- end }}
+	{{- if and $convert.HasDefault (not $convert.IsStruct) }}
+    result = {{ if $convert.IsRef }}Default{{$convert.TargetGoType}}{{ else }}{{$convert.DefaultValue}}{{ end }}
+	{{- else if and $convert.IsStruct }}
+    result = {{ if not $convert.IsPtr}}*{{ end }}New{{$convert.TargetGoType}}()
+	{{ end }}
 	return result, mapstructure.Decode(m.data, &result)
 }
 {{- end}}
