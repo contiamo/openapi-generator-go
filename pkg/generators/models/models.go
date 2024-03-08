@@ -460,7 +460,7 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 // resolveAllOf resolves the list of `allOf` definitions in the schema to a complete type merging
 // all the mentioned types.
 // `passed` can be nil, it's used recursively in order to avoid infinite loops
-func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
+func resolveAllOf(ref *openapi3.SchemaRef, overrideRef bool, passed passedSchemas) (out *openapi3.SchemaRef) {
 	defer func() {
 		// clean up the allOf field after resolving it
 		ref.Value.AllOf = nil
@@ -482,17 +482,6 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 		passed = make(passedSchemas)
 	}
 
-	// very special case where the allOf references
-	// another named schema but is not actually merging
-	// several schemas, this is usually just overriding
-	// a value like nullable or the description
-	if len(ref.Value.AllOf) == 1 {
-		pointer := ref.Value.AllOf[0]
-		passed[pointer] = true
-		out = deepMerge(out, pointer, passed)
-		return out
-	}
-
 	// this is used for the special edge cases like this
 	//   allOf:
 	//      - description: "this will only set the description value"
@@ -503,27 +492,23 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	// the special case of a single `ref`, which will used the named `ColumnTypeMetadata` type.
 	ref.Value.AllOf = removeSemanticallyEmptyRefs(ref.Value.AllOf)
 
-	isSelfRef := false
+	// very special case where the allOf references
+	// another named schema but is not actually merging
+	// several schemas, this is usually just overriding
+	// a value like nullable or the description
+	if len(ref.Value.Properties) == 0 && len(ref.Value.AllOf) == 1 {
+		pointer := ref.Value.AllOf[0]
+		passed[pointer] = true
+		out = deepMerge(out, pointer, overrideRef, passed)
+		return out
+	}
+
 	for _, subSchema := range ref.Value.AllOf {
 		if passed[subSchema] {
-			isSelfRef = true
 			continue
 		}
 		passed[subSchema] = true
-		out = deepMerge(out, subSchema, passed)
-	}
-
-	// remove the reference field on AllOf values, these should be
-	// flattened into a single (potentially inlined) struct.
-	// We make exceptions for
-	// 		* types are contain a self-reference, these can not be flattened
-	// 		* types are a single allOf, these usually indicate merging in nullable properties, etc
-	// 		  it is not a _real_ allOf, rather we are just overriding fields on a single type.
-	// 		  this case should already be handled above, so this is really checking if AllOf > 0,
-	// 		  but checking >1 is more semantically correct
-	//
-	if !isSelfRef && len(ref.Value.AllOf) > 1 {
-		out.Ref = ""
+		out = deepMerge(out, subSchema, false, passed)
 	}
 
 	return out
@@ -618,7 +603,7 @@ func isNonEmptySchemaRef(ref *openapi3.SchemaRef) bool {
 // deepMerge merges `right` into `left` schema recursively resolving types (e.g. `allOf`).
 // `passed` map will be populated with all the visited types during the resolution process, so we can
 // avoid the infinite loop.
-func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
+func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, overrideRef bool, passed passedSchemas) (out *openapi3.SchemaRef) {
 	out = left
 	if out == nil {
 		out = &openapi3.SchemaRef{}
@@ -634,11 +619,11 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		right.Value = &openapi3.Schema{}
 	}
 
-	right = resolveAllOf(right, passed)
-	if right.Ref != "" {
+	right = resolveAllOf(right, false, passed)
+	if overrideRef && out.Ref == "" && right.Ref != "" {
 		out.Ref = right.Ref
 	}
-	if right.Value.Type != "" {
+	if out.Value.Type == "" && right.Value.Type != "" {
 		out.Value.Type = right.Value.Type
 	}
 
@@ -679,6 +664,7 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		out.Value.AdditionalProperties = deepMerge(
 			out.Value.AdditionalProperties,
 			right.Value.AdditionalProperties,
+			overrideRef,
 			nil, // here we merge all over, without `passed`
 		)
 	}
@@ -688,12 +674,12 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 			out.Value.Properties = make(map[string]*openapi3.SchemaRef)
 		}
 		for k, v := range right.Value.Properties {
-			out.Value.Properties[k] = resolveAllOf(v, passed)
+			out.Value.Properties[k] = resolveAllOf(v, true, passed)
 		}
 	}
 
 	if right.Value.Type == "array" && right.Value.Items != nil {
-		out.Value.Items = resolveAllOf(right.Value.Items, passed)
+		out.Value.Items = resolveAllOf(right.Value.Items, true, passed)
 	}
 
 	return out
@@ -718,29 +704,6 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports map[
 	imports = make(map[string]string)
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
-
-		// special case for singleton allOf
-		// generally these are used to add
-		// a new description or override the
-		// nullable flag
-		if len(prop.Value.AllOf) == 1 {
-			pointer := prop.Value.AllOf[0]
-			prop.Ref = pointer.Ref
-
-			// a sub-special case when the referenced type
-			// is an array. Because we don't create top-level
-			// models for arrays, we actually need to follow
-			// this reference.
-			resolved := resolveAllOf(prop, nil)
-			if resolved.Value.Type == "array" {
-				prop = resolved
-			}
-		}
-
-		if prop.Ref == "" {
-			prop = resolveAllOf(prop, nil)
-		}
-
 		isRequired := checkIfRequired(name, ref.Value.Required)
 		var spec *PropSpec
 		spec, err = newPropertySpecFromRef(name, prop, isRequired, imports)

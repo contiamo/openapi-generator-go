@@ -328,7 +328,7 @@ func (g generator) createNamedSchemaForInlineSchemas(ctx context.Context, name s
 		return nil
 	}
 
-	ref = resolveAllOf(ref, nil)
+	ref = resolveAllOf(ref, shouldCreate, nil)
 	if ref.Ref != "" {
 		return nil
 	}
@@ -340,6 +340,7 @@ func (g generator) createNamedSchemaForInlineSchemas(ctx context.Context, name s
 			err = g.createNamedSchemaForInlineSchema(ctx, name, ref, schemas)
 		}
 	case "array":
+		// Follow array items schema
 		err = g.createNamedSchemaForInlineSchemas(ctx, name, ref.Value.Items, true, schemas)
 	case "", "object":
 		// Create a ref if the object has properties or additionalProperties
@@ -349,19 +350,6 @@ func (g generator) createNamedSchemaForInlineSchemas(ctx context.Context, name s
 
 		// Check all properties for inline schemas
 		for propName, propRef := range ref.Value.Properties {
-			// special case for singleton allOf generally these are used to add a new description or override the
-			// nullable flag
-			if len(propRef.Value.AllOf) == 1 {
-				pointer := propRef.Value.AllOf[0]
-				propRef.Ref = pointer.Ref
-
-				// a sub-special case when the referenced type is an array. Because we don't create top-level models
-				// for arrays, we actually need to follow this reference.
-				resolved := resolveAllOf(propRef, nil)
-				if resolved.Value.Type == "array" {
-					propRef = resolved
-				}
-			}
 			err = g.createNamedSchemaForInlineSchemas(ctx, fmt.Sprintf("%s_%s", name, propName), propRef, true, schemas)
 			if err != nil {
 				return err
