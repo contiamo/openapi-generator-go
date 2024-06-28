@@ -16,6 +16,11 @@ type EitherIdOrNamespaceName struct {
 	data interface{}
 }
 
+// NewEitherIdOrNamespaceName creates a new EitherIdOrNamespaceName instance with no internal value.
+func NewEitherIdOrNamespaceName() *EitherIdOrNamespaceName {
+	return &EitherIdOrNamespaceName{}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m EitherIdOrNamespaceName) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
@@ -26,23 +31,13 @@ func (m *EitherIdOrNamespaceName) UnmarshalJSON(bs []byte) error {
 	return json.Unmarshal(bs, &m.data)
 }
 
-// FromStructId sets the EitherIdOrNamespaceName from a struct {
-// Id string `json:"id,omitempty" mapstructure:"id,omitempty"`
-// }
-func (m *EitherIdOrNamespaceName) FromStructId(data struct {
-	Id string `json:"id,omitempty" mapstructure:"id,omitempty"`
-}) {
+// FromEitherIdOrNamespaceNameOneOfIdx0 sets the EitherIdOrNamespaceName from a EitherIdOrNamespaceNameOneOfIdx0
+func (m *EitherIdOrNamespaceName) FromEitherIdOrNamespaceNameOneOfIdx0(data EitherIdOrNamespaceNameOneOfIdx0) {
 	m.data = data
 }
 
-// FromStructNameNamespace sets the EitherIdOrNamespaceName from a struct {
-// Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
-// Namespace string `json:"namespace,omitempty" mapstructure:"namespace,omitempty"`
-// }
-func (m *EitherIdOrNamespaceName) FromStructNameNamespace(data struct {
-	Name      string `json:"name,omitempty" mapstructure:"name,omitempty"`
-	Namespace string `json:"namespace,omitempty" mapstructure:"namespace,omitempty"`
-}) {
+// FromEitherIdOrNamespaceNameOneOfIdx1 sets the EitherIdOrNamespaceName from a EitherIdOrNamespaceNameOneOfIdx1
+func (m *EitherIdOrNamespaceName) FromEitherIdOrNamespaceNameOneOfIdx1(data EitherIdOrNamespaceNameOneOfIdx1) {
 	m.data = data
 }
 
@@ -51,22 +46,16 @@ func (m EitherIdOrNamespaceName) As(target interface{}) error {
 	return mapstructure.Decode(m.data, target)
 }
 
-// AsStructId converts EitherIdOrNamespaceName to a struct {
-// Id string `json:"id,omitempty" mapstructure:"id,omitempty"`
-// }
-func (m EitherIdOrNamespaceName) AsStructId() (result struct {
-	Id string `json:"id,omitempty" mapstructure:"id,omitempty"`
-}, err error) {
+// AsEitherIdOrNamespaceNameOneOfIdx0 converts EitherIdOrNamespaceName to a EitherIdOrNamespaceNameOneOfIdx0
+func (m EitherIdOrNamespaceName) AsEitherIdOrNamespaceNameOneOfIdx0() (result EitherIdOrNamespaceNameOneOfIdx0, err error) {
+	result = *NewEitherIdOrNamespaceNameOneOfIdx0()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 
-// AsStructNameNamespace converts EitherIdOrNamespaceName to a struct {
-// Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
-// Namespace string `json:"namespace,omitempty" mapstructure:"namespace,omitempty"`
-// }
-func (m EitherIdOrNamespaceName) AsStructNameNamespace() (result struct {
-	Name      string `json:"name,omitempty" mapstructure:"name,omitempty"`
-	Namespace string `json:"namespace,omitempty" mapstructure:"namespace,omitempty"`
-}, err error) {
+// AsEitherIdOrNamespaceNameOneOfIdx1 converts EitherIdOrNamespaceName to a EitherIdOrNamespaceNameOneOfIdx1
+func (m EitherIdOrNamespaceName) AsEitherIdOrNamespaceNameOneOfIdx1() (result EitherIdOrNamespaceNameOneOfIdx1, err error) {
+	result = *NewEitherIdOrNamespaceNameOneOfIdx1()
+
 	return result, mapstructure.Decode(m.data, &result)
 }

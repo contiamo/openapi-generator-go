@@ -10,7 +10,10 @@ components:
       properties:
         bar:
           type: integer
-      requiredProperties:
+        baz:
+          type: number
+          default: 0.5
+      required:
         - bar
       additionalProperties: true
     FooBar:

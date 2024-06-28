@@ -22,7 +22,6 @@ components:
     Quak:
       type: object
       additionalProperties:
-        oneof:
+        oneOf:
           - $ref: "#/components/schemas/Foo"
           - $ref: "#/components/schemas/Bar"
-      

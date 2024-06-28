@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -18,9 +20,33 @@ type Person struct {
 	Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
 }
 
+// NewPerson instantiates a new Person with default values overriding them as follows:
+// 1. Default values specified in the Person schema
+// 2. Default values specified per Person property
+func NewPerson() *Person {
+	m := &Person{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Person. It set the default values for the Person type
+func (m *Person) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewPerson()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Person
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Person) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	return errors.Filter()
 }
 
 // GetAge returns the Age property

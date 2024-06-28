@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -20,9 +22,34 @@ type Top struct {
 	Obj *Sub1 `json:"obj,omitempty" mapstructure:"obj,omitempty"`
 }
 
+// NewTop instantiates a new Top with default values overriding them as follows:
+// 1. Default values specified in the Top schema
+// 2. Default values specified per Top property
+func NewTop() *Top {
+	m := &Top{
+		Obj: NewSub1(),
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Top. It set the default values for the Top type
+func (m *Top) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewTop()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Top
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Top) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"arr": validation.Validate(
 			m.Arr,
 		),
@@ -32,7 +59,8 @@ func (m Top) Validate() error {
 		"obj": validation.Validate(
 			m.Obj,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetArr returns the Arr property

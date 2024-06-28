@@ -184,6 +184,11 @@ var cases = []struct {
 		name:      "example of nullable and required combinations",
 		directory: "testdata/cases/required_nullable_combinations",
 	},
+	// 40
+	{
+		name:      "example of defaults",
+		directory: "testdata/cases/defaults",
+	},
 }
 
 func TestModels(t *testing.T) {

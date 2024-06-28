@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -16,9 +18,33 @@ type Sub struct {
 	SubField string `json:"subField,omitempty" mapstructure:"subField,omitempty"`
 }
 
+// NewSub instantiates a new Sub with default values overriding them as follows:
+// 1. Default values specified in the Sub schema
+// 2. Default values specified per Sub property
+func NewSub() *Sub {
+	m := &Sub{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Sub. It set the default values for the Sub type
+func (m *Sub) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewSub()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Sub
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Sub) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	return errors.Filter()
 }
 
 // GetSubField returns the SubField property

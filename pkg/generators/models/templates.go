@@ -11,11 +11,7 @@ var (
 	//go:embed templates
 	templateData embed.FS
 
-	modelTpls     = template.Must(template.New("base").Funcs(fmap).ParseFS(templateData, "templates/*.gotpl"))
-	modelTemplate = modelTpls.Lookup("model.gotpl")
-	oneOfTemplate = modelTpls.Lookup("oneof.gotpl")
-	enumTemplate  = modelTpls.Lookup("enum.gotpl")
-	valueTemplate = modelTpls.Lookup("value.gotpl")
+	modelTpls = template.Must(template.New("base").Funcs(fmap).ParseFS(templateData, "templates/*.gotpl"))
 
 	fmap = template.FuncMap{
 		"firstLower":      tpl.FirstLower,
@@ -26,5 +22,6 @@ var (
 		"removeSpecial":   tpl.RemoveSpecial,
 		"typeDisplayName": tpl.TypeDisplayName,
 		"ternary":         tpl.Ternary,
+		"map":             tpl.MapFunc,
 	}
 )

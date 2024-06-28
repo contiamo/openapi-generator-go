@@ -1,0 +1,45 @@
+{{- define "model_type_simple" }}
+{{ (printf "%s is an object. %s" .Name .Description) | commentBlock }}
+{{- if .IsMap }}
+	type {{.Name}} {{ .GoType }}
+{{- else }}
+	type {{.Name}} struct {
+	{{- range .Properties }}
+		{{ (printf "%s: %s" .Name .Description) | commentBlock }}
+		{{.Name}} {{if .IsPtr}}*{{end}}{{.GoType}} {{.JSONTags}}
+	{{- end }}
+	}
+{{- end }}
+{{- end }}
+
+{{- define "model_json_simple" }}
+{{- if or .Properties (and .AdditionalProperties .AdditionalProperties.HasDefault (not .AdditionalProperties.IsRef)) }}
+// UnmarshalJSON implements the json.Unmarshaler interface for {{.Name}}. It set the default values for the {{.Name}} type
+func (m *{{.Name}}) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = {{if not .IsMap}}*{{end}}New{{.Name}}()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias {{.Name}}
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	{{- if and .AdditionalProperties .AdditionalProperties.HasDefault (not .AdditionalProperties.IsRef)}}
+
+	var zero {{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}}
+	for k, v := range *m {
+		if v == zero {
+		{{- if .AdditionalProperties.IsPtr }}
+			(*m)[k] = new({{.AdditionalProperties.GoType}})
+			*(*m)[k] = {{.AdditionalProperties.DefaultValue}}
+		{{- else }}
+			(*m)[k] = {{.AdditionalProperties.DefaultValue}}
+		{{- end }}
+		}
+	}
+	{{- end }}
+	return nil
+}
+{{- end }}
+{{- end }}

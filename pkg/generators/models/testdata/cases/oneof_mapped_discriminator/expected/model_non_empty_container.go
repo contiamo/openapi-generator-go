@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -16,15 +18,39 @@ type NonEmptyContainer struct {
 	Error Error `json:"error" mapstructure:"error"`
 }
 
+// NewNonEmptyContainer instantiates a new NonEmptyContainer with default values overriding them as follows:
+// 1. Default values specified in the NonEmptyContainer schema
+// 2. Default values specified per NonEmptyContainer property
+func NewNonEmptyContainer() *NonEmptyContainer {
+	m := &NonEmptyContainer{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for NonEmptyContainer. It set the default values for the NonEmptyContainer type
+func (m *NonEmptyContainer) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewNonEmptyContainer()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias NonEmptyContainer
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m NonEmptyContainer) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"error": validation.Validate(
 			m.Error, validation.NotNil,
 			ErrorNilableRule{},
 			validation.Skip,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetError returns the Error property

@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -24,9 +26,35 @@ type ColumnTypeMetadata struct {
 	Type ColumnType `json:"type" mapstructure:"type"`
 }
 
+// NewColumnTypeMetadata instantiates a new ColumnTypeMetadata with default values overriding them as follows:
+// 1. Default values specified in the ColumnTypeMetadata schema
+// 2. Default values specified per ColumnTypeMetadata property
+func NewColumnTypeMetadata() *ColumnTypeMetadata {
+	m := &ColumnTypeMetadata{
+		ItemType: NewColumnTypeMetadata(),
+		Nullable: DefaultNullability,
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for ColumnTypeMetadata. It set the default values for the ColumnTypeMetadata type
+func (m *ColumnTypeMetadata) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewColumnTypeMetadata()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias ColumnTypeMetadata
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m ColumnTypeMetadata) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"columns": validation.Validate(
 			m.Columns,
 		),
@@ -39,7 +67,8 @@ func (m ColumnTypeMetadata) Validate() error {
 		"type": validation.Validate(
 			m.Type, validation.Required,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetColumns returns the Columns property

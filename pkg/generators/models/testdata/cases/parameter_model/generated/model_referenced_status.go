@@ -31,6 +31,7 @@ var (
 		ReferencedStatusFixed,
 		ReferencedStatusOpen,
 	}
+
 	// KnownReferencedStatusString is the list of valid ReferencedStatus as string
 	KnownReferencedStatusString = []string{
 		string(ReferencedStatusClosed),

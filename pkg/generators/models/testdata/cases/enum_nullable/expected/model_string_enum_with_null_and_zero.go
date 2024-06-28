@@ -29,6 +29,7 @@ var (
 		StringEnumWithNullAndZeroFoo,
 		StringEnumWithNullAndZeroItem3,
 	}
+
 	// KnownStringEnumWithNullAndZeroString is the list of valid StringEnumWithNullAndZero as string
 	KnownStringEnumWithNullAndZeroString = []string{
 		string(StringEnumWithNullAndZeroBar),

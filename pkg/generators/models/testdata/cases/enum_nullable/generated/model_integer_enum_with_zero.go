@@ -29,6 +29,7 @@ var (
 		IntegerEnumWithZero1,
 		IntegerEnumWithZero2,
 	}
+
 	// KnownIntegerEnumWithZeroInt32 is the list of valid IntegerEnumWithZero as int32
 	KnownIntegerEnumWithZeroInt32 = []int32{
 		int32(IntegerEnumWithZero0),

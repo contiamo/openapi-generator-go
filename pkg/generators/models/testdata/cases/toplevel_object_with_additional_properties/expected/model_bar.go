@@ -13,7 +13,22 @@ import (
 // Bar is an object.
 type Bar map[string]Foo
 
+// NewBar instantiates a new Bar with default values overriding them as follows:
+// 1. Default values specified in the Bar schema
+// 2. Default values specified per Bar property
+func NewBar() Bar {
+	m := Bar{}
+
+	return m
+}
+
 // Validate implements basic validation for this model
 func (m Bar) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	for k, v := range m {
+		if err := validation.Validate(v, validation.NotNil); err != nil {
+			errors[k] = err
+		}
+	}
+	return errors.Filter()
 }
