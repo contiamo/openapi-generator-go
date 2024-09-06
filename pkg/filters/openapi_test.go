@@ -35,6 +35,11 @@ func TestFilterByPath(t *testing.T) {
 			source:  "source_without_responses_component.yaml",
 			filters: []string{"/api/v2/{projectId}/fields"},
 		},
+		{
+			name:    "source with request bodies component",
+			source:  "source_with_request_bodies_component.yaml",
+			filters: []string{"/api/v2/{projectId}/fields"},
+		},
 	}
 
 	for _, tc := range cases {
