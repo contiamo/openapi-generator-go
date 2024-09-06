@@ -59,6 +59,16 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 		return filteredSpec, fmt.Errorf("`schemas` is invalid type")
 	}
 
+	// requestBodies are optional
+	var requestBodies Entry
+	rb := components["requestBodies"]
+	if rb != nil {
+		requestBodies, ok = rb.(Entry)
+		if !ok {
+			return filteredSpec, fmt.Errorf("`requestBodies` is invalid type")
+		}
+	}
+
 	// responses are optional
 	var responses Entry
 	r := components["responses"]
@@ -89,6 +99,12 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 		newSchemas = filter(schemas, referenceList)
 	}
 
+	// now filter the request bodies schemas and then check
+	// if there are still any more references we need
+	// to include
+	newRequestBodies := filter(requestBodies, referenceList)
+	findReferences(newRequestBodies, referenceList)
+
 	// now filter the response schemas and then check
 	// if there are still any more references we need
 	// to include
@@ -103,6 +119,7 @@ func ByPath(file io.Reader, allowedPaths []string) (filteredSpec []byte, err err
 	}
 	components["schemas"] = newSchemas
 	components["responses"] = newResponses
+	components["requestBodies"] = newRequestBodies
 
 	filteredYAML, err := yaml.Marshal(spec)
 	if err != nil {
