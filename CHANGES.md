@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/contiamo/openapi-generator-go/compare/v2.1.1...v2.1.2) (2024-09-06)
+
+
+### Bug Fixes
+
+* filter missing schema when request bodies are defined ([aadda1a](https://github.com/contiamo/openapi-generator-go/commit/aadda1a94a190075404223ead615b1aa57980e69))
+
 ## [2.1.1](https://github.com/contiamo/openapi-generator-go/compare/v2.1.0...v2.1.1) (2024-02-16)
 
 
