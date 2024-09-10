@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/contiamo/openapi-generator-go/compare/v2.1.2...v2.1.3) (2024-09-10)
+
+
+### Miscellaneous Chores
+
+* release 2.1.3 ([00cae34](https://github.com/contiamo/openapi-generator-go/commit/00cae345069915e43502eb39109440adfe361082))
+
 ## [2.1.2](https://github.com/contiamo/openapi-generator-go/compare/v2.1.1...v2.1.2) (2024-09-06)
 
 
