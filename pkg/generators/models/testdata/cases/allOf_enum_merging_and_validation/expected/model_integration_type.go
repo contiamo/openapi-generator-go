@@ -27,6 +27,7 @@ var (
 		IntegrationTypeGeneric,
 		IntegrationTypeTableau,
 	}
+
 	// KnownIntegrationTypeString is the list of valid IntegrationType as string
 	KnownIntegrationTypeString = []string{
 		string(IntegrationTypeGeneric),

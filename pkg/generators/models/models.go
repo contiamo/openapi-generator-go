@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
-	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/pkg/errors"
@@ -32,12 +31,9 @@ var (
 	validatedTypesRegExp = regexp.MustCompile(`^(\*?[A-Z])|(\[])|(map\[)`)
 )
 
-// something is just something that does not have to be allocated
-type something struct{}
-
 // passedSchemas is a map of pointers to a schema.
 // Used for marking already visited types when recursively resolve `allOf` definitions and merging types.
-type passedSchemas map[*openapi3.SchemaRef]something
+type passedSchemas map[*openapi3.SchemaRef]bool
 
 // TemplateKind is a kind of template to render
 type TemplateKind string
@@ -76,6 +72,10 @@ type Model struct {
 	// GoType is a string that represents the Go type that follows the model type name.
 	// For example, `type Name GoType`.
 	GoType string
+	// HasDefault is true when the model has a default value
+	HasDefault bool
+	// DefaultValue is the default value of the model
+	DefaultValue string
 	// SpecTitle is the spec title used in the auto-generated header
 	SpecTitle string
 	// SpecVersion is the spec version used in the auto-generated header
@@ -84,7 +84,9 @@ type Model struct {
 	PackageName string
 	// AdditionalPropertiesGoType is the optional type of additional properties
 	// that exist _in addition_ to `Properties`
-	AdditionalPropertiesGoType string
+	AdditionalProperties *PropSpec
+	// IsMap is true when the model is a map
+	IsMap bool
 }
 
 // ConvertSpec holds all info to build one As{Type}() function
@@ -93,6 +95,12 @@ type ConvertSpec struct {
 	TargetGoType string
 	// IsPtr is true when the target type is a pointer
 	IsPtr bool
+	// IsMap is true when the target type is a map
+	IsMap        bool
+	HasDefault   bool
+	DefaultValue string
+	IsStruct     bool
+	IsRef        bool
 }
 
 type ValidationSpec struct {
@@ -142,6 +150,10 @@ type PropSpec struct {
 	Description string
 	// GoType used for this property (e.g. `string`, `int`, etc)
 	GoType string
+	// HasDefault is true when the property has a default value
+	HasDefault bool
+	// DefaultValue is the default value of the property
+	DefaultValue string
 	// JSONTags is a string of JSON tags used for marshaling (e.g. `json:omitempty`)
 	JSONTags string
 	// Value is a value used for a enum item
@@ -183,31 +195,83 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 		Description: ref.Value.Description,
 	}
 
-	ref = resolveAllOf(ref, nil)
-
 	switch {
 	case len(ref.Value.Enum) > 0:
 		model.TemplateKind = Enum
 		model.GoType = goTypeFromSpec(ref)
 		model.Properties = enumPropsFromRef(ref, model)
+		if ref.Value.Default != nil {
+			err = isDefValueValid(ref.Value)
+			if err != nil {
+				return nil, err
+			}
+			model.HasDefault = true
+			if defVal, present := getDefaultValue(ref.Value); present {
+				model.DefaultValue = defVal
+			}
+		}
 
 	case ref.Value.Type == "object" || len(ref.Value.Properties) > 0:
 		model.TemplateKind = Struct
 		model.Properties, model.Imports, err = structPropsFromRef(ref)
-		if len(model.Properties) == 0 {
+		if ref.Value.Default != nil {
+			err = isDefValueValid(ref.Value)
+			if err != nil {
+				return nil, err
+			}
+			model.HasDefault = true
+			if defVal, present := getDefaultValue(ref.Value); present {
+				model.DefaultValue = defVal
+			}
+		}
+
+		if ref.Value.AdditionalProperties != nil {
+			model.AdditionalProperties, err = newPropertySpecFromRef("AdditionalProperties", ref.Value.AdditionalProperties, true, model.Imports)
+			if err != nil {
+				return nil, err
+			}
+		} else if ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed {
+			model.AdditionalProperties = &PropSpec{
+				Name:   "AdditionalProperties",
+				GoType: "interface{}",
+			}
+		}
+
+		// This is following what was resolved in: https://github.com/contiamo/openapi-generator-go/issues/139#issuecomment-1958083054
+		if len(ref.Value.Properties) == 0 {
+			model.IsMap = true
 			model.GoType = "map[string]interface{}"
 			if ref.Value.AdditionalProperties != nil {
-				model.GoType = "map[string]" + goTypeFromSpec(ref.Value.AdditionalProperties)
+				model.GoType = "map[string]"
+				if model.AdditionalProperties.IsPtr {
+					model.GoType += "*"
+				}
+				model.GoType += model.AdditionalProperties.GoType
+			} else if ref.Value.AdditionalPropertiesAllowed != nil && !*ref.Value.AdditionalPropertiesAllowed {
+				model.GoType = "struct{}"
+				model.IsMap = false
 			}
-		} else if ref.Value.AdditionalProperties != nil || (ref.Value.AdditionalPropertiesAllowed != nil && *ref.Value.AdditionalPropertiesAllowed) {
-			model.AdditionalPropertiesGoType = goTypeFromSpec(ref.Value.AdditionalProperties)
 		}
+
 	case len(ref.Value.OneOf) > 0:
 		model.TemplateKind = OneOf
-		model.configureOneOf(ref)
+		err = model.configureOneOf(ref)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		model.TemplateKind = Value
 		model.GoType = goTypeFromSpec(ref)
+		if ref.Value.Default != nil {
+			err = isDefValueValid(ref.Value)
+			if err != nil {
+				return nil, err
+			}
+			model.HasDefault = true
+			if defVal, present := getDefaultValue(ref.Value); present {
+				model.DefaultValue = defVal
+			}
+		}
 		model.Imports = make(map[string]string)
 		err = fillValidationSpec(ref, &model.ValidationSpec, model.GoType, model.Imports)
 	}
@@ -216,6 +280,74 @@ func NewModelFromRef(ref *openapi3.SchemaRef) (model *Model, err error) {
 	}
 
 	return model, nil
+}
+
+func newPropertySpecFromRef(name string, prop *openapi3.SchemaRef, isRequired bool, imports map[string]string) (spec *PropSpec, err error) {
+	spec = &PropSpec{
+		Name:         tpl.ToPascalCase(name),
+		PropertyName: name,
+		GoType:       goTypeFromSpec(prop),
+		Description:  prop.Value.Description,
+		IsRequired:   isRequired, // additional properties are always required for them to be validated properly
+		IsEnum:       len(prop.Value.Enum) > 0,
+		IsArray:      prop.Value.Type == "array",
+		IsMap:        (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) == 0,
+		IsStruct:     (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) > 0,
+		IsString:     prop.Value.Type == "string",
+		IsNumber:     prop.Value.Type == "number",
+		IsInteger:    prop.Value.Type == "integer",
+		IsRef:        prop.Ref != "",
+		ValidationSpec: ValidationSpec{
+			IsEnumWithNil: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
+				// Reflect considers the enum value nil to be invalid because it doesn't have a type for it
+				return !reflect.ValueOf(i).IsValid()
+			}),
+			IsEnumWithZero: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
+				val := reflect.ValueOf(i)
+				return val.IsValid() && val.IsZero()
+			}),
+		},
+		IsOneOf: prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
+	}
+	if prop.Value.Default != nil {
+		spec.HasDefault = true
+		if prop.Ref == "" {
+			err = isDefValueValid(prop.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid default value for additionalProperty: %w", err)
+			}
+			if defVal, present := getDefaultValue(prop.Value); present {
+				spec.DefaultValue = defVal
+			}
+		}
+	}
+
+	spec.IsPtr = prop.Value.Nullable && !(spec.IsMap || spec.IsArray) && (!spec.IsEnum || spec.IsEnumWithNil)
+
+	spec.IsString = spec.IsString && !spec.IsEnum
+
+	if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
+		imports["time"] = ""
+	}
+
+	omit := ""
+	if !spec.IsRequired {
+		omit += ",omitempty"
+	}
+
+	jsonTags := fmt.Sprintf(" `json:\"%s%s\"", name, omit)
+	jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", name, omit)
+	jsonTags += "`"
+
+	spec.JSONTags = jsonTags
+
+	err = fillValidationSpec(prop, &spec.ValidationSpec, spec.GoType, imports)
+	if err != nil {
+		return nil, err
+	}
+	resolveDerivedValidation(spec, imports)
+
+	return spec, nil
 }
 
 // NewModelFromParameters returns a model built from operation parameters
@@ -256,12 +388,27 @@ func NewModelFromParameters(params openapi3.Parameters) (model *Model, err error
 	return model, err
 }
 
-func (m *Model) configureOneOf(ref *openapi3.SchemaRef) {
+func (m *Model) configureOneOf(ref *openapi3.SchemaRef) error {
 	for _, oneOf := range ref.Value.OneOf {
-		m.ConvertSpecs = append(m.ConvertSpecs, ConvertSpec{
+		spec := ConvertSpec{
 			TargetGoType: goTypeFromSpec(oneOf),
 			IsPtr:        oneOf.Value.Nullable && oneOf.Value.Type != "" && oneOf.Value.Type != "object" && oneOf.Value.Type != "array",
-		})
+			IsMap:        (oneOf.Value.Type == "" || oneOf.Value.Type == "object") && len(oneOf.Value.Properties) == 0,
+			IsStruct:     (oneOf.Value.Type == "" || oneOf.Value.Type == "object") && len(oneOf.Value.Properties) > 0,
+			IsRef:        oneOf.Ref != "",
+			HasDefault:   oneOf.Value.Default != nil,
+		}
+		m.ConvertSpecs = append(m.ConvertSpecs, spec)
+		if oneOf.Value.Default != nil {
+			err := isDefValueValid(oneOf.Value)
+			if err != nil {
+				return err
+			}
+			spec.HasDefault = true
+			if defVal, present := getDefaultValue(oneOf.Value); present {
+				spec.DefaultValue = defVal
+			}
+		}
 	}
 
 	if ref.Value.Discriminator != nil {
@@ -284,24 +431,25 @@ func (m *Model) configureOneOf(ref *openapi3.SchemaRef) {
 			}
 		}
 	}
+	return nil
 }
 
 // Render renders the model to a Go file
 func (m *Model) Render(ctx context.Context, writer io.Writer) error {
-	var tpl *template.Template
+	var name string
 
 	switch m.TemplateKind {
 	case Struct:
-		tpl = modelTemplate
+		name = "model.gotpl"
 	case Enum:
-		tpl = enumTemplate
+		name = "enum.gotpl"
 	case Value:
-		tpl = valueTemplate
+		name = "value.gotpl"
 	case OneOf:
-		tpl = oneOfTemplate
+		name = "oneof.gotpl"
 	}
 
-	err := tpl.Execute(writer, m)
+	err := modelTpls.ExecuteTemplate(writer, name, m)
 	if err != nil {
 		return errors.Wrap(err, "failed to render the model")
 	}
@@ -312,7 +460,12 @@ func (m *Model) Render(ctx context.Context, writer io.Writer) error {
 // resolveAllOf resolves the list of `allOf` definitions in the schema to a complete type merging
 // all the mentioned types.
 // `passed` can be nil, it's used recursively in order to avoid infinite loops
-func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
+func resolveAllOf(ref *openapi3.SchemaRef, overrideRef bool, passed passedSchemas) (out *openapi3.SchemaRef) {
+	defer func() {
+		// clean up the allOf field after resolving it
+		ref.Value.AllOf = nil
+	}()
+
 	if ref == nil {
 		ref = &openapi3.SchemaRef{}
 	}
@@ -321,53 +474,41 @@ func resolveAllOf(ref *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.
 	}
 
 	out = ref
+	if len(ref.Value.AllOf) == 0 {
+		return out
+	}
 
 	if passed == nil {
 		passed = make(passedSchemas)
 	}
 
-	// very special case where the allOf references
-	// another named schema but is not actually merging
-	// several schemas, this is usually just overriding
-	// a value like nullable or the description
-	if len(ref.Value.AllOf) == 1 {
-		pointer := ref.Value.AllOf[0]
-		passed[pointer] = something{}
-		out = deepMerge(out, pointer, passed)
-		return out
-	}
-
 	// this is used for the special edge cases like this
 	//   allOf:
 	//      - description: "this will only set the description value"
-	// 	- $ref: '#/components/schemas/ColumnTypeMetadata'
+	//      - $ref: '#/components/schemas/ColumnTypeMetadata'
 	//
 	// without this method, the allOf will generate an inline type, but the resulting code
 	// is much better and easier to use if we drop the first allOf item and just treat it like
 	// the special case of a single `ref`, which will used the named `ColumnTypeMetadata` type.
 	ref.Value.AllOf = removeSemanticallyEmptyRefs(ref.Value.AllOf)
 
-	isSelfRef := false
-	for _, subSchema := range ref.Value.AllOf {
-		if _, exists := passed[subSchema]; exists {
-			isSelfRef = true
-			continue
-		}
-		passed[subSchema] = something{}
-		out = deepMerge(out, subSchema, passed)
+	// very special case where the allOf references
+	// another named schema but is not actually merging
+	// several schemas, this is usually just overriding
+	// a value like nullable or the description
+	if len(ref.Value.Properties) == 0 && len(ref.Value.AllOf) == 1 {
+		pointer := ref.Value.AllOf[0]
+		passed[pointer] = true
+		out = deepMerge(out, pointer, overrideRef, passed)
+		return out
 	}
 
-	// remove the reference field on AllOf values, these should be
-	// flattened into a single (potentially inlined) struct.
-	// We make exceptions for
-	// 		* types are contain a self-reference, these can not be flattened
-	// 		* types are a single allOf, these usually indicate merging in nullable properties, etc
-	// 		  it is not a _real_ allOf, rather we are just overriding fields on a single type.
-	// 		  this case should already be handled above, so this is really checking if AllOf > 0,
-	// 		  but checking >1 is more semantically correct
-	//
-	if !isSelfRef && len(ref.Value.AllOf) > 1 {
-		out.Ref = ""
+	for _, subSchema := range ref.Value.AllOf {
+		if passed[subSchema] {
+			continue
+		}
+		passed[subSchema] = true
+		out = deepMerge(out, subSchema, false, passed)
 	}
 
 	return out
@@ -462,7 +603,7 @@ func isNonEmptySchemaRef(ref *openapi3.SchemaRef) bool {
 // deepMerge merges `right` into `left` schema recursively resolving types (e.g. `allOf`).
 // `passed` map will be populated with all the visited types during the resolution process, so we can
 // avoid the infinite loop.
-func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passedSchemas) (out *openapi3.SchemaRef) {
+func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, overrideRef bool, passed passedSchemas) (out *openapi3.SchemaRef) {
 	out = left
 	if out == nil {
 		out = &openapi3.SchemaRef{}
@@ -478,11 +619,11 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		right.Value = &openapi3.Schema{}
 	}
 
-	right = resolveAllOf(right, passed)
-	if right.Ref != "" {
+	right = resolveAllOf(right, false, passed)
+	if overrideRef && out.Ref == "" && right.Ref != "" {
 		out.Ref = right.Ref
 	}
-	if right.Value.Type != "" {
+	if out.Value.Type == "" && right.Value.Type != "" {
 		out.Value.Type = right.Value.Type
 	}
 
@@ -523,6 +664,7 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 		out.Value.AdditionalProperties = deepMerge(
 			out.Value.AdditionalProperties,
 			right.Value.AdditionalProperties,
+			overrideRef,
 			nil, // here we merge all over, without `passed`
 		)
 	}
@@ -532,12 +674,12 @@ func deepMerge(left *openapi3.SchemaRef, right *openapi3.SchemaRef, passed passe
 			out.Value.Properties = make(map[string]*openapi3.SchemaRef)
 		}
 		for k, v := range right.Value.Properties {
-			out.Value.Properties[k] = resolveAllOf(v, passed)
+			out.Value.Properties[k] = resolveAllOf(v, true, passed)
 		}
 	}
 
 	if right.Value.Type == "array" && right.Value.Items != nil {
-		out.Value.Items = resolveAllOf(right.Value.Items, passed)
+		out.Value.Items = resolveAllOf(right.Value.Items, true, passed)
 	}
 
 	return out
@@ -562,91 +704,18 @@ func structPropsFromRef(ref *openapi3.SchemaRef) (specs []PropSpec, imports map[
 	imports = make(map[string]string)
 	for _, name := range sortedKeys(ref.Value.Properties) {
 		prop := ref.Value.Properties[name]
-
-		// special case for singleton allOf
-		// generally these are used to add
-		// a new description or override the
-		// nullable flag
-		if len(prop.Value.AllOf) == 1 {
-			pointer := prop.Value.AllOf[0]
-			prop.Ref = pointer.Ref
-
-			// a sub-special case when the referenced type
-			// is an array. Because we don't create top-level
-			// models for arrays, we actually need to follow
-			// this reference.
-			resolved := resolveAllOf(prop, nil)
-			if resolved.Value.Type == "array" {
-				prop = resolved
-			}
-		}
-
-		if prop.Ref == "" {
-			prop = resolveAllOf(prop, nil)
-		}
-
 		isRequired := checkIfRequired(name, ref.Value.Required)
-		goType := goTypeFromSpec(prop)
-
-		// If an object property is not required but also not nullable,
-		// it must be a pointer to allow it to either be fully specified or
-		// not present at all.
-		if !isRequired && !prop.Value.Nullable && len(prop.Value.Properties) > 0 {
-			goType = "*" + goType
-		}
-
-		spec := PropSpec{
-			Name:         tpl.ToPascalCase(name),
-			PropertyName: name,
-			Description:  prop.Value.Description,
-			GoType:       goType,
-			IsRequired:   isRequired,
-			IsEnum:       len(prop.Value.Enum) > 0,
-			IsArray:      prop.Value.Type == "array",
-			IsMap:        (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) == 0,
-			IsStruct:     (prop.Value.Type == "" || prop.Value.Type == "object") && len(prop.Value.Properties) > 0,
-			IsString:     prop.Value.Type == "string",
-			IsNumber:     prop.Value.Type == "number",
-			IsInteger:    prop.Value.Type == "integer",
-			IsRef:        prop.Ref != "",
-			ValidationSpec: ValidationSpec{
-				IsEnumWithNil: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
-					// Reflect considers the enum value nil to be invalid because it doesn't have a type for it
-					return !reflect.ValueOf(i).IsValid()
-				}),
-				IsEnumWithZero: len(prop.Value.Enum) > 0 && slices.ContainsFunc(prop.Value.Enum, func(i any) bool {
-					val := reflect.ValueOf(i)
-					return val.IsValid() && val.IsZero()
-				}),
-			},
-			IsOneOf: prop.Value.OneOf != nil && len(prop.Value.OneOf) > 0,
-		}
-		// Set/Update dependent properties
-		spec.IsPtr = prop.Value.Nullable && !(spec.IsMap || spec.IsArray) && (!spec.IsEnum || spec.IsEnumWithNil)
-		spec.IsString = spec.IsString && !spec.IsEnum
-
-		if spec.GoType == "time.Time" || spec.GoType == "*time.Time" {
-			imports["time"] = ""
-		}
-
-		omit := ""
-		if !spec.IsRequired {
-			omit += ",omitempty"
-		}
-
-		jsonTags := fmt.Sprintf(" `json:\"%s%s\"", name, omit)
-		jsonTags += fmt.Sprintf(" mapstructure:\"%s%s\"", name, omit)
-		jsonTags += "`"
-
-		spec.JSONTags = jsonTags
-
-		err := fillValidationSpec(prop, &spec.ValidationSpec, spec.GoType, imports)
+		var spec *PropSpec
+		spec, err = newPropertySpecFromRef(name, prop, isRequired, imports)
 		if err != nil {
-			return nil, nil, fmt.Errorf("invalid %s property %q: %w", ExtensionPatternError, name, err)
+			return nil, nil, err
 		}
 
-		resolveDerivedValidation(&spec, imports)
-		specs = append(specs, spec)
+		// If an object property is not required but also not nullable, it must be a pointer to allow it to either be
+		// fully specified or not present at all.
+		spec.IsPtr = spec.IsPtr || !isRequired && !prop.Value.Nullable && spec.IsStruct
+
+		specs = append(specs, *spec)
 	}
 
 	return specs, imports, err
@@ -912,4 +981,120 @@ func checkIfRequired(name string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func isDefValueValid(schema *openapi3.Schema) error {
+	if schema.Default == nil {
+		return nil
+	}
+	rVal := reflect.ValueOf(schema.Default)
+	if !rVal.IsValid() {
+		return fmt.Errorf("default value '%v' is not valid for type %s", schema.Default, schema.Type)
+	}
+	switch schema.Type {
+	case "number":
+		if !rVal.CanFloat() {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+	case "integer":
+		if !rVal.CanConvert(reflect.TypeOf(int64(0))) {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+	case "boolean":
+		if rVal.Kind() != reflect.Bool {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+	case "string":
+		if rVal.Kind() != reflect.String {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+	case "array":
+		if rVal.Kind() != reflect.Slice {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+		for i := 0; i < rVal.Len(); i++ {
+			err := isDefValueValid(&openapi3.Schema{Type: schema.Items.Value.Type, Default: rVal.Index(i).Interface()})
+			if err != nil {
+				return fmt.Errorf("%w in array", err)
+			}
+		}
+	case "object", "":
+		if rVal.Kind() != reflect.Map {
+			return fmt.Errorf("default value %#v can't be assigned as type %s", rVal, schema.Type)
+		}
+	}
+
+	if len(schema.Enum) > 0 {
+		// Check if the value is present in the enum
+		for _, v := range schema.Enum {
+			if v == schema.Default {
+				return nil
+			}
+		}
+		return fmt.Errorf("default value '%v' is not present in the enum values", schema.Default)
+	}
+
+	return nil
+}
+
+// getDefaultValue returns the default value of a schema ready to be used in the template
+func getDefaultValue(schema *openapi3.Schema) (defVal string, present bool) {
+	if schema.Default == nil {
+		return "", false
+	}
+
+	if schema.Type == "object" || schema.Type == "" {
+		bytes, _ := json.Marshal(schema.Default)
+		return string(bytes), true
+	}
+
+	if schema.Type == "array" {
+		anyItems, _ := schema.Default.([]interface{})
+		var typedItems any
+		switch goTypeFromSpec(schema.Items) {
+		case "string":
+			items := make([]string, 0, len(anyItems))
+			for _, anyItem := range anyItems {
+				// Type was verified in isDefValueValid
+				item, _ := anyItem.(string)
+				items = append(items, item)
+			}
+			typedItems = items
+		case "int32":
+			items := make([]int32, 0, len(anyItems))
+			for _, anyItem := range anyItems {
+				// Type was verified in isDefValueValid
+				item, _ := anyItem.(float64)
+				items = append(items, int32(item))
+			}
+			typedItems = items
+		case "int64":
+			items := make([]int64, 0, len(anyItems))
+			for _, anyItem := range anyItems {
+				// Type was verified in isDefValueValid
+				item, _ := anyItem.(float64)
+				items = append(items, int64(item))
+			}
+			typedItems = items
+		case "float32":
+			items := make([]float32, 0, len(anyItems))
+			for _, anyItem := range anyItems {
+				// Type was verified in isDefValueValid
+				item, _ := anyItem.(float64)
+				items = append(items, float32(item))
+			}
+			typedItems = items
+		case "float64":
+			items := make([]float64, 0, len(anyItems))
+			for _, anyItem := range anyItems {
+				// Type was verified in isDefValueValid
+				item, _ := anyItem.(float64)
+				items = append(items, item)
+			}
+			typedItems = items
+		}
+		return fmt.Sprintf("%#v", typedItems), true
+	}
+
+	return fmt.Sprintf("%#v", schema.Default), true
 }

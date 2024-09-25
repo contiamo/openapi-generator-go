@@ -38,6 +38,11 @@ type Error struct {
 	data errorer
 }
 
+// NewError creates a new Error instance with no internal value.
+func NewError() *Error {
+	return &Error{}
+}
+
 var EmptyErrorError = fmt.Errorf("empty data is not an Error")
 var NotErrorError = fmt.Errorf("could not convert to type Error")
 
@@ -140,6 +145,8 @@ func (m Error) AsGenericError() (result GenericError, err error) {
 	if m.data == nil {
 		return result, EmptyErrorError
 	}
+	result = *NewGenericError()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -148,6 +155,8 @@ func (m Error) AsFieldError() (result FieldError, err error) {
 	if m.data == nil {
 		return result, EmptyErrorError
 	}
+	result = *NewFieldError()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -156,6 +165,8 @@ func (m Error) AsExternalError() (result ExternalError, err error) {
 	if m.data == nil {
 		return result, EmptyErrorError
 	}
+	result = *NewExternalError()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 

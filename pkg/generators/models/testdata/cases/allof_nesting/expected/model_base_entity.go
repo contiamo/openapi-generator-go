@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -19,13 +21,37 @@ type BaseEntity struct {
 	Name string `json:"name" mapstructure:"name"`
 }
 
+// NewBaseEntity instantiates a new BaseEntity with default values overriding them as follows:
+// 1. Default values specified in the BaseEntity schema
+// 2. Default values specified per BaseEntity property
+func NewBaseEntity() *BaseEntity {
+	m := &BaseEntity{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for BaseEntity. It set the default values for the BaseEntity type
+func (m *BaseEntity) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewBaseEntity()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias BaseEntity
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m BaseEntity) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetId returns the Id property

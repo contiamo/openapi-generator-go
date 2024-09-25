@@ -13,7 +13,22 @@ import (
 // Foo is an object.
 type Foo map[string]string
 
+// NewFoo instantiates a new Foo with default values overriding them as follows:
+// 1. Default values specified in the Foo schema
+// 2. Default values specified per Foo property
+func NewFoo() Foo {
+	m := Foo{}
+
+	return m
+}
+
 // Validate implements basic validation for this model
 func (m Foo) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	for k, v := range m {
+		if err := validation.Validate(v); err != nil {
+			errors[k] = err
+		}
+	}
+	return errors.Filter()
 }

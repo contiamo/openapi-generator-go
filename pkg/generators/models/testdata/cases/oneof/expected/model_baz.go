@@ -16,6 +16,11 @@ type Baz struct {
 	data interface{}
 }
 
+// NewBaz creates a new Baz instance with no internal value.
+func NewBaz() *Baz {
+	return &Baz{}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m Baz) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)
@@ -48,6 +53,8 @@ func (m Baz) As(target interface{}) error {
 
 // AsFoo converts Baz to a Foo
 func (m Baz) AsFoo() (result Foo, err error) {
+	result = *NewFoo()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -58,5 +65,7 @@ func (m Baz) AsBar() (result Bar, err error) {
 
 // AsPerson converts Baz to a Person
 func (m Baz) AsPerson() (result Person, err error) {
+	result = *NewPerson()
+
 	return result, mapstructure.Decode(m.data, &result)
 }

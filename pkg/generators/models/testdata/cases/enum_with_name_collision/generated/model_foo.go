@@ -25,6 +25,7 @@ var (
 	KnownFoo = []Foo{
 		FooItem0,
 	}
+
 	// KnownFooString is the list of valid Foo as string
 	KnownFooString = []string{
 		string(FooItem0),

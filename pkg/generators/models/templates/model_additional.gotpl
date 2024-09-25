@@ -1,0 +1,93 @@
+{{- define "model_type_additional" }}
+{{ (printf "%s is an object with additional properties. %s" .Name .Description) | commentBlock }}
+type {{.Name}} struct {
+{{- range .Properties}}
+	{{ (printf "%s: %s" .Name .Description) | commentBlock }}
+	{{.Name}} {{.GoType}} {{.JSONTags}}
+{{- end}}
+	{{ (printf "AdditionalProperties: %s" .AdditionalProperties.Description) | commentBlock }}
+	AdditionalProperties map[string]{{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}} `json:"-"`
+}
+{{- end }}
+{{- define "model_json_additional" }}
+// UnmarshalJSON all named properties into {{.Name}} and the rest into the AdditionalProperties map
+func (m *{{.Name}}) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *New{{.Name}}()
+
+	var generic map[string]json.RawMessage
+	if err := json.Unmarshal(data, &generic); err != nil {
+		return err
+	}
+
+	var additionalProperties = make(map[string]{{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}})
+	for k, v := range generic {
+		switch k {
+		{{- range .Properties}}
+		case "{{.PropertyName}}":
+			if err := json.Unmarshal(v, &(m.{{.Name}})); err != nil {
+				return err
+			}
+		{{- end}}
+		default:
+			var prop {{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}}
+			if err := json.Unmarshal(v, &prop); err != nil {
+				return err
+			}
+			additionalProperties[k] = prop
+		}
+	}
+
+	if len(additionalProperties) > 0 {
+	{{- if and .AdditionalProperties.HasDefault (not .AdditionalProperties.IsRef)}}
+		var zero {{if .AdditionalProperties.IsPtr}}*{{end}}{{.AdditionalProperties.GoType}}
+		for k, v := range additionalProperties {
+			if v == zero {
+    		{{- if .AdditionalProperties.IsPtr }}
+				additionalProperties[k] = new({{.AdditionalProperties.GoType}})
+				*additionalProperties[k] = {{.AdditionalProperties.DefaultValue}}
+			{{- else }}
+				m.AdditionalProperties[k] = {{.AdditionalProperties.DefaultValue}}
+			{{- end }}
+			}
+		}
+	{{- end }}
+		m.AdditionalProperties = additionalProperties
+	}
+	return nil
+}
+
+const {{.Name}}NamedProperties = "{{range .Properties}}|{{.PropertyName}}{{end}}"
+
+// MarshalJSON {{.Name}} by combining the AdditionalProperties with the named properties in a single JSON object.
+// An error will be returned if there are duplicate keys.
+func (m {{.Name}}) MarshalJSON() ([]byte, error) {
+	type alias {{.Name}}
+	data, err := json.Marshal(alias(m))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(m.AdditionalProperties) > 0 {
+		for k, _ := range m.AdditionalProperties {
+			if strings.Contains({{.Name}}NamedProperties, k) {
+				return nil, fmt.Errorf("named key: %s was found in additionalProperties field", k)
+			}
+		}
+		additionalData, err := json.Marshal(m.AdditionalProperties)
+		if err != nil {
+			return nil, err
+		}
+
+		// merge the two JSON objects, we do it at byte level to avoid re-encoding the JSON
+		data = data[:len(data)-1]
+		additionalData = additionalData[1:]
+		if len(data) > 1 {
+			data = append(data, ',')
+		}
+		data = append(data, additionalData...)
+	}
+
+	return data, err
+}
+{{- end }}

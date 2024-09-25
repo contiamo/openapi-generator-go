@@ -14,4 +14,4 @@ components:
           description: the next item
           allOf:
             - $ref: "#/components/schemas/ListItem"
-            - nullable: true
+          nullable: true

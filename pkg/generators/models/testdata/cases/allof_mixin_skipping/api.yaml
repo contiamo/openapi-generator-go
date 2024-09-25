@@ -35,7 +35,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/ColumnTypeMetadata'
           - description: Array item type if this type is array
-            nullable: true
+          nullable: true
         nullable:
           $ref: '#/components/schemas/Nullability'
         originalName:

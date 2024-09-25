@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -18,13 +20,39 @@ type ListItem struct {
 	Value string `json:"value,omitempty" mapstructure:"value,omitempty"`
 }
 
+// NewListItem instantiates a new ListItem with default values overriding them as follows:
+// 1. Default values specified in the ListItem schema
+// 2. Default values specified per ListItem property
+func NewListItem() *ListItem {
+	m := &ListItem{
+		Next: NewListItem(),
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for ListItem. It set the default values for the ListItem type
+func (m *ListItem) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewListItem()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias ListItem
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m ListItem) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"next": validation.Validate(
 			m.Next,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetNext returns the Next property

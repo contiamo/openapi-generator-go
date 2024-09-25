@@ -1,0 +1,176 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Test
+
+paths: { }
+
+components:
+  schemas:
+
+    EnumString:
+      type: string
+      enum:
+        - foo
+        - bar
+      default: bar
+
+    EnumInteger:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 0
+      default: 2
+
+    ZeroInteger:
+      type: integer
+      format: int32
+      default: 0
+
+    EpsilonDouble:
+      type: number
+      format: double
+      default: 2.220446049250313e-16
+
+    PI:
+      type: number
+      format: double
+      default: 3.14159265359
+
+    Email:
+      type: string
+      format: email
+      default: "no@email.com"
+
+    String:
+      type: string
+      default: "a string"
+
+    Address:
+        type: object
+        required:
+          - street
+          - number
+          - city
+          - state
+        properties:
+          street:
+            type: string
+          number:
+            type: integer
+          city:
+            type: string
+          state:
+            type: string
+          zip:
+            type: string
+            nullable: true
+
+    Person:
+      type: object
+      required:
+        - name
+        - age
+        - address
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+          default: 13
+        address:
+          $ref: '#/components/schemas/Address'
+        pets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pet'
+
+    PetType:
+        type: string
+        enum:
+            - dog
+            - cat
+            - bird
+        default: dog
+
+    Pet:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PetType'
+        name:
+          type: string
+        age:
+          type: integer
+          default: 1
+      default:
+        type: dog
+        name: Fido
+        age: 2
+
+    Wrapper:
+      type: object
+      properties:
+        string:
+          $ref: '#/components/schemas/String'
+        email:
+          $ref: '#/components/schemas/Email'
+        enumString:
+          $ref: '#/components/schemas/EnumString'
+        enumInteger:
+          $ref: '#/components/schemas/EnumInteger'
+        person:
+          $ref: '#/components/schemas/Person'
+
+        integerArray:
+          type: array
+          items:
+            type: integer
+          default: [ 1, 3 ]
+
+        bool:
+          type: boolean
+          default: true
+
+        cat:
+          $ref: '#/components/schemas/Pet'
+
+        inlineStruct:
+          type: object
+          properties:
+            field1:
+              type: string
+            field2:
+              type: integer
+              default: 13
+
+    map:
+      type: object
+      additionalProperties:
+        type: string
+      default:
+        key1: value1
+        key2: value2
+        key3: value3
+
+    mapWithRef:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Person'
+      default:
+        key1:
+          name: John
+          age: 25
+          address:
+            street: 123 Main St
+            number: 123
+            city: Springfield
+            state: IL
+        key2:
+          name: Jane
+          address:
+            street: 123 Main St
+            number: 123
+            city: Springfield
+            state: IL

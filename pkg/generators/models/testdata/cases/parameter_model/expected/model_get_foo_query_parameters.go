@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -31,9 +33,34 @@ type GetFooQueryParameters struct {
 	Param4 ReferencedStatus `json:"param4,omitempty" mapstructure:"param4,omitempty"`
 }
 
+// NewGetFooQueryParameters instantiates a new GetFooQueryParameters with default values overriding them as follows:
+// 1. Default values specified in the GetFooQueryParameters schema
+// 2. Default values specified per GetFooQueryParameters property
+func NewGetFooQueryParameters() *GetFooQueryParameters {
+	m := &GetFooQueryParameters{
+		Page: 1,
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for GetFooQueryParameters. It set the default values for the GetFooQueryParameters type
+func (m *GetFooQueryParameters) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewGetFooQueryParameters()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias GetFooQueryParameters
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m GetFooQueryParameters) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
@@ -52,7 +79,8 @@ func (m GetFooQueryParameters) Validate() error {
 		"param4": validation.Validate(
 			m.Param4,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetPlus1 returns the Plus1 property

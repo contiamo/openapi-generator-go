@@ -26,6 +26,10 @@ var {{.Name| firstLower}}Pattern = regexp.MustCompile(`{{ .Pattern }}`)
 {{ (printf "%s is a value type. %s" .Name .Description) | commentBlock }}
 type {{.Name}} {{.GoType}}
 
+{{- if .HasDefault }}
+// Default{{.Name}} is the default value for {{.Name}}
+var Default{{.Name}} = {{.Name}}({{.DefaultValue}})
+{{- end }}
 
 // Validate implements basic validation for this model
 func (v {{.Name}}) Validate() error {

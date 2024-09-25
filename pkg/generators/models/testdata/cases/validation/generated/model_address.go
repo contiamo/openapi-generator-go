@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -22,9 +24,32 @@ type Address struct {
 	SubNumber *int32 `json:"subNumber,omitempty" mapstructure:"subNumber,omitempty"`
 }
 
+// NewAddress instantiates a new Address with default values overriding them as follows:
+// 1. Default values specified in the Address schema
+// 2. Default values specified per Address property
+func NewAddress() *Address {
+	m := &Address{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Address. It set the default values for the Address type
+func (m *Address) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewAddress()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Address
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Address) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"name": validation.Validate(
 			m.Name, validation.NilOrNotEmpty, validation.Length(2, 0),
 		),
@@ -34,7 +59,8 @@ func (m Address) Validate() error {
 		"subNumber": validation.Validate(
 			m.SubNumber, validation.NilOrNotEmpty, validation.Min(int32(1)),
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetName returns the Name property

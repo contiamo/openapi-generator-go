@@ -29,6 +29,7 @@ var (
 		FoodBanana,
 		FoodPizza,
 	}
+
 	// KnownFoodString is the list of valid Food as string
 	KnownFoodString = []string{
 		string(FoodApple),
