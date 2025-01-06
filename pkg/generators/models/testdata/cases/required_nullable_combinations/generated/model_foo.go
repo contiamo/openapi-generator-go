@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -32,9 +34,32 @@ type Foo struct {
 	StringRequiredNullable *string `json:"string_required_nullable" mapstructure:"string_required_nullable"`
 }
 
+// NewFoo instantiates a new Foo with default values overriding them as follows:
+// 1. Default values specified in the Foo schema
+// 2. Default values specified per Foo property
+func NewFoo() *Foo {
+	m := &Foo{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Foo. It set the default values for the Foo type
+func (m *Foo) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewFoo()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Foo
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Foo) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"arrayRequiredNullable": validation.Validate(
 			m.ArrayRequiredNullable, validation.NilOrNotEmpty, validation.Length(1, 2),
 		),
@@ -50,7 +75,8 @@ func (m Foo) Validate() error {
 		"enumRequiredNullable": validation.Validate(
 			m.EnumRequiredNullable, validation.NilOrNotEmpty,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetArrayRequiredNullable returns the ArrayRequiredNullable property

@@ -16,6 +16,11 @@ type QueryResponseRowEntry struct {
 	data interface{}
 }
 
+// NewQueryResponseRowEntry creates a new QueryResponseRowEntry instance with no internal value.
+func NewQueryResponseRowEntry() *QueryResponseRowEntry {
+	return &QueryResponseRowEntry{}
+}
+
 // MarshalJSON implements the json.Marshaller interface
 func (m QueryResponseRowEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.data)

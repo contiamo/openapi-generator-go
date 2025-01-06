@@ -48,6 +48,8 @@ components:
           properties:
             id:
               type: string
+          default:
+            id: "a default id from oneOf"
         - type: object
           properties:
             namespace:

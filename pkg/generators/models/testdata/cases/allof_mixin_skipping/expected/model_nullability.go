@@ -13,6 +13,9 @@ import (
 // Nullability is an enum. Column nullability
 type Nullability string
 
+// DefaultNullability is the default value for Nullability
+var DefaultNullability = Nullability("NullableUnknown")
+
 // Validate implements basic validation for this model
 func (m Nullability) Validate() error {
 	return InKnownNullability.Validate(m)
@@ -29,6 +32,7 @@ var (
 		NullabilityNullable,
 		NullabilityNullableUnknown,
 	}
+
 	// KnownNullabilityString is the list of valid Nullability as string
 	KnownNullabilityString = []string{
 		string(NullabilityNoNulls),

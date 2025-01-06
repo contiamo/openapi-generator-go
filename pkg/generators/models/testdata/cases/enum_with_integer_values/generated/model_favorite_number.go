@@ -31,6 +31,7 @@ var (
 		FavoriteNumber5,
 		FavoriteNumber8,
 	}
+
 	// KnownFavoriteNumberInt32 is the list of valid FavoriteNumber as int32
 	KnownFavoriteNumberInt32 = []int32{
 		int32(FavoriteNumber1),

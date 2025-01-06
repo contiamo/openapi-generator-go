@@ -29,6 +29,7 @@ var (
 		ColorGreen,
 		ColorRed,
 	}
+
 	// KnownColorString is the list of valid Color as string
 	KnownColorString = []string{
 		string(ColorBlue),

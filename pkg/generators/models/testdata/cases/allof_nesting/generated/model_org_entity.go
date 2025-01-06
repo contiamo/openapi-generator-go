@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -23,16 +25,40 @@ type OrgEntity struct {
 	UpdateTs int32 `json:"update_ts" mapstructure:"update_ts"`
 }
 
+// NewOrgEntity instantiates a new OrgEntity with default values overriding them as follows:
+// 1. Default values specified in the OrgEntity schema
+// 2. Default values specified per OrgEntity property
+func NewOrgEntity() *OrgEntity {
+	m := &OrgEntity{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for OrgEntity. It set the default values for the OrgEntity type
+func (m *OrgEntity) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewOrgEntity()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias OrgEntity
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m OrgEntity) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"email": validation.Validate(
 			m.Email, validation.Required, is.EmailFormat,
 		),
 		"id": validation.Validate(
 			m.Id, validation.Required, is.UUID,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetEmail returns the Email property

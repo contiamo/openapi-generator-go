@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -18,13 +20,37 @@ type Shape struct {
 	Type string `json:"type,omitempty" mapstructure:"type,omitempty"`
 }
 
+// NewShape instantiates a new Shape with default values overriding them as follows:
+// 1. Default values specified in the Shape schema
+// 2. Default values specified per Shape property
+func NewShape() *Shape {
+	m := &Shape{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Shape. It set the default values for the Shape type
+func (m *Shape) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewShape()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Shape
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Shape) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"coordinates": validation.Validate(
 			m.Coordinates,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetCoordinates returns the Coordinates property

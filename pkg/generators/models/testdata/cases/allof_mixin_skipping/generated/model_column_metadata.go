@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -20,13 +22,39 @@ type ColumnMetadata struct {
 	Type ColumnTypeMetadata `json:"type" mapstructure:"type"`
 }
 
+// NewColumnMetadata instantiates a new ColumnMetadata with default values overriding them as follows:
+// 1. Default values specified in the ColumnMetadata schema
+// 2. Default values specified per ColumnMetadata property
+func NewColumnMetadata() *ColumnMetadata {
+	m := &ColumnMetadata{
+		Type: *NewColumnTypeMetadata(),
+	}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for ColumnMetadata. It set the default values for the ColumnMetadata type
+func (m *ColumnMetadata) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewColumnMetadata()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias ColumnMetadata
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m ColumnMetadata) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"type": validation.Validate(
 			m.Type,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetComment returns the Comment property

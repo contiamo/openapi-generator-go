@@ -27,6 +27,7 @@ var (
 		StringEnumNullableBar,
 		StringEnumNullableFoo,
 	}
+
 	// KnownStringEnumNullableString is the list of valid StringEnumNullable as string
 	KnownStringEnumNullableString = []string{
 		string(StringEnumNullableBar),

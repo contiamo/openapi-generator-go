@@ -27,6 +27,7 @@ var (
 		EnumOne,
 		EnumTwo,
 	}
+
 	// KnownEnumString is the list of valid Enum as string
 	KnownEnumString = []string{
 		string(EnumOne),

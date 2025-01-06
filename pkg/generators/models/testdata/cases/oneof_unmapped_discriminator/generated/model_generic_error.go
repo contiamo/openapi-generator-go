@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -15,16 +17,44 @@ type GenericError struct {
 	// Code: machine friendly error code.
 	Code string `json:"code,omitempty" mapstructure:"code,omitempty"`
 	// Kind:
-	Kind string `json:"kind" mapstructure:"kind"`
+	Kind GenericErrorKind `json:"kind" mapstructure:"kind"`
 	// Message: the user friendly error message.
 	Message string `json:"message" mapstructure:"message"`
 	// TraceId: the request tracing id, this can be submitted during bug reports to help with debugging the underlying cause.
 	TraceId string `json:"traceId,omitempty" mapstructure:"traceId,omitempty"`
 }
 
+// NewGenericError instantiates a new GenericError with default values overriding them as follows:
+// 1. Default values specified in the GenericError schema
+// 2. Default values specified per GenericError property
+func NewGenericError() *GenericError {
+	m := &GenericError{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for GenericError. It set the default values for the GenericError type
+func (m *GenericError) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewGenericError()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias GenericError
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m GenericError) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{
+		"kind": validation.Validate(
+			m.Kind, validation.Required,
+		),
+	}
+	return errors.Filter()
 }
 
 // GetCode returns the Code property
@@ -38,12 +68,12 @@ func (m *GenericError) SetCode(val string) {
 }
 
 // GetKind returns the Kind property
-func (m GenericError) GetKind() string {
+func (m GenericError) GetKind() GenericErrorKind {
 	return m.Kind
 }
 
 // SetKind sets the Kind property
-func (m *GenericError) SetKind(val string) {
+func (m *GenericError) SetKind(val GenericErrorKind) {
 	m.Kind = val
 }
 

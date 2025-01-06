@@ -8,83 +8,104 @@ package generatortest
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-// FooBar is an object.
+// FooBar is an object with additional properties.
 type FooBar struct {
-	FooBarProperties
-	AdditionalProperties map[string][]struct {
-		Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
-	}
-}
-
-type FooBarProperties struct {
 	// Baz:
 	Baz string `json:"baz,omitempty" mapstructure:"baz,omitempty"`
+	// AdditionalProperties:
+	AdditionalProperties map[string][]FooBarAdditionalProperties `json:"-"`
 }
 
-// Unmarshal all named properties into FooBarProperties and
-// the rest into the AdditionalProperties map
-func (obj *FooBar) UnmarshalJSON(data []byte) error {
+// NewFooBar instantiates a new FooBar with default values overriding them as follows:
+// 1. Default values specified in the FooBar schema
+// 2. Default values specified per FooBar property
+func NewFooBar() *FooBar {
+	m := &FooBar{}
+
+	return m
+}
+
+// UnmarshalJSON all named properties into FooBar and the rest into the AdditionalProperties map
+func (m *FooBar) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewFooBar()
+
 	var generic map[string]json.RawMessage
 	if err := json.Unmarshal(data, &generic); err != nil {
 		return err
 	}
 
-	obj.FooBarProperties = FooBarProperties{}
-
-	var additionalProperties = make(map[string][]struct {
-		Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
-	})
+	var additionalProperties = make(map[string][]FooBarAdditionalProperties)
 	for k, v := range generic {
-		if k == "baz" {
-			if err := json.Unmarshal(v, &(obj.FooBarProperties.Baz)); err != nil {
+		switch k {
+		case "baz":
+			if err := json.Unmarshal(v, &(m.Baz)); err != nil {
 				return err
 			}
-			continue
+		default:
+			var prop []FooBarAdditionalProperties
+			if err := json.Unmarshal(v, &prop); err != nil {
+				return err
+			}
+			additionalProperties[k] = prop
 		}
-		var prop []struct {
-			Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
-		}
-		if err := json.Unmarshal(v, &prop); err != nil {
-			return err
-		}
-		additionalProperties[k] = prop
 	}
 
-	obj.AdditionalProperties = additionalProperties
+	if len(additionalProperties) > 0 {
+		m.AdditionalProperties = additionalProperties
+	}
 	return nil
 }
 
-// Marshal FooBar by combining the AdditionalProperties with the
-// named properties in a single JSON object. Named properties take
-// precedence.
-func (obj FooBar) MarshalJSON() ([]byte, error) {
-	props := make(map[string]json.RawMessage)
+const FooBarNamedProperties = "|baz"
 
-	// start with additional properties so regular properties overwrite them
-	for k, v := range obj.AdditionalProperties {
-		if propData, err := json.Marshal(v); err == nil {
-			props[k] = propData
-		} else {
-			return nil, err
-		}
-	}
-	if propData, err := json.Marshal(obj.FooBarProperties.Baz); err == nil {
-		props["baz"] = propData
-	} else {
+// MarshalJSON FooBar by combining the AdditionalProperties with the named properties in a single JSON object.
+// An error will be returned if there are duplicate keys.
+func (m FooBar) MarshalJSON() ([]byte, error) {
+	type alias FooBar
+	data, err := json.Marshal(alias(m))
+	if err != nil {
 		return nil, err
 	}
 
-	data, err := json.Marshal(props)
+	if len(m.AdditionalProperties) > 0 {
+		for k, _ := range m.AdditionalProperties {
+			if strings.Contains(FooBarNamedProperties, k) {
+				return nil, fmt.Errorf("named key: %s was found in additionalProperties field", k)
+			}
+		}
+		additionalData, err := json.Marshal(m.AdditionalProperties)
+		if err != nil {
+			return nil, err
+		}
+
+		// merge the two JSON objects, we do it at byte level to avoid re-encoding the JSON
+		data = data[:len(data)-1]
+		additionalData = additionalData[1:]
+		if len(data) > 1 {
+			data = append(data, ',')
+		}
+		data = append(data, additionalData...)
+	}
+
 	return data, err
 }
 
 // Validate implements basic validation for this model
 func (m FooBar) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	for k, v := range m.AdditionalProperties {
+		if err := validation.Validate(v, validation.NotNil); err != nil {
+			errors[k] = err
+		}
+	}
+	return errors.Filter()
 }
 
 // GetBaz returns the Baz property
@@ -97,14 +118,10 @@ func (m *FooBar) SetBaz(val string) {
 	m.Baz = val
 }
 
-func (m *FooBar) GetAdditionalProperties() map[string][]struct {
-	Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
-} {
+func (m *FooBar) GetAdditionalProperties() map[string][]FooBarAdditionalProperties {
 	return m.AdditionalProperties
 }
 
-func (m *FooBar) SetAdditionalProperties(val map[string][]struct {
-	Test string `json:"test,omitempty" mapstructure:"test,omitempty"`
-}) {
+func (m *FooBar) SetAdditionalProperties(val map[string][]FooBarAdditionalProperties) {
 	m.AdditionalProperties = val
 }

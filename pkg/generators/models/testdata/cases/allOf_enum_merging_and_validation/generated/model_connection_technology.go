@@ -37,6 +37,7 @@ var (
 		ConnectionTechnologyPostgresql,
 		ConnectionTechnologyTableau,
 	}
+
 	// KnownConnectionTechnologyString is the list of valid ConnectionTechnology as string
 	KnownConnectionTechnologyString = []string{
 		string(ConnectionTechnologyGeneric),

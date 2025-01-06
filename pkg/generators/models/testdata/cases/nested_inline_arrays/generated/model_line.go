@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -18,13 +20,37 @@ type Line struct {
 	Type string `json:"type,omitempty" mapstructure:"type,omitempty"`
 }
 
+// NewLine instantiates a new Line with default values overriding them as follows:
+// 1. Default values specified in the Line schema
+// 2. Default values specified per Line property
+func NewLine() *Line {
+	m := &Line{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Line. It set the default values for the Line type
+func (m *Line) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewLine()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Line
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Line) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"coordinates": validation.Validate(
 			m.Coordinates, validation.NilOrNotEmpty, validation.Length(2, 2),
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetCoordinates returns the Coordinates property

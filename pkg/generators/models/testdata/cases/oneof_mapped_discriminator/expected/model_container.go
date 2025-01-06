@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -16,15 +18,39 @@ type Container struct {
 	Error Error `json:"error,omitempty" mapstructure:"error,omitempty"`
 }
 
+// NewContainer instantiates a new Container with default values overriding them as follows:
+// 1. Default values specified in the Container schema
+// 2. Default values specified per Container property
+func NewContainer() *Container {
+	m := &Container{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Container. It set the default values for the Container type
+func (m *Container) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewContainer()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias Container
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m Container) Validate() error {
-	return validation.Errors{
+	errors := validation.Errors{
 		"error": validation.Validate(
 			m.Error,
 			ErrorNilableRule{},
 			validation.Skip,
 		),
-	}.Filter()
+	}
+	return errors.Filter()
 }
 
 // GetError returns the Error property

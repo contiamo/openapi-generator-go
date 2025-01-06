@@ -27,6 +27,7 @@ var (
 		NameBar,
 		NameFoo,
 	}
+
 	// KnownNameString is the list of valid Name as string
 	KnownNameString = []string{
 		string(NameBar),

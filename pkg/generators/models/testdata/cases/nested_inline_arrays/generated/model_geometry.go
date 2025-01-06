@@ -34,6 +34,11 @@ type Geometry struct {
 	data geometryer
 }
 
+// NewGeometry creates a new Geometry instance with no internal value.
+func NewGeometry() *Geometry {
+	return &Geometry{}
+}
+
 var EmptyGeometryError = fmt.Errorf("empty data is not an Geometry")
 var NotGeometryError = fmt.Errorf("could not convert to type Geometry")
 
@@ -117,6 +122,8 @@ func (m Geometry) AsLine() (result Line, err error) {
 	if m.data == nil {
 		return result, EmptyGeometryError
 	}
+	result = *NewLine()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 
@@ -125,6 +132,8 @@ func (m Geometry) AsShape() (result Shape, err error) {
 	if m.data == nil {
 		return result, EmptyGeometryError
 	}
+	result = *NewShape()
+
 	return result, mapstructure.Decode(m.data, &result)
 }
 

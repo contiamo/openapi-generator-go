@@ -13,7 +13,22 @@ import (
 // Baz is an object.
 type Baz map[string][]Bar
 
+// NewBaz instantiates a new Baz with default values overriding them as follows:
+// 1. Default values specified in the Baz schema
+// 2. Default values specified per Baz property
+func NewBaz() Baz {
+	m := Baz{}
+
+	return m
+}
+
 // Validate implements basic validation for this model
 func (m Baz) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	for k, v := range m {
+		if err := validation.Validate(v, validation.NotNil); err != nil {
+			errors[k] = err
+		}
+	}
+	return errors.Filter()
 }

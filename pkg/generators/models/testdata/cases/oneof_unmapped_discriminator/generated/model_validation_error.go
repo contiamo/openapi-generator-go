@@ -7,6 +7,8 @@
 package generatortest
 
 import (
+	"encoding/json"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -18,9 +20,33 @@ type ValidationError struct {
 	Name string `json:"name,omitempty" mapstructure:"name,omitempty"`
 }
 
+// NewValidationError instantiates a new ValidationError with default values overriding them as follows:
+// 1. Default values specified in the ValidationError schema
+// 2. Default values specified per ValidationError property
+func NewValidationError() *ValidationError {
+	m := &ValidationError{}
+
+	return m
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for ValidationError. It set the default values for the ValidationError type
+func (m *ValidationError) UnmarshalJSON(data []byte) error {
+	// Set default values
+	*m = *NewValidationError()
+
+	// Unmarshal using an alias to avoid an infinite loop
+	type alias ValidationError
+	err := json.Unmarshal(data, (*alias)(m))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Validate implements basic validation for this model
 func (m ValidationError) Validate() error {
-	return validation.Errors{}.Filter()
+	errors := validation.Errors{}
+	return errors.Filter()
 }
 
 // GetMessage returns the Message property
